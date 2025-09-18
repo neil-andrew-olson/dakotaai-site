@@ -1,3 +1,6 @@
+// Remove any Cloudflare or analytics scripts if present
+// This file contains only essential client-side interactions
+
 document.addEventListener('DOMContentLoaded', function() {
     // Formspree handles form submission, no need for custom handling
     // But we can add success feedback if needed
