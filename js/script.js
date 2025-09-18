@@ -1,6 +1,34 @@
 // Remove any Cloudflare or analytics scripts if present
 // This file contains only essential client-side interactions
 
+(function() {
+    // Block Cloudflare scripts from loading
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.tagName === 'SCRIPT' &&
+                    node.src &&
+                    node.src.includes('cloudflareinsights.com')) {
+                    node.parentNode.removeChild(node);
+                    console.log('Cloudflare script blocked');
+                }
+            });
+        });
+    });
+
+    // Start observing
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
+
+    // Also block existing Cloudflare scripts
+    document.querySelectorAll('script[src*="cloudflareinsights.com"]').forEach(function(script) {
+        script.parentNode.removeChild(script);
+        console.log('Existing Cloudflare script removed');
+    });
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Formspree handles form submission, no need for custom handling
     // But we can add success feedback if needed
