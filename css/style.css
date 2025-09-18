@@ -25,6 +25,8 @@ header {
     position: sticky;
     top: 0;
     z-index: 100;
+    max-height: 80px; /* Constrain header height */
+    overflow: hidden; /* Hide overflow if logo exceeds */
 }
 
 .nav-container {
@@ -42,8 +44,10 @@ header {
 }
 
 .logo img {
-    height: 30px;
-    width: auto;
+    max-width: 200px; /* Limit width to shrink logo */
+    max-height: 60px; /* Cap height to fit header */
+    height: auto; /* Maintain aspect ratio */
+    width: auto; /* Allow proportional scaling */
     cursor: pointer;
     transition: transform 0.3s;
 }
