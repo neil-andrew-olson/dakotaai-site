@@ -1,0 +1,40 @@
+Suggested Stock Image Ideas for Dakota AI Website (Free/Open Source Resources):
+
+Hero Section:
+- Abstract data flow visualization (e.g., glowing lines connecting data points)
+- Neural network diagram with subtle background
+- Circuit board pattern with digital overlays
+- Wave patterns representing data streams
+
+Service Cards:
+- Bar chart or analytics dashboard screenshot
+- Gear icons with data processing elements
+- Light bulb icon for AI ideas
+- Cloud computing icons
+
+About Page:
+- Clean office space in a professional building
+- Team collaboration photo (use diverse group)
+- Technology background with subtle AI elements
+
+Contact Page:
+- West Fargo skyline (city view)
+- Office building exterior
+- North Dakota landscape as subtle background
+
+General:
+- Tech icons from Feather Icons or Heroicons (free SVG icon libraries)
+- Nature/technology hybrid images (not overly futuristic)
+- Professional business imagery from Unsplash
+
+Suggested Sources:
+- Unsplash.com (free stock photos)
+- Pixabay.com (free images)
+- Feathericons.com (free icons)
+- Heroicons.com (free with Tailwind)
+
+AI Theme Notes:
+- Focus on clean, geometric designs
+- Use blues, greens, and silvers
+- Avoid overly robotic or sci-fi imagery
+- Prefer data visualization style graphics
