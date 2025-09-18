@@ -4,8 +4,10 @@
     box-sizing: border-box;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f8f9fa;
@@ -40,7 +42,7 @@ header {
 }
 
 .logo img {
-    height: 50px;
+    height: 25px;
     width: auto;
     cursor: pointer;
     transition: transform 0.3s;

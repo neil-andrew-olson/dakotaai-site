@@ -1,23 +1,11 @@
-// Simple form submission placeholder
 document.addEventListener('DOMContentLoaded', function() {
+    // Formspree handles form submission, no need for custom handling
+    // But we can add success feedback if needed
     const contactForm = document.getElementById('contact-form');
 
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Get form data
-            const formData = new FormData(this);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const message = formData.get('message');
-
-            // Placeholder for form submission - in a real app, this would send to a server
-            alert(`Thank you for your message, ${name}! We'll get back to you at ${email} soon.`);
-
-            // Reset form
-            this.reset();
-        });
+        // Optional: Add custom success handling
+        // Note: With Formspree, form will submit and redirect to success page
     }
 
     // Simple hover effects for service cards
