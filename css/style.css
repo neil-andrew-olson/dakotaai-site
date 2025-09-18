@@ -42,7 +42,7 @@ header {
 }
 
 .logo img {
-    height: 20px;
+    height: 30px;
     width: auto;
     cursor: pointer;
     transition: transform 0.3s;
@@ -100,9 +100,9 @@ nav a:hover {
 }
 
 .hero {
-    background: #1E3A8A;
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
     color: white;
-    padding: 1rem 0;
+    padding: 3rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
