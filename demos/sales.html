@@ -25,10 +25,7 @@
         <p>This demo loads messy sales data, performs automated cleaning (removes duplicates, fills missing values), applies statistical models (average sales by region), and visualizes trends.</p>
         <button onclick="loadAndCleanDataset()">Load and Clean Dataset</button>
         <div id="stats"></div>
-        <div class="chart-container">
-            <canvas id="rawChart"></canvas>
-            <canvas id="cleanChart"></canvas>
-        </div>
+        <canvas id="comparisonChart"></canvas>
         <h2>Raw Data</h2>
         <table id="dataTable"></table>
         <h2>Cleaned Data</h2>
@@ -166,9 +163,72 @@
                 </ul>
             `;
 
-            // Render charts
-            renderRawChart(rawDates, rawSales);
-            renderCleanChart(cleanDates, cleanSales);
+            // Render combined comparison chart
+            renderComparisonChart(rawDates, rawSales, cleanDates, cleanSales);
+        }
+
+        function renderComparisonChart(rawLabels, rawData, cleanLabels, cleanData) {
+            const ctx = document.getElementById('comparisonChart');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Raw Sales (messy data)',
+                            data: rawData,
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            fill: false,
+                            pointStyle: 'circle',
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Cleaned Sales (processed data)',
+                            data: cleanData,
+                            borderColor: 'green',
+                            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            fill: false,
+                            pointStyle: 'rect',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Raw vs Cleaned Sales Data Comparison',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category',
+                            labels: cleanLabels.map((l,i) => rawLabels[i] || l), // Use clean for consistent labels
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Sales ($)'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function standardizeDate(dateStr) {
@@ -179,47 +239,6 @@
             return dateStr;
         }
 
-        function renderRawChart(labels, sales) {
-            const ctx = document.getElementById('rawChart');
-            if (window.rawChart) window.rawChart.destroy();
-            window.rawChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Raw Sales per Day', data: sales, borderColor: 'red', fill: false }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: false } },
-                    plugins: { title: { display: true, text: 'Raw Data Sales Trends' } }
-                }
-            });
-        }
-
-        function renderCleanChart(labels, sales) {
-            const ctx = document.getElementById('cleanChart');
-            if (window.cleanChart) window.cleanChart.destroy();
-            window.cleanChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Cleaned Sales per Day', data: sales, borderColor: 'green', fill: false }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: false } },
-                    plugins: { title: { display: true, text: 'Cleaned Data Sales Trends' } }
-                }
-            });
-        }
-
-        // Replace renderChart
-        function renderChart(labels, sales) {
-            // Not used
-        }
-
         function populateTable(data, tableId) {
             const table = document.getElementById(tableId);
             if (data.length === 0) return;
@@ -228,23 +247,6 @@
                 <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
                 <tbody>${data.map(row => `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`).join('')}</tbody>
             `;
-        }
-
-        function renderChart(labels, sales) {
-            const ctx = document.getElementById('salesChart');
-            if (chart) chart.destroy();
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Total Sales per Day', data: sales, borderColor: 'green', fill: false }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: false } }
-                }
-            });
         }
     </script>
 </body>
