@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI Demos - Sales Data Cleaner</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/papaparse/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        #dataTable, #cleanedTable { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        #dataTable th, #dataTable td, #cleanedTable th, #cleanedTable td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        #dataTable th { background-color: #f2f2f2; }
+        #cleanedTable thead tr { background-color: #e0f7e0; }
+        #stats { margin: 20px 0; }
+        canvas { display: block; margin: 20px auto; width: 80vw; height: 50vh; max-width: 800px; max-height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dakota AI Demo: Sales Data Cleaner and Trend Analyzer</h1>
+        <p>This demo loads messy sales data, performs automated cleaning (removes duplicates, fills missing values), applies statistical models (average sales by region), and visualizes trends.</p>
+        <button onclick="loadAndCleanDataset()">Load and Clean Dataset</button>
+        <div id="stats"></div>
+        <canvas id="salesChart"></canvas>
+        <h2>Raw Data</h2>
+        <table id="dataTable"></table>
+        <h2>Cleaned Data</h2>
+        <table id="cleanedTable"></table>
+    </div>
+
+    <script>
+        let chart;
+
+        function loadAndCleanDataset() {
+            fetch('sales_data.csv')
+                .then(response => response.text())
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        header: true,
+                        complete: function(results) {
+                            const rawData = results.data;
+                            const cleanedData = cleanData(rawData);
+                            processCleanedData(cleanedData, rawData);
+                        }
+                    });
+                });
+        }
+
+        function cleanData(data) {
+            // Remove duplicates based on all columns
+            const seen = new Set();
+            let uniqueData = data.filter(row => {
+                const key = JSON.stringify(row);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            // Fill missing Sales with mean
+            const sales = uniqueData.map(row => row.Sales ? parseFloat(row.Sales) : null).filter(s => s !== null);
+            const salesMean = sales.reduce((a,b)=>a+b,0)/sales.length;
+            uniqueData = uniqueData.map(row => {
+                if (!row.Sales || row.Sales === '') {
+                    row.Sales = salesMean.toFixed(2);
+                }
+                return row;
+            });
+
+            // Fill missing Quantity with median
+            const quantities = uniqueData.map(row => row.Quantity ? parseFloat(row.Quantity) : null).filter(q => q !== null).sort((a,b)=>a-b);
+            const median = quantities.length % 2 === 0 ? (quantities[quantities.length/2 -1] + quantities[quantities.length/2])/2 : quantities[Math.floor(quantities.length/2)];
+            uniqueData = uniqueData.map(row => {
+                if (!row.Quantity || row.Quantity === '') {
+                    row.Quantity = Math.round(median);
+                }
+                return row;
+            });
+
+            // Remove extraneous columns (like MissingCol if present)
+            uniqueData = uniqueData.map(row => {
+                delete row.MissingCol;
+                return row;
+            });
+
+            return uniqueData;
+        }
+
+        function processCleanedData(cleanedData, rawData) {
+            // Display raw table (first 10)
+            populateTable(rawData.slice(0,10), 'dataTable');
+
+            // Display cleaned table (first 10)
+            populateTable(cleanedData.slice(0,10), 'cleanedTable');
+
+            // Calculate stats
+            const totalSales = cleanedData.reduce((sum, row) => sum + parseFloat(row.Sales), 0);
+            const avgSalesByRegion = {};
+            cleanedData.forEach(row => {
+                const region = row.Region;
+                if (!avgSalesByRegion[region]) avgSalesByRegion[region] = { total: 0, count: 0 };
+                avgSalesByRegion[region].total += parseFloat(row.Sales);
+                avgSalesByRegion[region].count++;
+            });
+            for (const region in avgSalesByRegion) {
+                avgSalesByRegion[region] = (avgSalesByRegion[region].total / avgSalesByRegion[region].count).toFixed(2);
+            }
+
+            document.getElementById('stats').innerHTML = `
+                <h2>Data Analytics</h2>
+                <p><strong>Total Sales:</strong> $${totalSales.toFixed(2)}</p>
+                <p><strong>Average Sales by Region:</strong></p>
+                <ul>
+                    ${Object.entries(avgSalesByRegion).map(([region, avg]) => `<li>${region}: $${avg}</li>`).join('')}
+                </ul>
+                <p><strong>Records Cleaned:</strong> ${rawData.length} raw → ${cleanedData.length} cleaned</p>
+            `;
+
+            // Chart sales over time grouped by dates
+            const dateGroups = {};
+            cleanedData.forEach(row => {
+                const date = row.OrderDate;
+                if (!dateGroups[date]) dateGroups[date] = 0;
+                dateGroups[date] += parseFloat(row.Sales);
+            });
+            const dates = Object.keys(dateGroups).sort();
+            const salesValues = dates.map(d => dateGroups[d]);
+
+            renderChart(dates, salesValues);
+        }
+
+        function populateTable(data, tableId) {
+            const table = document.getElementById(tableId);
+            if (data.length === 0) return;
+            const headers = Object.keys(data[0]);
+            table.innerHTML = `
+                <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                <tbody>${data.map(row => `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`).join('')}</tbody>
+            `;
+        }
+
+        function renderChart(labels, sales) {
+            const ctx = document.getElementById('salesChart');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Total Sales per Day', data: sales, borderColor: 'green', fill: false }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+</content>
