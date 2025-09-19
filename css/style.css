@@ -25,8 +25,8 @@ header {
     position: sticky;
     top: 0;
     z-index: 100;
-    max-height: 40px; /* Constrain header height */
-    overflow: hidden; /* Hide overflow if logo exceeds */
+    min-height: 60px; /* Increased minimum height to fit larger logo */
+    overflow: visible; /* Allow content to show */
 }
 
 .nav-container {
@@ -44,12 +44,11 @@ header {
 }
 
 .logo img {
-    max-width: 100px; /* Limit width to shrink logo */
-    max-height: 30px; /* Cap height to fit header */
-    height: auto; /* Maintain aspect ratio */
-    width: auto; /* Allow proportional scaling */
+    height: 45px; /* Increased logo height for better visibility */
+    width: auto; /* Maintain aspect ratio */
     cursor: pointer;
     transition: transform 0.3s;
+    max-width: 150px; /* Allow larger logos */
 }
 
 .logo img:hover {
@@ -69,8 +68,9 @@ nav ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 2rem;
+    gap: 1.5rem; /* Slightly reduced gap to show more items */
     flex-shrink: 0;
+    flex-wrap: nowrap; /* Prevent wrapping to keep them visible */
 }
 
 nav a {
@@ -106,18 +106,21 @@ nav a:hover {
 .hero {
     background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
     color: white;
-    padding: 3rem 0;
+    padding: 4rem 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* Better centering for all content */
+    text-align: center; /* Center all text */
     gap: 2rem;
     flex-wrap: wrap;
+    min-height: 50vh;
 }
 
 .hero-content {
     flex: 1;
-    max-width: 600px;
-    text-align: center;
+    max-width: 800px; /* Increased width for better use of space */
+    text-align: center; /* Ensure centered text */
+    margin: 0 auto; /* Center the content */
 }
 
 .hero h1 {
