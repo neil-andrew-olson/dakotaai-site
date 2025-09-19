@@ -436,8 +436,7 @@
 
                 console.log('Loading model from ./tfjs_model/...');
 
-                // Load the TensorFlow.js model
-                // NOTE: You need to place your model files in ./demos/tfjs_model/
+                // Try to load the TensorFlow.js model
                 model = await tf.loadLayersModel('./tfjs_model/model.json');
 
                 console.log('Model loaded successfully!');
@@ -446,16 +445,23 @@
                 // Hide any previous model loading messages
                 hideError();
 
+                // Update UI to show AI mode is active
+                document.querySelector('.demo-description').innerHTML =
+                    '<strong>🤖 AI Mode Active:</strong> Your trained transfer learning model is loaded and ready to classify images! Upload any image to see real AI predictions from your VGG16 CIFAR-10 model.';
+
             } catch (error) {
-                console.error('Model loading failed:', error);
+                console.warn('Model loading failed:', error);
 
-                // Fallback message if model fails to load
-                showError('Model loading failed. Make sure your TensorFlow.js model files are in the demos/tfjs_model/ directory. ' +
-                         'Convert your .h5 model using: tensorflowjs_converter --input_format keras transfer_model.h5 tfjs_model/');
+                // Enter demo mode instead of disabling
+                model = null; // Explicitly set to null
 
-                // Disable upload functionality
-                uploadArea.style.pointerEvents = 'none';
-                uploadArea.style.opacity = '0.5';
+                console.log('Demo mode activated - showing banner message to user');
+
+                console.log('Running in demo mode with intelligent feature analysis');
+
+                // Update UI to show demo mode is active
+                document.querySelector('.demo-description').innerHTML =
+                    '<strong>🎯 Demo Mode Active:</strong> Experience intelligent image analysis! While the real AI model isn\'t loaded yet, upload images to see how AI processes visual features and makes educated guesses based on colors, shapes, and patterns.';
             }
         }
 
@@ -519,8 +525,13 @@
                     return;
                 }
 
-                // Check if model is loaded
-                if (!model) {
+                // Check if model is loaded (null means demo mode)
+                if (model === null) {
+                    // Demo mode - use intelligent analysis
+                    runDemoAnalysis(file);
+                    return;
+                } else if (model === undefined) {
+                    // Still loading
                     showError('AI model is still loading. Please wait a moment and try again.');
                     return;
                 }
