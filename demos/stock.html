@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI Demos - Real-Time Stock Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        #stockInput { display: block; margin: 20px auto; padding: 10px; width: 200px; }
+        #stockData { margin-top: 20px; }
+        #toggles { text-align: center; margin: 10px 0; }
+        #callCount { color: red; font-weight: bold; }
+        canvas { display: block; margin: 20px auto; width: 80vw; height: 50vh; max-width: 800px; max-height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dakota AI Demo: Real-Time Stock Price Tracker</h1>
+        <p>This demo showcases our capabilities in real-time data processing, analytics, and visualization. Enter a stock symbol (e.g., AAPL) to fetch real-time data and analyze trends.</p>
+        <input type="text" id="stockInput" placeholder="Enter Stock Symbol" value="AAPL">
+        <button onclick="fetchStockData()">Fetch Data</button>
+        <p id="callCount">API calls today: 0/25</p>
+        <div id="toggles">
+            <label><input type="checkbox" id="smaToggle" checked> Show SMA</label>
+            <label><input type="checkbox" id="emaToggle" checked> Show EMA</label>
+            <label><input type="checkbox" id="rsiToggle"> Show RSI</label>
+        </div>
+        <div id="stockData"></div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        let chart;
+        let dataCache = null;
+
+        function updateCallCount() {
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem('lastCallDate');
+            let callsToday = parseInt(localStorage.getItem('callsToday') || 0);
+            if (lastDate !== today) {
+                callsToday = 0;
+                localStorage.setItem('lastCallDate', today);
+            }
+            document.getElementById('callCount').textContent = `API calls today: ${callsToday}/25`;
+            return callsToday;
+        }
+
+        function incrementCallCount() {
+            const callsToday = updateCallCount() + 1;
+            localStorage.setItem('callsToday', callsToday);
+            updateCallCount();
+        }
+
+        function calculateEMA(prices, period) {
+            const multiplier = 2 / (period + 1);
+            const ema = [];
+            let prev = prices[0];
+            for (let i = 0; i < prices.length; i++) {
+                prev = (prices[i] - prev) * multiplier + prev;
+                ema.push(prev);
+            }
+            return ema;
+        }
+
+        function calculateRSI(prices, period = 14) {
+            const gains = [];
+            const losses = [];
+            for (let i = 1; i < prices.length; i++) {
+                const change = prices[i] - prices[i-1];
+                gains.push(change > 0 ? change : 0);
+                losses.push(change < 0 ? -change : 0);
+            }
+            const rsi = [];
+            let avgGain = gains.slice(0, period).reduce((a,b)=>a+b,0) / period;
+            let avgLoss = losses.slice(0, period).reduce((a,b)=>a+b,0) / period;
+            for (let i = 0; i < gains.length; i++) {
+                if (i >= period) {
+                    avgGain = (avgGain * (period - 1) + gains[i]) / period;
+                    avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+                }
+                const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+                rsi.push(100 - (100 / (1 + rs)));
+            }
+            return Array(period).fill(null).concat(rsi);
+        }
+
+        function renderChart(times, prices, sma, ema, rsi) {
+            const ctx = document.getElementById('myChart');
+            const datasets = [{ label: 'Price', data: prices, borderColor: 'blue', fill: false }];
+            if (document.getElementById('smaToggle').checked && sma) datasets.push({ label: 'SMA 20', data: sma, borderColor: 'red', fill: false });
+            if (document.getElementById('emaToggle').checked && ema) datasets.push({ label: 'EMA 20', data: ema, borderColor: 'green', fill: false });
+            // RSI as separate chart, but for simplicity, add as line with different scale? But chart.js can mix, better separate data.
+            // For demo, plot RSI separately or in tooltip.
+            // For now, add as dataset but it's % vs $ , so perhaps separate y axes.
+
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: times.map(t => new Date(t).toLocaleTimeString()), datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    if (rsi && rsi[context.dataIndex]) {
+                                        return 'RSI: ' + rsi[context.dataIndex].toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchStockData() {
+            let callsToday = updateCallCount();
+            if (callsToday >= 25) {
+                document.getElementById('stockData').innerHTML = 'Daily API limit reached (25 calls). Try again tomorrow.';
+                return;
+            }
+
+            const symbol = document.getElementById('stockInput').value.toUpperCase();
+            const apiKey = '1KVB3JGWTYYBEYDS'; // Note: This should be kept secret; move to server-side for production
+            const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&apikey=${apiKey}`;
+
+            try {
+                document.getElementById('stockData').innerHTML = 'Fetching data...';
+                const response = await axios.get(url);
+                const data = response.data['Time Series (5min)'];
+                incrementCallCount();
+
+                if (!data) {
+                    document.getElementById('stockData').innerHTML = 'Invalid symbol or API error.';
+                    return;
+                }
+
+                const times = Object.keys(data).reverse();
+                const prices = times.map(time => parseFloat(data[time]['1. open']));
+                const volumes = times.map(time => parseFloat(data[time]['5. volume']));
+
+                // Calculations
+                const sma = prices.map((price, index) => {
+                    if (index < 19) return null;
+                    const sum = prices.slice(index - 19, index + 1).reduce((a, b) => a + b, 0);
+                    return sum / 20;
+                });
+                const ema = calculateEMA(prices, 20);
+                const closes = times.map(time => parseFloat(data[time]['4. close']));
+                const rsi = calculateRSI(closes, 14);
+                dataCache = { times, prices, sma, ema, rsi };
+
+                // Update UI
+                const latestPrice = prices[prices.length - 1];
+                const latestTime = times[times.length - 1];
+                const latestRsi = rsi[rsi.length - 1];
+                document.getElementById('stockData').innerHTML = `
+                    <h2>${symbol} - Latest Data</h2>
+                    <p><strong>Time:</strong> ${latestTime}</p>
+                    <p><strong>Price:</strong> $${latestPrice.toFixed(2)}</p>
+                    <p><strong>Volume:</strong> ${volumes[volumes.length - 1].toLocaleString()}</p>
+                    <p><strong>SMA (20):</strong> ${sma[sma.length - 1] ? `$${sma[sma.length - 1].toFixed(2)}` : 'N/A'}</p>
+                    <p><strong>EMA (20):</strong> $${ema[ema.length - 1].toFixed(2)}</p>
+                    <p><strong>RSI (14):</strong> ${latestRsi ? latestRsi.toFixed(2) : 'N/A'}</p>
+                `;
+
+                renderChart(times, prices, sma, ema, rsi);
+            } catch (error) {
+                document.getElementById('stockData').innerHTML = 'Error fetching data. Check network or API limit.';
+                console.error(error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('smaToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi); });
+        document.getElementById('emaToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi); });
+        document.getElementById('rsiToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi); }); // RSI is in tooltip, for now
+
+        // Initialize
+        updateCallCount();
+    </script>
+</body>
+</html>
