@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI Demos - Public Dataset Explorer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/papaparse/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        #dataTable { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        #dataTable th, #dataTable td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        #dataTable th { background-color: #f2f2f2; }
+        #stats { margin: 20px 0; }
+        canvas { display: block; margin: 20px auto; width: 80vw; height: 50vh; max-width: 800px; max-height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dakota AI Demo: Public Dataset Explorer</h1>
+        <p>This demo loads a public CSV dataset, processes the data, performs analytics, and applies a simple AI model (linear regression) for predictions. Data: Sample historical stock prices.</p>
+        <button onclick="loadDataset()">Load Dataset</button>
+        <div id="stats"></div>
+        <canvas id="priceChart"></canvas>
+        <table id="dataTable"></table>
+        <div id="prediction"></div>
+    </div>
+
+    <script>
+        let chart;
+
+        function loadDataset() {
+            fetch('sample_stock.csv')
+                .then(response => response.text())
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        header: true,
+                        complete: function(results) {
+                            processData(results.data);
+                        }
+                    });
+                });
+        }
+
+        function processData(data) {
+            // Filter out any invalid rows
+            const validData = data.filter(row => row.Date && row.Price);
+
+            // Calculate stats
+            const prices = validData.map(row => parseFloat(row.Price)).sort((a,b)=>a-b);
+            const volumes = validData.map(row => parseFloat(row.Volume)).sort((a,b)=>a-b);
+
+            const priceMean = prices.reduce((a,b)=>a+b,0)/prices.length;
+            const priceStd = Math.sqrt(prices.reduce((a,b,sum)=>sum + Math.pow(b-priceMean,2),0)/prices.length);
+            const volumeMean = volumes.reduce((a,b)=>a+b,0)/volumes.length;
+
+            document.getElementById('stats').innerHTML = `
+                <h2>Data Analytics</h2>
+                <p><strong>Price Stats:</strong> Mean: $${priceMean.toFixed(2)}, Std Dev: ${priceStd.toFixed(2)}, Min: $${prices[0].toFixed(2)}, Max: $${prices[prices.length-1].toFixed(2)}</p>
+                <p><strong>Volume Stats:</strong> Mean: ${volumeMean.toFixed(0)}, Max: ${volumes[volumes.length-1]}</p>
+            `;
+
+            // Populate table (show first 10 rows for demo)
+            const table = document.getElementById('dataTable');
+            table.innerHTML = '<thead><tr><th>Date</th><th>Price</th><th>Volume</th></tr></thead><tbody></tbody>';
+            const tbody = table.querySelector('tbody');
+            validData.slice(0,10).forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.Date}</td><td>$${parseFloat(row.Price).toFixed(2)}</td><td>${row.Volume}</td>`;
+                tbody.appendChild(tr);
+            });
+
+            // Chart
+            const dates = validData.map(row => row.Date);
+            const priceValues = validData.map(row => parseFloat(row.Price));
+            renderChart(dates, priceValues);
+
+            // AI: Linear Regression
+            const regression = linearRegression(priceValues);
+            const nextIndex = priceValues.length;
+            const nextPrice = regression.slope * nextIndex + regression.intercept;
+            document.getElementById('prediction').innerHTML = `
+                <h2>AI Prediction (Linear Regression)</h2>
+                <p><strong>Next Price Prediction:</strong> $${nextPrice.toFixed(2)}</p>
+                <p>Slope: ${regression.slope.toFixed(4)}, Intercept: ${regression.intercept.toFixed(2)}</p>
+            `;
+        }
+
+        function linearRegression(yValues) {
+            const n = yValues.length;
+            const xValues = Array.from({length: n}, (_, i) => i);
+            const sumX = xValues.reduce((a,b)=>a+b,0);
+            const sumY = yValues.reduce((a,b)=>a+b,0);
+            const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
+            const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            return { slope, intercept };
+        }
+
+        function renderChart(labels, prices) {
+            const ctx = document.getElementById('priceChart');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Price', data: prices, borderColor: 'blue', fill: false }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+</content>
