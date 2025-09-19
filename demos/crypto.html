@@ -6,7 +6,6 @@
     <title>Dakota AI Demos - Crypto Market Sentiment Analyzer</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://unpkg.com/sentiment@5.0.2/lib/sentiment.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -119,7 +118,7 @@
         async function fetchCryptoData() {
             const symbol = document.getElementById('cryptoInput').value.toLowerCase();
             const apiKey = 'CG-htAfQpJ25kHiw7SxRNTjYNXA'; // Note: This should be kept secret; move to server-side for production
-            const apiUrl = `https://api.coingecko.com/api/v3/coins/${symbol}/market_chart?vs_currency=usd&days=1&interval=hourly`;
+            const apiUrl = `https://api.coingecko.com/api/v3/coins/${symbol}/market_chart?vs_currency=usd&days=30&interval=daily`;
 
             try {
                 document.getElementById('cryptoData').innerHTML = 'Fetching real data...';
@@ -129,7 +128,7 @@
                     }
                 });
                 const prices = response.data.prices.map(p => p[1]);
-                const times = response.data.prices.map(p => new Date(p[0]).toLocaleTimeString());
+                const times = response.data.prices.map(p => new Date(p[0]).toLocaleDateString());
 
                 const volatility = calculateVolatility(prices);
                 const { adx, plusDI, minusDI } = calculateADX(prices);
