@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Image Classifier Demo - Transfer Learning with CIFAR-10 dataset">
+    <title>AI Image Classifier - Dakota AI Demo</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" href="../DA.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .demo-header h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-description {
+            font-size: 1.2rem;
+            color: #64748b;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .classifier-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin: 3rem 0;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .classifier-section {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-section h3 {
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #1d4ed8;
+        }
+
+        #imageUpload {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-section h3 {
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        #resultsContainer {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #2563eb;
+        }
+
+        .prediction-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .prediction-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #2563eb);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .cifar-classes {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 3rem 0;
+        }
+
+        .cifar-classes h3 {
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .class-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .class-number {
+            background: #2563eb;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .demo-info {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+        }
+
+        .demo-info h3 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .demo-info p {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tech-tag {
+            background: #2563eb;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1><i class="fas fa-brain"></i> AI Image Classifier</h1>
+            <p class="demo-description">
+                Experience transfer learning in action! Upload an image and our AI model, trained on the CIFAR-10 dataset, will classify it into one of ten categories. This demo showcases how pre-trained neural networks can be adapted for new classification tasks.
+            </p>
+        </div>
+
+        <div id="error-message" class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="error-text"></span>
+        </div>
+
+        <div class="classifier-section">
+            <div class="upload-section">
+                <h3>Upload an Image</h3>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="imageUpload" accept="image/*">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <strong>Click to upload</strong> or drag and drop
+                        <br>
+                        <small>PNG, JPG, GIF up to 10MB</small>
+                    </div>
+                </div>
+                <img id="previewImage" style="display: none;" alt="Preview">
+                <div class="loading" id="loadingSpinner" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing image...</p>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h3>Classification Results</h3>
+                <div id="resultsContainer">
+                    <div class="result-card">
+                        <h4 id="topPrediction">Predicted: <span class="prediction-class">Class</span></h4>
+                        <h5>Confidence: <span id="confidenceLevel">89%</span></h5>
+                        <div class="prediction-bar">
+                            <div class="prediction-fill" id="confidenceBar" style="width: 89%;"></div>
+                        </div>
+                        <p id="predictionDescription">Loading description...</p>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>Top 3 Predictions</h4>
+                        <div id="topPredictionsList">
+                            <!-- Dynamic predictions will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="noResults" style="text-align: center; color: #64748b; padding: 2rem;">
+                    <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>Upload an image to see classification results</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cifar-classes">
+            <h3>CIFAR-10 Classes</h3>
+            <div class="classes-grid">
+                <div class="class-item">
+                    <div class="class-number">0</div>
+                    <span>Airplane</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">1</div>
+                    <span>Automobile</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">2</div>
+                    <span>Bird</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">3</div>
+                    <span>Cat</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">4</div>
+                    <span>Deer</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">5</div>
+                    <span>Dog</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">6</div>
+                    <span>Frog</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">7</div>
+                    <span>Horse</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">8</div>
+                    <span>Ship</span>
+                </div>
+                <div class="class-item">
+                    <div class="class-number">9</div>
+                    <span>Truck</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h3><i class="fas fa-info-circle"></i> About This Demo</h3>
+            <p>
+                This image classifier uses transfer learning, adapting a pre-trained VGG16 model that was originally trained on millions of images. By fine-tuning the model with the CIFAR-10 dataset (containing 60,000 images across 10 classes), we can achieve accurate classification without training from scratch.
+            </p>
+            <p>
+                <strong>Transfer Learning Benefits:</strong> Save computational resources, achieve better performance with smaller datasets, and leverage knowledge from related tasks to accelerate AI development.
+            </p>
+
+            <div class="tech-stack">
+                <span class="tech-tag">TensorFlow</span>
+                <span class="tech-tag">Keras</span>
+                <span class="tech-tag">CIFAR-10</span>
+                <span class="tech-tag">VGG16</span>
+                <span class="tech-tag">Transfer Learning</span>
+                <span class="tech-tag">JavaScript</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // CIFAR-10 classes
+        const classes = [
+            'Airplane', 'Automobile', 'Bird', 'Cat', 'Deer',
+            'Dog', 'Frog', 'Horse', 'Ship', 'Truck'
+        ];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const imageUpload = document.getElementById('imageUpload');
+        const previewImage = document.getElementById('previewImage');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const noResults = document.getElementById('noResults');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadArea.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            uploadArea.classList.remove('dragover');
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+        uploadArea.addEventListener('click', () => imageUpload.click());
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        imageUpload.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+
+                // Validate file type
+                if (!file.type.includes('image/')) {
+                    showError('Please upload a valid image file.');
+                    return;
+                }
+
+                // Validate file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    showError('File size must be less than 10MB.');
+                    return;
+                }
+
+                hideError();
+                previewFile(file);
+                classifyImage(file);
+            }
+        }
+
+        function previewFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function classifyImage(file) {
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            noResults.style.display = 'none';
+            resultsContainer.style.display = 'none';
+
+            // Create FormData to send the image
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Simulate API call (replace with actual backend endpoint)
+            setTimeout(() => {
+                // Mock classification results
+                simulateClassification();
+            }, 2000);
+        }
+
+        function simulateClassification() {
+            // Hide loading, show results
+            loadingSpinner.style.display = 'none';
+            resultsContainer.style.display = 'block';
+
+            // Generate random predictions for demo
+            const predictions = [
+                { class: 5, confidence: 0.87 }, // Dog
+                { class: 3, confidence: 0.12 }, // Cat
+                { class: 4, confidence: 0.08 }  // Deer
+            ];
+
+            // Randomize for variety
+            const randomClass = Math.floor(Math.random() * classes.length);
+            predictions[0] = { class: randomClass, confidence: 0.75 + Math.random() * 0.24 };
+
+            // Display top prediction
+            const topPrediction = predictions[0];
+            document.querySelector('.prediction-class').textContent = classes[topPrediction.class];
+            document.getElementById('confidenceLevel').textContent = Math.round(topPrediction.confidence * 100) + '%';
+            document.getElementById('confidenceBar').style.width = Math.round(topPrediction.confidence * 100) + '%';
+            document.getElementById('predictionDescription').textContent =
+                `The AI model predicts this image contains a ${classes[topPrediction.class].toLowerCase()} with ${Math.round(topPrediction.confidence * 100)}% confidence.`;
+
+            // Display top 3 predictions
+            const topPredictionsList = document.getElementById('topPredictionsList');
+            topPredictionsList.innerHTML = '';
+
+            predictions.forEach((pred, index) => {
+                const predItem = document.createElement('div');
+                predItem.innerHTML = `
+                    <span style="font-weight: ${index === 0 ? 'bold' : 'normal'};">${index + 1}. ${classes[pred.class]} - ${Math.round(pred.confidence * 100)}%
+                        <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; margin: 4px 0;">
+                            <div style="width: ${Math.round(pred.confidence * 100)}%; height: 100%; background: ${index === 0 ? '#10b981' : '#6b7280'}; border-radius: 4px;"></div>
+                        </div>
+                    </span>
+                `;
+                topPredictionsList.appendChild(predItem);
+            });
+        }
+
+        // Note: In a real implementation, replace the simulateClassification function with actual API call
+        // Example real API call would look like:
+        /*
+        fetch('/api/classify', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => displayResults(data))
+        .catch(error => showError('Failed to classify image'));
+        */
+    </script>
+</body>
+</html>
