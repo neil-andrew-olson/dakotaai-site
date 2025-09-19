@@ -690,6 +690,80 @@ h4, h5, h6 {
     color: #64748b;
 }
 
+.blog-insights {
+    margin-top: 3rem;
+}
+
+.insights-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.insights-header h3 {
+    color: #1e293b;
+    font-size: 1.4rem;
+}
+
+.insights-header i {
+    color: #10b981;
+    margin-right: 0.5rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.insight-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    display: flex;
+    gap: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.insight-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.insight-icon {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.insight-content h4 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.insight-content p {
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.quote-tag {
+    font-size: 0.9rem;
+    color: #10b981;
+    font-weight: 500;
+    margin-left: 3rem;
+    margin-top: 0.5rem;
+}
+
 .blog-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
