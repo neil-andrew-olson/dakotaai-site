@@ -121,10 +121,15 @@ Apr/27/2023,South,Widget C,2300,56,0.15,""
 Apr/28/2023,North,Widget B,2320,59,0.05,""
 Apr/29/2023,East,Widget A,2340,57,0.2,""
 Apr/30/2023,West,Widget C,2360,60,0.1,""
-01/01/2023,East,Widget C,100,2,0.1,"" 
-Jan/01/2023,East,Widget C,100,2,0.1,"" 
-Feb/01/2023,East,Widget A,620,16,0.05,"" 
-Feb/01/2023,East,Widget A,620,16,0.05,"" 
-,,,,,, 
-,,,,,, 
+01/01/2023,East,Widget C,100,2,0.1,""
+Jan/01/2023,East,Widget C,100,2,0.1,""
+Feb/01/2023,East,Widget A,620,16,0.05,""
+Feb/01/2023,East,Widget A,620,16,0.05,""
+May/01/2023,East,Widget A,50000,100,0,""  # Outlier high sales
+May/02/2023,West,Widget B,,1000,0.5,""  # Outlier high quantity
+03/02/2023,North,Widget C,-500,5,0.1,""  # Negative sales
+Jun/01/2023,South,Widget B,0,,0,""  # Zero sales
+Jun/02/2023,East,Widget A,15000,200,0,""  # Another high outlier
+,,,,,,
+,,,,,,
 ,,,,,,
