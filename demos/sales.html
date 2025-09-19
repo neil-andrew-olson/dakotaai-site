@@ -15,7 +15,8 @@
         #dataTable th { background-color: #f2f2f2; }
         #cleanedTable thead tr { background-color: #e0f7e0; }
         #stats { margin: 20px 0; }
-        canvas { display: block; margin: 20px auto; width: 80vw; height: 50vh; max-width: 800px; max-height: 400px; }
+        .chart-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        canvas { width: 80vw; height: 50vh; max-width: 400px; max-height: 300px; }
     </style>
 </head>
 <body>
@@ -24,7 +25,10 @@
         <p>This demo loads messy sales data, performs automated cleaning (removes duplicates, fills missing values), applies statistical models (average sales by region), and visualizes trends.</p>
         <button onclick="loadAndCleanDataset()">Load and Clean Dataset</button>
         <div id="stats"></div>
-        <canvas id="salesChart"></canvas>
+        <div class="chart-container">
+            <canvas id="rawChart"></canvas>
+            <canvas id="cleanChart"></canvas>
+        </div>
         <h2>Raw Data</h2>
         <table id="dataTable"></table>
         <h2>Cleaned Data</h2>
@@ -108,27 +112,99 @@
                 avgSalesByRegion[region] = (avgSalesByRegion[region].total / avgSalesByRegion[region].count).toFixed(2);
             }
 
-            document.getElementById('stats').innerHTML = `
-                <h2>Data Analytics</h2>
-                <p><strong>Total Sales:</strong> $${totalSales.toFixed(2)}</p>
-                <p><strong>Average Sales by Region:</strong></p>
-                <ul>
-                    ${Object.entries(avgSalesByRegion).map(([region, avg]) => `<li>${region}: $${avg}</li>`).join('')}
-                </ul>
-                <p><strong>Records Cleaned:</strong> ${rawData.length} raw → ${cleanedData.length} cleaned</p>
-            `;
+            // Compute raw sales (ignoring missing, dups)
+            const rawDateGroups = {};
+            const validRaw = rawData.filter(row => row.Sales && row.Quantity && row.Region && row.OrderDate && row.Sales !== '9999');
+            validRaw.forEach(row => {
+                const date = standardizeDate(row.OrderDate);
+                if (!rawDateGroups[date]) rawDateGroups[date] = 0;
+                rawDateGroups[date] += parseFloat(row.Sales);
+            });
+            const rawDates = Object.keys(rawDateGroups).sort();
+            const rawSales = rawDates.map(d => rawDateGroups[d]);
 
-            // Chart sales over time grouped by dates
-            const dateGroups = {};
+            // Compute cleaned sales
+            const cleanDateGroups = {};
             cleanedData.forEach(row => {
                 const date = row.OrderDate;
-                if (!dateGroups[date]) dateGroups[date] = 0;
-                dateGroups[date] += parseFloat(row.Sales);
+                if (!cleanDateGroups[date]) cleanDateGroups[date] = 0;
+                cleanDateGroups[date] += parseFloat(row.Sales);
             });
-            const dates = Object.keys(dateGroups).sort();
-            const salesValues = dates.map(d => dateGroups[d]);
+            const cleanDates = Object.keys(cleanDateGroups).sort();
+            const cleanSales = cleanDates.map(d => cleanDateGroups[d]);
 
-            renderChart(dates, salesValues);
+            document.getElementById('stats').innerHTML = `
+                <h2>Data Analytics</h2>
+                <p><strong>Cleaning Steps Performed:</strong></p>
+                <ul>
+                    <li>Removed duplicate records</li>
+                    <li>Filled missing Sales with mean value</li>
+                    <li>Filled missing Quantity with median value</li>
+                    <li>Removed invalid/outlier records (e.g., sales of 9999)</li>
+                    <li>Standardized date formats</li>
+                </ul>
+                <p><strong>Processed Data:</strong></p>
+                <ul>
+                    <li><strong>Raw Records:</strong> ${rawData.length} (with duplicates, missing values, invalid rows)</li>
+                    <li><strong>Cleaned Records:</strong> ${cleanedData.length} </li>
+                    <li><strong>Total Valid Sales:</strong> $${cleanSales.reduce((a,b)=>a+b,0).toFixed(2)}</li>
+                    <li><strong>Average Sales by Region:</strong></li>
+                    <ul>${Object.entries(avgSalesByRegion).map(([region, avg]) => `<li>${region}: $${avg}</li>`).join('')}</ul>
+                </ul>
+            `;
+
+            // Render charts
+            renderRawChart(rawDates, rawSales);
+            renderCleanChart(cleanDates, cleanSales);
+        }
+
+        function standardizeDate(dateStr) {
+            if (dateStr.includes('false')) return null;
+            if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) return dateStr;
+            if (dateStr.match(/^Jan\/\d{2}\/\d{4}$/)) return dateStr.replace('Jan/', '01/');
+            if (dateStr.match(/^Jan-\d{2}-\d{4}$/)) return dateStr.replace('Jan-', '01/').replace('-', '/');
+            return dateStr;
+        }
+
+        function renderRawChart(labels, sales) {
+            const ctx = document.getElementById('rawChart');
+            if (window.rawChart) window.rawChart.destroy();
+            window.rawChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Raw Sales per Day', data: sales, borderColor: 'red', fill: false }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: false } },
+                    plugins: { title: { display: true, text: 'Raw Data Sales Trends' } }
+                }
+            });
+        }
+
+        function renderCleanChart(labels, sales) {
+            const ctx = document.getElementById('cleanChart');
+            if (window.cleanChart) window.cleanChart.destroy();
+            window.cleanChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Cleaned Sales per Day', data: sales, borderColor: 'green', fill: false }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: false } },
+                    plugins: { title: { display: true, text: 'Cleaned Data Sales Trends' } }
+                }
+            });
+        }
+
+        // Replace renderChart
+        function renderChart(labels, sales) {
+            // Not used
         }
 
         function populateTable(data, tableId) {
