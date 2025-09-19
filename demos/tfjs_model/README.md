@@ -2,27 +2,82 @@
 
 This directory should contain your TensorFlow.js converted model files from your transfer-image-classifier repository.
 
-## 🚀 How to Convert and Add Your Model
+## 🔧 Manual Model Conversion (Fixed)
 
-### Step 1: Install TensorFlow.js Converter
+Due to version compatibility issues, use this step-by-step approach:
 
+### Step 1: Navigate to Model Directory
 ```bash
-pip install tensorflowjs
+cd "C:\Users\neil\Desktop\transfer-image-classifier"
 ```
 
-### Step 2: Convert Your Trained Model
+### Step 2: Create Python Conversion Script
+Create a file called `manual_convert.py`:
 
-Make sure you have your trained model file (e.g., `transfer_model.h5`) from your transfer-image-classifier repository, then run:
+```python
+import tensorflow as tf
+from tensorflow import keras
+import tensorflowjs as tfjs
+import os
 
+# Load your trained model
+model_path = "models/transfer_model.h5"
+model = keras.models.load_model(model_path)
+
+print("Model loaded successfully!")
+print("Model summary:")
+model.summary()
+
+# Check model compatibility with TensorFlow.js
+def check_tfjs_compatibility(model):
+    """Check if model is compatible with TensorFlow.js"""
+    unsupported_layers = []
+
+    for layer in model.layers:
+        layer_type = type(layer).__name__
+        # List of TensorFlow.js supported layer types
+        supported_types = [
+            'InputLayer', 'Dense', 'Conv2D', 'MaxPooling2D', 'AveragePooling2D',
+            'GlobalAveragePooling2D', 'GlobalMaxPooling2D', 'BatchNormalization',
+            'Activation', 'Dropout', 'Flatten', 'Reshape', 'Concatenate',
+            'Add', 'Multiply', 'Rescaling', 'ZeroPadding2D'
+        ]
+
+        if layer_type not in supported_types:
+            unsupported_layers.append(f"{layer_type}: {layer.name}")
+
+    return unsupported_layers
+
+incompatible_layers = check_tfjs_compatibility(model)
+if incompatible_layers:
+    print("⚠️  Warning: Found potentially incompatible layers:")
+    for layer in incompatible_layers:
+        print(f"  - {layer}")
+    print("\nSome layers might need to be converted or removed for TensorFlow.js compatibility")
+else:
+    print("✅ All layers appear TensorFlow.js compatible")
+
+# Convert the model
+try:
+    tfjs.converters.save_keras_model(model, "./tfjs_model_converted")
+    print("✅ Model converted successfully to ./tfjs_model_converted/")
+except Exception as e:
+    print(f"❌ Conversion failed: {e}")
+    print("\nTroubleshooting:")
+    print("1. Try with TensorFlow 2.13-2.15 for better compatibility")
+    print("2. Some advanced layers might need custom conversion")
+    print("3. Check model architecture for unsupported operations")
+```
+
+### Step 3: Run Manual Conversion
 ```bash
-# Navigate to your transfer-image-classifier directory
-cd /path/to/your/transfer-image-classifier
+python manual_convert.py
+```
 
-# Convert the Keras model to TensorFlow.js format
-tensorflowjs_converter --input_format keras transfer_model.h5 ./tfjs_export
-
-# Copy the converted model to demos directory
-cp -r ./tfjs_export ~/Desktop/AIprojects/dakotaai-site/demos/tfjs_model
+### Step 4: Copy Converted Model
+```bash
+# If conversion succeeds
+copy "C:\Users\neil\Desktop\transfer-image-classifier\tfjs_model_converted\*.*" "C:\Users\neil\Desktop\AIprojects\dakotaai-site\demos\tfjs_model\"
 ```
 
 ### Step 3: Verify the Conversion
