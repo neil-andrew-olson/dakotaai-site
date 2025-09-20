@@ -1,0 +1,6 @@
+[build]
+  publish = "apps/image-classifier/out"
+  command = "cd apps/image-classifier && npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"

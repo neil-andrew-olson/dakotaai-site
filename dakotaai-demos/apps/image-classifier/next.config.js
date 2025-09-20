@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  experimental: {
-    appDir: true,
-  },
+  output: 'export',
+  trailingSlash: true,
   images: {
     domains: ['localhost'],
+    unoptimized: true,
   },
   webpack: (config, { isServer }) => {
     // Handle TensorFlow.js bundle splitting
