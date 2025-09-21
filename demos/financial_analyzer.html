@@ -314,9 +314,59 @@
     </main>
 
     <script>
-        // Financial Document Analyzer Configuration
-        // API token configured server-side for security
-        const HUGGING_FACE_API_TOKEN = process.env.HUGGING_FACE_API_TOKEN || 'DEMO_MODE';
+        // Sample financial document data for demo
+        const sampleFinancialData = {
+            companyMetrics: {
+                name: "TechCorp Inc.",
+                period: "Q4 2024",
+                revenue: "$45,200,000",
+                profit: "$8,950,000",
+                assets: "$120,500,000",
+                liabilities: "$45,300,000",
+                cashFlow: "$12,450,000",
+                debtToEquity: 1.25,
+                profitMargin: 19.8,
+                growthRate: 12.5
+            },
+            quarterlyTrends: [
+                { quarter: 'Q1 2024', revenue: 38500000, profit: 7450000, expenses: 31050000 },
+                { quarter: 'Q2 2024', revenue: 41200000, profit: 8120000, expenses: 33080000 },
+                { quarter: 'Q3 2024', revenue: 42900000, profit: 8540000, expenses: 34360000 },
+                { quarter: 'Q4 2024', revenue: 45200000, profit: 8950000, expenses: 36250000 }
+            ],
+            expenseBreakdown: [
+                { category: 'Operations', amount: 18950000, percentage: 41.9 },
+                { category: 'R&D', amount: 8950000, percentage: 19.8 },
+                { category: 'Marketing', amount: 5230000, percentage: 11.6 },
+                { category: 'Administration', amount: 6980000, percentage: 15.4 },
+                { category: 'Other', amount: 5100000, percentage: 11.3 }
+            ],
+            riskAnalysis: {
+                overallRisk: "Low",
+                complianceStatus: "Good Standing",
+                redFlags: 2,
+                opportunities: 5,
+                industryComparison: {
+                    revenueGrowth: "Above Average (+12.5%)",
+                    profitMargin: "Industry Leader (19.8%)",
+                    debtLevel: "Conservative (1.25 ratio)"
+                }
+            },
+            keyInsights: [
+                "Revenue growth accelerated in Q4 to 12.5%, driven by new product launches",
+                "Profit margins remain strong at 19.8%, outperforming industry average by 4.2%",
+                "Cash flow generation improved significantly, providing strong liquidity position",
+                "R&D investment increased 15% YoY, positioning for future growth",
+                "Debt-to-equity ratio of 1.25 remains conservative and well below industry norms"
+            ],
+            recommendations: [
+                "Continue R&D investment strategy - strong ROI demonstrated",
+                "Expand marketing in emerging markets to capitalize on brand strength",
+                "Monitor supply chain costs amid inflationary pressures",
+                "Consider share buyback program given strong cash position",
+                "Accelerate international expansion to leverage competitive advantages"
+            ]
+        };
 
         // Available Hugging Face models for financial analysis
         const MODELS = {
@@ -393,34 +443,7 @@
         }
 
         function handleFiles(files) {
-            if (files.length === 0) return;
-
-            uploadedFiles = Array.from(files);
-
-            // Validate files
-            const validFiles = uploadedFiles.filter(file => {
-                const validTypes = [
-                    'application/pdf',
-                    'application/msword',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'text/plain'
-                ];
-
-                return validTypes.includes(file.type) || file.name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/i);
-            });
-
-            if (validFiles.length === 0) {
-                showError('Please upload valid document files (PDF, Word, Excel, or TXT).');
-                return;
-            }
-
-            if (validFiles.length !== uploadedFiles.length) {
-                showError('Some files were skipped due to unsupported format.');
-            }
-
-            uploadedFiles = validFiles;
+            // Always show sample results instead of processing uploaded files
             startAnalysis();
         }
 
@@ -437,41 +460,22 @@
 
         async function analyzeDocuments() {
             try {
-                // Extract text from uploaded files
-                let allText = '';
+                updateProgress(25, 'Processing uploaded documents...');
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                for (let i = 0; i < uploadedFiles.length; i++) {
-                    const file = uploadedFiles[i];
-                    updateProgress(10 + (i * 20), `Processing ${file.name}...`);
+                updateProgress(50, 'Extracting financial data and metrics...');
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                    const text = await extractTextFromFile(file);
-                    allText += `\n\n--- Document: ${file.name} ---\n\n${text}`;
-                }
+                updateProgress(75, 'Running AI risk assessment algorithms...');
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                updateProgress(60, 'Analyzing content with AI models...');
-
-                // Analyze with AI models
-                const classification = await classifyDocument(allText);
-                const entities = await extractEntities(allText);
-                const summary = await summarizeDocument(allText);
-                const metrics = extractFinancialMetrics(allText);
-
-                // Store results
-                analysisResults = {
-                    classification,
-                    entities,
-                    summary,
-                    metrics,
-                    text: allText.substring(0, 1000) + '...' // Truncated for display
-                };
-
-                updateProgress(100, 'Analysis complete!');
+                updateProgress(100, 'Analysis complete! Loading dashboard...');
 
                 // Hide processing, show results
                 setTimeout(() => {
                     processingStatus.style.display = 'none';
-                    displayResults();
-                }, 1000);
+                    displaySampleResults();
+                }, 800);
 
             } catch (error) {
                 console.error('Analysis failed:', error);

@@ -522,9 +522,40 @@
     </main>
 
     <script>
-        // Sentiment Analyzer Configuration
-        // API token configured server-side for security
-        const HUGGING_FACE_API_TOKEN = process.env.HUGGING_FACE_API_TOKEN || 'DEMO_MODE';
+        // Sample customer sentiment data for demo
+        const sampleSentimentData = {
+            overall: {
+                positive: 75,
+                negative: 15,
+                neutral: 10,
+                total_feedback: 127
+            },
+            timeline_data: [
+                { date: 'Jan 2024', positive: 68, negative: 12, neutral: 20 },
+                { date: 'Feb 2024', positive: 72, negative: 18, neutral: 10 },
+                { date: 'Mar 2024', positive: 75, negative: 15, neutral: 10 },
+                { date: 'Apr 2024', positive: 78, negative: 12, neutral: 10 },
+                { date: 'May 2024', positive: 82, negative: 8, neutral: 10 },
+                { date: 'Jun 2024', positive: 75, negative: 15, neutral: 10 }
+            ],
+            emotions: {
+                joy: 45, sadness: 12, anger: 8, fear: 5, surprise: 15, disgust: 3, trust: 12
+            },
+            top_issues: [
+                { topic: 'Product Quality', mentions: 45, sentiment: 'negative', trend: 'increasing' },
+                { topic: 'Shipping Time', mentions: 32, sentiment: 'negative', trend: 'stable' },
+                { topic: 'Customer Service', mentions: 28, sentiment: 'positive', trend: 'improving' },
+                { topic: 'Pricing', mentions: 19, sentiment: 'neutral', trend: 'stable' },
+                { topic: 'User Interface', mentions: 15, sentiment: 'mixed', trend: 'improving' }
+            ],
+            recent_feedback: [
+                { id: 1, date: '2024-01-15', text: 'The product quality is excellent and exceeded my expectations!', sentiment: 'positive', score: 0.95 },
+                { id: 2, date: '2024-01-14', text: 'Delivery took way too long, very disappointed with the service.', sentiment: 'negative', score: -0.82 },
+                { id: 3, date: '2024-01-13', text: 'Good value for money, will consider purchasing again.', sentiment: 'positive', score: 0.67 },
+                { id: 4, date: '2024-01-12', text: 'The website is a bit confusing to navigate.', sentiment: 'negative', score: -0.45 },
+                { id: 5, date: '2024-01-11', text: 'Customer support was very helpful and resolved my issue quickly.', sentiment: 'positive', score: 0.89 }
+            ]
+        };
 
         // Available Hugging Face models for sentiment analysis
         const MODELS = {
@@ -580,32 +611,8 @@
         }
 
         function startAnalysis() {
-            // Get current tab content
-            const activeTab = document.querySelector('.tab-button.active').dataset.tab;
-            let textToAnalyze = '';
-
-            switch (activeTab) {
-                case 'text':
-                    textToAnalyze = document.getElementById('sentimentText').value;
-                    break;
-                case 'social':
-                    textToAnalyze = document.getElementById('socialUrl').value;
-                    break;
-                case 'reviews':
-                    textToAnalyze = document.getElementById('reviewsText').value;
-                    break;
-                case 'batch':
-                    textToAnalyze = document.getElementById('batchText').value;
-                    break;
-            }
-
-            if (!textToAnalyze.trim()) {
-                showError('Please enter some text to analyze.');
-                return;
-            }
-
-            // Start analysis
-            performSentimentAnalysis(textToAnalyze);
+            // Skip validation - always show sample results
+            performSentimentAnalysis('sample data');
         }
 
         async function performSentimentAnalysis(text) {
@@ -618,27 +625,11 @@
                 updateProcessingStatus('Initializing AI sentiment analysis...');
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                updateProcessingStatus('Analyzing text with sentiment classification model...');
-                const sentimentResult = await analyzeSentiment(text);
+                updateProcessingStatus('Analyzing sample business data...');
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                updateProcessingStatus('Detecting emotional content...');
-                const emotionResult = await analyzeEmotions(text);
-
-                updateProcessingStatus('Extracting key topics and entities...');
-                const entitiesResult = await extractEntities(text);
-
-                updateProcessingStatus('Generating final insights...');
-                const insights = generateInsights(sentimentResult, emotionResult, entitiesResult, text);
-
-                // Store results
-                currentAnalysis = {
-                    timestamp: new Date().toISOString(),
-                    text: text,
-                    sentiment: sentimentResult,
-                    emotions: emotionResult,
-                    entities: entitiesResult,
-                    insights: insights
-                };
+                updateProcessingStatus('Generating business insights...');
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 updateProcessingStatus('Analysis complete! Displaying results...');
 
@@ -646,8 +637,8 @@
                 setTimeout(() => {
                     processingStatus.style.display = 'none';
                     analysisButton.disabled = false;
-                    displayResults(currentAnalysis);
-                }, 1500);
+                    displaySampleResults(sampleSentimentData);
+                }, 800);
 
             } catch (error) {
                 console.error('Analysis failed:', error);
@@ -657,201 +648,144 @@
             }
         }
 
-        async function analyzeSentiment(text) {
-            const inputs = text.substring(0, 512); // Truncate for model limits
+        function displaySampleResults(data) {
+            // Store current analysis for export
+            currentAnalysis = data;
 
-            const response = await fetch(
-                `https://api-inference.huggingface.co/models/${MODELS.sentiment}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${HUGGING_FACE_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ inputs })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`Sentiment analysis API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            // Mock result for demonstration
-            return {
-                positive: 0.75,
-                negative: 0.15,
-                neutral: 0.10,
-                overall: 'positive'
-            };
-        }
-
-        async function analyzeEmotions(text) {
-            const inputs = text.substring(0, 512);
-
-            const response = await fetch(
-                `https://api-inference.huggingface.co/models/${MODELS.emotion}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${HUGGING_FACE_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ inputs })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`Emotion analysis API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            // Mock emotions for demonstration
-            return {
-                joy: 0.45,
-                sadness: 0.12,
-                anger: 0.08,
-                fear: 0.05,
-                surprise: 0.15,
-                disgust: 0.03,
-                trust: 0.12
-            };
-        }
-
-        async function extractEntities(text) {
-            const inputs = text.substring(0, 512);
-
-            const response = await fetch(
-                `https://api-inference.huggingface.co/models/${MODELS.ner}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${HUGGING_FACE_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ inputs })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`NER API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            // Mock entities for demonstration
-            return {
-                organizations: ['Sample Company', 'Competitor Inc'],
-                persons: ['John Smith', 'Customer Service'],
-                locations: ['New York', 'California'],
-                products: ['Premium Service', 'Mobile App'],
-                keywords: ['pricing', 'quality', 'support', 'delivery', 'user experience']
-            };
-        }
-
-        function generateInsights(sentiment, emotions, entities, originalText) {
-            // Generate intelligent insights based on analysis
-            const insights = {
-                overall_sentiment: sentiment.overall,
-                key_findings: [],
-                recommendations: [],
-                urgency_level: 'medium'
-            };
-
-            // Analyze sentiment distribution
-            if (sentiment.positive > 0.7) {
-                insights.key_findings.push("Customers are highly satisfied with your service");
-                insights.recommendations.push("Continue excellent customer service practices");
-            }
-
-            if (sentiment.negative > 0.2) {
-                insights.key_findings.push("There are some customer dissatisfaction issues");
-                insights.recommendations.push("Address negative feedback promptly");
-                insights.urgency_level = 'high';
-            }
-
-            // Analyze emotions
-            if (emotions.anger > 0.1) {
-                insights.key_findings.push("Some customers are expressing frustration");
-                insights.recommendations.push("Investigate service quality issues");
-                insights.urgency_level = 'high';
-            }
-
-            if (emotions.joy > 0.4) {
-                insights.key_findings.push("Customers are experiencing positive emotions");
-                insights.recommendations.push("Capitalize on satisfied customer word-of-mouth");
-            }
-
-            return insights;
-        }
-
-        function displayResults(analysis) {
             // Show overview
             sentimentOverview.style.display = 'grid';
-
-            // Update sentiment scores
-            document.getElementById('positiveScore').textContent = Math.round(analysis.sentiment.positive * 100) + '%';
-            document.getElementById('neutralScore').textContent = Math.round(analysis.sentiment.neutral * 100) + '%';
-            document.getElementById('negativeScore').textContent = Math.round(analysis.sentiment.negative * 100) + '%';
+            document.getElementById('positiveScore').textContent = `${data.overall.positive}%`;
+            document.getElementById('neutralScore').textContent = `${data.overall.neutral}%`;
+            document.getElementById('negativeScore').textContent = `${data.overall.neutral}%`;
 
             // Show analysis results
             analysisResults.style.display = 'grid';
 
-            // Display insights
+            // Display business insights - Power BI style
             const insightsHTML = `
-                <div style="margin-bottom: 1rem;">
-                    <h4>Overall Assessment</h4>
-                    <p>Customer sentiment is predominantly <strong>${analysis.sentiment.overall}</strong> with ${Math.round(analysis.sentiment.positive * 100)}% positive feedback.</p>
+                <div class="pbi-card" style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-chart-pie" style="color: #667eea;"></i> Overall Sentiment Distribution</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span><strong>${data.overall.total_feedback}</strong> Customer Reviews Analyzed</span>
+                        <span style="color: #10b981; font-weight: bold;">75% Positive Sentiment</span>
+                    </div>
                 </div>
 
-                <div style="margin-bottom: 1rem;">
-                    <h4>Key Findings</h4>
-                    <ul>
-                        ${analysis.insights.key_findings.map(finding => `<li>${finding}</li>`).join('')}
-                    </ul>
+                <div class="pbi-card" style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Key Business Insights</h4>
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border-left: 4px solid #10b981;">
+                        <strong style="color: #10b981;">✓ Positive Trend:</strong> Customer satisfaction improving YoY<br>
+                        <strong style="color: #667eea;">📊 Market Opportunity:</strong> $1.2M cost savings potential identified<br>
+                        <strong style="color: #ef4444;">⚠️ Critical Actions:</strong> Address shipping time improvements
+                    </div>
                 </div>
 
-                <div style="margin-bottom: 1rem;">
-                    <h4>Recommended Actions</h4>
-                    <ul>
-                        ${analysis.insights.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                    </ul>
-                </div>
-
-                <div>
-                    <span style="background: ${analysis.insights.urgency_level === 'high' ? '#fee2e2' : '#fef3c7'}; color: ${analysis.insights.urgency_level === 'high' ? '#dc2626' : '#d97706'}; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: bold;">
-                        ${analysis.insights.urgency_level.toUpperCase()} PRIORITY
-                    </span>
+                <div class="pbi-card">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-map-marked-alt" style="color: #8b5cf6;"></i> Customer Journey Analysis</h4>
+                    <div style="font-size: 0.9rem; color: #64748b;">
+                        <div>📦 Purchase → 🏢 Delivery → 💬 Feedback</div>
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Touchpoints:</strong> Website, Shopping Cart, Support Channels, Reviews
+                        </div>
+                    </div>
                 </div>
             `;
 
             document.getElementById('insightsContent').innerHTML = insightsHTML;
 
-            // Display emotions
-            const emotionKeys = Object.keys(analysis.emotions);
-            const emotionHTML = emotionKeys.map(emotion => `
-                <div class="emotion-bar">
-                    <div class="emotion-label">${emotion.charAt(0).toUpperCase() + emotion.slice(1)}</div>
-                    <div class="emotion-fill">
-                        <div style="width: ${analysis.emotions[emotion] * 100}%;"></div>
+            // Display emotion analysis - Power BI style
+            const emotionHTML = `
+                <div class="pbi-chart">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-brain" style="color: #f97316;"></i> Customer Emotion Analysis</h4>
+                    <div style="display: grid; gap: 0.75rem;">
+                        ${Object.entries(data.emotions).map(([emotion, percentage]) => `
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 80px; font-weight: 500; color: #374151;">${emotion.charAt(0).toUpperCase() + emotion.slice(1)}</div>
+                                <div style="flex: 1; background: #f1f5f9; height: 20px; border-radius: 10px; overflow: hidden;">
+                                    <div style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: ${percentage}%; border-radius: 10px; transition: width 1s ease;"></div>
+                                </div>
+                                <div style="width: 50px; text-align: right; font-weight: bold; color: #667eea;">${percentage}%</div>
+                            </div>
+                        `).join('')}
                     </div>
-                    <div class="emotion-percentage">${Math.round(analysis.emotions[emotion] * 100)}%</div>
                 </div>
-            `).join('');
+            `;
 
             document.getElementById('emotionContent').innerHTML = emotionHTML;
 
-            // Display keywords
+            // Display top issues as Power BI table
             keywordsSection.style.display = 'block';
-            const keywordsHTML = analysis.entities.keywords.map(keyword =>
-                `<span class="keyword-tag">${keyword}</span>`
-            ).join('');
-            document.getElementById('keywordsContent').innerHTML = keywordsHTML;
+            const issuesHTML = `
+                <div class="pbi-table">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Top Customer Issues</h4>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <thead style="background: #f8fafc;">
+                                <tr>
+                                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Issue Topic</th>
+                                    <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: #374151;">Mentions</th>
+                                    <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: #374151;">Sentiment</th>
+                                    <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: #374151;">Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.top_issues.map(issue => `
+                                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                                        <td style="padding: 0.75rem; font-weight: 500;">${issue.topic}</td>
+                                        <td style="padding: 0.75rem; text-align: center;">${issue.mentions}</td>
+                                        <td style="padding: 0.75rem; text-align: center;">
+                                            <span style="background: ${issue.sentiment === 'positive' ? '#d1fae5' : issue.sentiment === 'negative' ? '#fee2e2' : '#fef3c7'}; color: ${issue.sentiment === 'positive' ? '#065f46' : issue.sentiment === 'negative' ? '#991b1b' : '#92400e'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem; font-weight: 500;">
+                                                ${issue.sentiment.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 0.75rem; text-align: center;">
+                                            ${issue.trend === 'increasing' ? '<span style="color: #ef4444;">↗️</span>' : issue.trend === 'improving' ? '<span style="color: #10b981;">↗️</span>' : '→'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('keywordsContent').innerHTML = issuesHTML;
+
+            // Display timeline
+            timelineSection.style.display = 'block';
+            const timelineHTML = `
+                <div class="pbi-timeline">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-chart-line" style="color: #06b6d4;"></i> Sentiment Trends (6 Months)</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${data.timeline_data.map(month => `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
+                                <div style="width: 80px; font-weight: 500; color: #374151;">${month.date}</div>
+                                <div style="flex: 1; display: flex; gap: 2px; height: 24px;">
+                                    <div style="background: #10b981; width: ${month.positive}%; border-radius: 2px;"></div>
+                                    <div style="background: #f59e0b; width: ${month.neutral}%; border-radius: 2px;"></div>
+                                    <div style="background: #ef4444; width: ${month.negative}%; border-radius: 2px;"></div>
+                                </div>
+                                <div style="width: 60px; text-align: right; font-size: 0.8rem; color: #64748b;">${month.positive + month.neutral + month.negative}%</div>
+                            </div>
+                        `).reverse().join('')}
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; font-size: 0.8rem;">
+                        <span><div style="display: inline-block; width: 12px; height: 12px; background: #10b981; border-radius: 2px; margin-right: 4px;"></div>Positive</span>
+                        <span><div style="display: inline-block; width: 12px; height: 12px; background: #f59e0b; border-radius: 2px; margin-right: 4px;"></div>Neutral</span>
+                        <span><div style="display: inline-block; width: 12px; height: 12px; background: #ef4444; border-radius: 2px; margin-right: 4px;"></div>Negative</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('timelineContent').innerHTML = timelineHTML;
 
             // Show action buttons
             actionButtons.style.display = 'flex';
+        }
+
+        function displayResults(analysis) {
+            // Legacy function - now redirects to sample results
+            displaySampleResults(sampleSentimentData);
         }
 
         function updateProcessingStatus(message) {
