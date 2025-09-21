@@ -27,6 +27,12 @@ cifar10_*_model.h5
 cifar10_*_model.keras
 training_history.png
 
+# TensorFlow SavedModel files (can be very large)
+saved_model/
+models/
+*.pb
+variables/
+
 # Python cache
 __pycache__/
 *.pyc

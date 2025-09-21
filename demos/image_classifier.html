@@ -425,10 +425,10 @@
             'butternut squash', 'cucumber', 'artichoke', 'earth apple', 'bell pepper'
         ].slice(0, 10); // Use first 10 classes for demo
 
-        // Dakota AI Custom CIFAR-10 Classifier
-        // API token configured server-side for security
+        // Hugging Face Image Classification Model
+        // Using a reliable model for general image classification
         const HUGGING_FACE_API_TOKEN = process.env.HUGGING_FACE_API_TOKEN || 'DEMO_MODE';
-        const MODEL_NAME = 'TrashHobbit/dakota-ai-cifar10-classifier'; // Custom trained CIFAR-10 model
+        const MODEL_NAME = 'google/vit-base-patch16-224'; // High-performance Vision Transformer model
 
         let isModelReady = false;
         const uploadArea = document.getElementById('uploadArea');
