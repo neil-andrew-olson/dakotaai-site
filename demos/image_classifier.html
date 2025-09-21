@@ -425,10 +425,9 @@
             'butternut squash', 'cucumber', 'artichoke', 'earth apple', 'bell pepper'
         ].slice(0, 10); // Use first 10 classes for demo
 
-        // Hugging Face Image Classification Model
-        // Using a reliable model for general image classification
-        const HUGGING_FACE_API_TOKEN = process.env.HUGGING_FACE_API_TOKEN || 'DEMO_MODE';
-        const MODEL_NAME = 'google/vit-base-patch16-224'; // High-performance Vision Transformer model
+        // Microsoft ResNet-50 - Proven and reliable image classification model
+        const HUGGING_FACE_API_TOKEN = 'DEMO_MODE'; // Using demo mode to avoid token requirements
+        const MODEL_NAME = 'microsoft/resnet-50'; // Industry-standard ResNet-50 model
 
         let isModelReady = false;
         const uploadArea = document.getElementById('uploadArea');
