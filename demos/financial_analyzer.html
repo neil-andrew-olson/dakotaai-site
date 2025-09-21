@@ -203,6 +203,345 @@
                 flex-direction: column;
             }
         }
+
+        /* Power BI-style Dashboard Components */
+        .executive-summary {
+            max-width: none;
+        }
+
+        .summary-header h4 {
+            margin-bottom: 1.5rem;
+            color: #1e293b;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+        }
+
+        .company-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-badge {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .positive-growth {
+            color: #10b981 !important;
+        }
+
+        .insights-section, .quarterly-performance, .expense-breakdown, .strategic-recommendations, .industry-comparison, .financial-health {
+            margin: 2.5rem 0;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .insights-section h5, .quarterly-performance h5, .expense-breakdown h5, .strategic-recommendations h5, .industry-comparison h5, .financial-health h5 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insights-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .insights-list li {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .insights-list i {
+            color: #10b981;
+            font-size: 0.9rem;
+            margin-top: 0.1rem;
+        }
+
+        .quarterly-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .quarter-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .quarter-card h6 {
+            margin: 0 0 1rem 0;
+            color: #3b82f6;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .quarter-metrics {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+        }
+
+        .metric .label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .metric .value {
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .metric .value.positive {
+            color: #10b981;
+        }
+
+        .expense-bars {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .expense-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .expense-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .expense-label .percentage {
+            color: #3b82f6;
+            font-size: 0.9rem;
+        }
+
+        .expense-bar {
+            height: 20px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .expense-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .recommendation-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .recommendation-card i {
+            color: #10b981;
+        }
+
+        .industry-metrics {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .industry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .industry-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .industry-value {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+
+        .company-value {
+            font-weight: bold;
+            color: #3b82f6;
+            font-size: 1.1rem;
+        }
+
+        .vs-industry {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .health-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .health-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .health-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .health-label i {
+            color: #3b82f6;
+        }
+
+        .health-value {
+            font-weight: bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .health-value.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .health-value.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .health-value.danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Loading animation improvements */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .metric-badge .metric-value.loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .sample-document-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .document-display {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .document-header {
+            background: #1e40af;
+            color: white;
+            padding: 1rem 1.5rem;
+        }
+
+        .document-header h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+        }
+
+        .document-meta {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .document-content {
+            padding: 1.5rem;
+        }
+
+        .financial-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #374151;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -216,15 +555,44 @@
             </div>
         </div>
 
-        <!-- Upload Zone -->
-        <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">
-                <i class="fas fa-file-contract"></i>
+        <!-- Sample Document Analysis -->
+        <div class="sample-document-section">
+            <h3><i class="fas fa-file-pdf"></i> Sample Annual Report Analysis</h3>
+            <div class="document-display">
+                <div class="document-header">
+                    <h4><i class="fas fa-building"></i> TechCorp Inc. - Annual Report 2024</h4>
+                    <span class="document-meta">Filed: March 15, 2024 | Pages: 127 | Industry: Technology Solutions</span>
+                </div>
+                <div class="document-content">
+                    <div class="financial-content">
+                        <strong>COMPANY OVERVIEW:</strong><br>
+                        TechCorp Inc. is a leading provider of enterprise software solutions, specializing in AI-powered analytics and cloud-based business intelligence platforms. Headquartered in Austin, Texas, with operations in 12 countries, the company services over 2,500 enterprise clients worldwide.<br><br>
+
+                        <strong>FINANCIAL HIGHLIGHTS - YEAR ENDING DECEMBER 31, 2024:</strong><br>
+                        • Annual Revenue: $175.2 million (up 12.5% from 2023)<br>
+                        • Net Profit: $34.7 million<br>
+                        • Total Assets: $487.3 million<br>
+                        • Cash and Equivalents: $89.5 million<br>
+                        • Debt-to-Equity Ratio: 1.25<br>
+                        • Return on Assets: 7.1%<br><br>
+
+                        <strong>KEY BUSINESS SEGMENTS:</strong><br>
+                        • Analytics & BI Platforms: 45% of revenue, 68% profit contribution<br>
+                        • AI Solutions & Services: 35% of revenue, 22% profit contribution<br>
+                        • Cloud Services: 20% of revenue, 10% profit contribution<br><br>
+
+                        <strong>OPERATING EXPENSES ($ millions):</strong><br>
+                        • Cost of Goods Sold: $82.4 (47.0% of revenue)<br>
+                        • Research & Development: $35.2 (20.1% of revenue)<br>
+                        • Sales & Marketing: $22.1 (12.6% of revenue)<br>
+                        • General & Administrative: $18.7 (10.7% of revenue)<br>
+                        • Operating Income: $16.8 million<br><br>
+
+                        <strong>OUTLOOK AND RISKS:</strong><br>
+                        The company anticipates continued strong growth driven by increasing demand for AI-powered business solutions. Key risks include intense market competition, regulatory changes in data privacy laws, and potential economic slowdowns affecting enterprise technology spending. The company maintains conservative financial policies and strong liquidity position ($89.5M cash) to navigate market uncertainties.
+                    </div>
+                </div>
             </div>
-            <h3>Upload Financial Documents</h3>
-            <p>Drop financial statements, contracts, or regulatory filings here</p>
-            <p><small>Supports PDF, Word, Excel, and TXT files up to 10MB</small></p>
-            <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" multiple style="display: none;">
         </div>
 
         <!-- Processing Status -->
@@ -394,6 +762,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             initializeUploadHandlers();
             hideError();
+
+            // Auto-run sample analysis on page load after a short delay
+            setTimeout(() => {
+                startAnalysis();
+            }, 2000);
         });
 
         function initializeUploadHandlers() {
@@ -594,32 +967,161 @@ Recommendations:
             progressText.textContent = message;
         }
 
-        function displayResults() {
+        function displaySampleResults() {
             analysisResultsDiv.style.display = 'grid';
             summarySection.style.display = 'block';
 
-            // Update metrics
-            const metrics = analysisResults.metrics;
-            document.getElementById('revenueValue').textContent = metrics.revenue;
-            document.getElementById('profitMargin').textContent = metrics.profitMargin;
-            document.getElementById('debtRatio').textContent = metrics.debtRatio;
+            // Update key metrics
+            document.getElementById('revenueValue').textContent = sampleFinancialData.companyMetrics.revenue;
+            document.getElementById('profitMargin').textContent = sampleFinancialData.companyMetrics.profitMargin + '%';
+            document.getElementById('debtRatio').textContent = '1.25';
 
             // Update risk assessment
-            document.getElementById('overallRisk').textContent = 'Low Risk';
-            document.getElementById('overallRisk').className = 'risk-level risk-low';
-            document.getElementById('complianceStatus').textContent = 'Compliant';
+            const riskSpan = document.getElementById('overallRisk');
+            riskSpan.textContent = sampleFinancialData.riskAnalysis.overallRisk + ' Risk';
+            riskSpan.className = 'risk-level risk-low';
 
-            // Update summary
+            document.getElementById('complianceStatus').textContent = sampleFinancialData.riskAnalysis.complianceStatus;
+            document.getElementById('issuesCount').textContent = sampleFinancialData.riskAnalysis.redFlags;
+
+            // Update document type
+            document.getElementById('documentType').innerHTML = `
+                <p><strong>TechCorp Inc.</strong> - Q4 2024 Financial Statements</p>
+                <p><small>Annual Revenue Growth: ${sampleFinancialData.companyMetrics.growthRate}%</small></p>
+                <p><small>Total Assets: ${sampleFinancialData.companyMetrics.assets}</small></p>
+            `;
+
+            // Update executive summary with professional Power BI-style layout
             document.getElementById('documentSummary').innerHTML = `
-                <h4>Executive Summary</h4>
-                <p>${analysisResults.summary}</p>
-                <h4>Key Findings</h4>
-                <ul>
-                    <li><strong>Revenue:</strong> ${metrics.revenue}</li>
-                    <li><strong>Profit Margin:</strong> ${metrics.profitMargin}</li>
-                    <li><strong>Risk Level:</strong> Low</li>
-                    <li><strong>Compliance:</strong> Good standing</li>
-                </ul>
+                <div class="executive-summary">
+                    <div class="summary-header">
+                        <h4><i class="fas fa-chart-line"></i> Executive Summary - TechCorp Inc. Q4 2024</h4>
+                        <div class="company-metrics">
+                            <div class="metric-badge">
+                                <span class="metric-value">${sampleFinancialData.companyMetrics.revenue}</span>
+                                <span class="metric-label">Annual Revenue</span>
+                            </div>
+                            <div class="metric-badge">
+                                <span class="metric-value">${sampleFinancialData.companyMetrics.profitMargin}%</span>
+                                <span class="metric-label">Profit Margin</span>
+                            </div>
+                            <div class="metric-badge">
+                                <span class="metric-value ${sampleFinancialData.companyMetrics.growthRate >= 10 ? 'positive-growth' : ''}">${sampleFinancialData.companyMetrics.growthRate}%</span>
+                                <span class="metric-label">YoY Growth</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insights-section">
+                        <h5><i class="fas fa-lightbulb"></i> Key Business Insights</h5>
+                        <ul class="insights-list">
+                            ${sampleFinancialData.keyInsights.map(insight => `
+                                <li><i class="fas fa-check-circle"></i> ${insight}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="quarterly-performance">
+                        <h5><i class="fas fa-calendar-alt"></i> Quarterly Performance Trends</h5>
+                        <div class="quarterly-charts">
+                            ${sampleFinancialData.quarterlyTrends.map(quarter => `
+                                <div class="quarter-card">
+                                    <h6>${quarter.quarter}</h6>
+                                    <div class="quarter-metrics">
+                                        <div class="metric">
+                                            <span class="label">Revenue:</span>
+                                            <span class="value">$${(quarter.revenue / 1000000).toFixed(1)}M</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="label">Profit:</span>
+                                            <span class="value ${quarter.profit > 8000000 ? 'positive' : ''}">$${(quarter.profit / 1000000).toFixed(1)}M</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="expense-breakdown">
+                        <h5><i class="fas fa-chart-pie"></i> Expense Category Analysis</h5>
+                        <div class="expense-bars">
+                            ${sampleFinancialData.expenseBreakdown.map(expense => `
+                                <div class="expense-item">
+                                    <div class="expense-label">
+                                        <span>${expense.category}</span>
+                                        <span class="percentage">${expense.percentage}%</span>
+                                    </div>
+                                    <div class="expense-bar">
+                                        <div class="expense-fill" style="width: ${expense.percentage}%"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="strategic-recommendations">
+                        <h5><i class="fas fa-compass"></i> Strategic Recommendations</h5>
+                        <div class="recommendations-grid">
+                            ${sampleFinancialData.recommendations.map(rec => `
+                                <div class="recommendation-card">
+                                    <i class="fas fa-arrow-right"></i>
+                                    <span>${rec}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="industry-comparison">
+                        <h5><i class="fas fa-balance-scale"></i> Industry Benchmarking</h5>
+                        <div class="industry-metrics">
+                            <div class="industry-item">
+                                <span class="industry-label">Revenue Growth:</span>
+                                <span class="industry-value">
+                                    <span class="company-value">${sampleFinancialData.riskAnalysis.industryComparison.revenueGrowth}</span>
+                                    <span class="vs-industry">vs Industry Avg +8.2%</span>
+                                </span>
+                            </div>
+                            <div class="industry-item">
+                                <span class="industry-label">Profit Margin:</span>
+                                <span class="industry-value">
+                                    <span class="company-value">${sampleFinancialData.riskAnalysis.industryComparison.profitMargin}</span>
+                                    <span class="vs-industry">vs Industry Avg 16.5%</span>
+                                </span>
+                            </div>
+                            <div class="industry-item">
+                                <span class="industry-label">Debt-to-Equity:</span>
+                                <span class="industry-value">
+                                    <span class="company-value">${sampleFinancialData.riskAnalysis.industryComparison.debtLevel}</span>
+                                    <span class="vs-industry">Industry Avg 1.8</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="financial-health">
+                        <h5><i class="fas fa-shield-alt"></i> Financial Health Indicators</h5>
+                        <div class="health-metrics">
+                            <div class="health-item">
+                                <span class="health-label">
+                                    <i class="fas fa-heartbeat"></i> Cash Flow Strength:
+                                </span>
+                                <span class="health-value success">Strong (${sampleFinancialData.companyMetrics.cashFlow})</span>
+                            </div>
+                            <div class="health-item">
+                                <span class="health-label">
+                                    <i class="fas fa-balance-scale"></i> Balance Sheet:
+                                </span>
+                                <span class="health-value success">Conservative</span>
+                            </div>
+                            <div class="health-item">
+                                <span class="health-label">
+                                    <i class="fas fa-gavel"></i> Regulatory Risk:
+                                </span>
+                                <span class="health-value success">${sampleFinancialData.riskAnalysis.complianceStatus}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `;
         }
 

@@ -340,6 +340,58 @@
             gap: 0.5rem;
         }
 
+        .sample-document-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .document-display {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .document-header {
+            background: #667eea;
+            color: white;
+            padding: 1rem 1.5rem;
+        }
+
+        .document-header h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+        }
+
+        .document-meta {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .document-content {
+            padding: 1.5rem;
+        }
+
+        .email-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #374151;
+            white-space: pre-wrap;
+        }
+
+        .pbi-card, .pbi-chart, .pbi-table, .pbi-timeline {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
+        }
+
         @media (max-width: 768px) {
             .analysis-results {
                 grid-template-columns: 1fr;
@@ -372,63 +424,31 @@
             <span id="errorText"></span>
         </div>
 
-        <!-- Main Analysis Interface -->
-        <div class="input-section">
-            <h3><i class="fas fa-pen-alt"></i> Analyze Customer Feedback</h3>
+        <!-- Sample Document Analysis -->
+        <div class="sample-document-section">
+            <h3><i class="fas fa-file-alt"></i> Sample Customer Feedback Analysis</h3>
+            <div class="document-display">
+                <div class="document-header">
+                    <h4><i class="fas fa-envelope"></i> Customer Service Email</h4>
+                    <span class="document-meta">Received: January 15, 2024 | Source: Support Ticket #CS-2024-001</span>
+                </div>
+                <div class="document-content">
+                    <div class="email-content">
+                        Dear Dakota AI Support Team,<br><br>
 
-            <!-- Tab Navigation -->
-            <div class="analysis-tabs">
-                <button class="tab-button active" data-tab="text">Text Analysis</button>
-                <button class="tab-button" data-tab="social">Social Media</button>
-                <button class="tab-button" data-tab="reviews">Product Reviews</button>
-                <button class="tab-button" data-tab="batch">Batch Analysis</button>
+                        I recently purchased your data analytics platform, and I must say I'm thoroughly impressed with the overall experience. The product quality is excellent, and it has significantly improved our team's productivity. Your customer support team was incredibly helpful during the initial setup - they resolved my questions within hours, not days.<br><br>
+
+                        However, I did notice that the initial product delivery took longer than expected. The shipping time was about 2 weeks, which impacted our project timeline. While the quality makes up for it, faster delivery would be greatly appreciated for future purchases.<br><br>
+
+                        Overall, I'm very satisfied with Dakota AI and will definitely recommend your services to colleagues in the industry.<br><br>
+
+                        Best regards,<br>
+                        Sarah Johnson<br>
+                        Data Analytics Manager<br>
+                        TechCorp Solutions
+                    </div>
+                </div>
             </div>
-
-            <!-- Text Analysis Tab -->
-            <div id="textTab" class="tab-content active">
-                <textarea
-                    class="text-input"
-                    id="sentimentText"
-                    placeholder="Paste customer feedback, reviews, emails, or social media posts here for sentiment analysis..."
-                ></textarea>
-            </div>
-
-            <!-- Social Media Tab -->
-            <div id="socialTab" class="tab-content">
-                <input
-                    type="url"
-                    class="text-input"
-                    id="socialUrl"
-                    placeholder="Enter social media URL or post content..."
-                    style="min-height: 50px;"
-                >
-                <p style="color: #64748b; margin-top: 0.5rem; font-size: 0.9rem;">
-                    <i class="fas fa-info-circle"></i> Supports Twitter, Facebook, Instagram, and LinkedIn URLs
-                </p>
-            </div>
-
-            <!-- Reviews Tab -->
-            <div id="reviewsTab" class="tab-content">
-                <textarea
-                    class="text-input"
-                    id="reviewsText"
-                    placeholder="Paste product reviews, testimonials, or customer survey responses..."
-                ></textarea>
-            </div>
-
-            <!-- Batch Analysis Tab -->
-            <div id="batchTab" class="tab-content">
-                <textarea
-                    class="text-input"
-                    id="batchText"
-                    placeholder="Paste multiple customer feedback items (one per line) or CSV data for batch analysis..."
-                ></textarea>
-            </div>
-
-            <button class="analyze-button" id="analyzeButton">
-                <i class="fas fa-brain"></i>
-                Analyze Sentiment with AI
-            </button>
         </div>
 
         <!-- Processing Status -->
@@ -584,6 +604,11 @@
             initializeTabs();
             initializeButtons();
             hideError();
+
+            // Auto-run sample analysis on page load after a short delay
+            setTimeout(() => {
+                startAnalysis();
+            }, 1500);
         });
 
         function initializeTabs() {
