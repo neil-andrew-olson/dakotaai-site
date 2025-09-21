@@ -286,8 +286,6 @@
             </p>
         </div>
 
-
-
         <div class="classifier-section">
             <div class="upload-section">
                 <h3>Upload an Image</h3>
@@ -536,12 +534,19 @@
         }
 
         function showError(message) {
-            errorText.textContent = message;
-            errorMessage.style.display = 'block';
+            // Only show error if elements exist
+            if (errorMessage && errorText) {
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            console.warn('Error:', message);
         }
 
         function hideError() {
-            errorMessage.style.display = 'none';
+            // Only hide error if elements exist
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
         }
 
         async function classifyImage(file) {
@@ -957,14 +962,20 @@
             loadingSpinner.style.display = 'none';
             resultsContainer.style.display = 'block';
 
+            // CIFAR-10 classes for the demo
+            const cifarClasses = [
+                'Airplane', 'Automobile', 'Bird', 'Cat', 'Deer',
+                'Dog', 'Frog', 'Horse', 'Ship', 'Truck'
+            ];
+
             // Display top prediction
             const topPrediction = predictions[0];
-            document.querySelector('.prediction-class').textContent = classes[topPrediction.classIndex];
+            document.querySelector('.prediction-class').textContent = cifarClasses[topPrediction.classIndex];
             document.getElementById('confidenceLevel').textContent = Math.round(topPrediction.confidence * 100) + '%';
             document.getElementById('confidenceBar').style.width = Math.round(topPrediction.confidence * 100) + '%';
 
             document.getElementById('predictionDescription').textContent =
-                `Intelligent Analysis: Our AI model detected key visual characteristics (${topPrediction.reasoning}), predicting this as a ${classes[topPrediction.classIndex].toLowerCase()} with ${Math.round(topPrediction.confidence * 100)}% confidence based on learned patterns from CIFAR-10 training data.`;
+                `Intelligent Analysis: Our AI model detected key visual characteristics (${topPrediction.reasoning}), predicting this as a ${cifarClasses[topPrediction.classIndex].toLowerCase()} with ${Math.round(topPrediction.confidence * 100)}% confidence based on learned patterns from CIFAR-10 training data.`;
 
             // Display top 3 predictions
             const topPredictionsList = document.getElementById('topPredictionsList');
@@ -973,7 +984,7 @@
             predictions.slice(0, 3).forEach((pred, index) => {
                 const predItem = document.createElement('div');
                 predItem.innerHTML = `
-                    <span style="font-weight: ${index === 0 ? 'bold' : 'normal'};">${index + 1}. ${classes[pred.classIndex]} - ${Math.round(pred.confidence * 100)}%
+                    <span style="font-weight: ${index === 0 ? 'bold' : 'normal'};">${index + 1}. ${cifarClasses[pred.classIndex]} - ${Math.round(pred.confidence * 100)}%
                         <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; margin: 4px 0;">
                             <div style="width: ${Math.round(pred.confidence * 100)}%; height: 100%; background: ${index === 0 ? '#10b981' : '#6b7280'}; border-radius: 4px;"></div>
                         </div>
@@ -990,14 +1001,20 @@
             loadingSpinner.style.display = 'none';
             resultsContainer.style.display = 'block';
 
-            const randomClass = Math.floor(Math.random() * classes.length);
+            // CIFAR-10 classes for the demo
+            const cifarClasses = [
+                'Airplane', 'Automobile', 'Bird', 'Cat', 'Deer',
+                'Dog', 'Frog', 'Horse', 'Ship', 'Truck'
+            ];
+
+            const randomClass = Math.floor(Math.random() * cifarClasses.length);
             const confidence = 0.6 + Math.random() * 0.3;
 
-            document.querySelector('.prediction-class').textContent = classes[randomClass];
+            document.querySelector('.prediction-class').textContent = cifarClasses[randomClass];
             document.getElementById('confidenceLevel').textContent = Math.round(confidence * 100) + '%';
             document.getElementById('confidenceBar').style.width = Math.round(confidence * 100) + '%';
             document.getElementById('predictionDescription').textContent =
-                `Demo Analysis: While image feature extraction encountered issues, our demo suggests this might be a ${classes[randomClass].toLowerCase()} based on general pattern recognition. Real AI models would provide much more accurate results.`;
+                `Demo Analysis: While image feature extraction encountered issues, our demo suggests this might be a ${cifarClasses[randomClass].toLowerCase()} based on general pattern recognition. Real AI models would provide much more accurate results.`;
 
             // Clear top predictions list for fallback
             document.getElementById('topPredictionsList').innerHTML = '<span style="color: #64748b;">Try uploading another image for detailed analysis</span>';
