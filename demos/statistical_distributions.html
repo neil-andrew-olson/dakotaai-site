@@ -53,11 +53,11 @@
 
         .nav-tabs button {
             flex: 1;
-            padding: 12px 15px;
+            padding: 12px 10px;
             border: none;
             background: none;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.8em;
             font-weight: 500;
             color: #666;
             border-bottom: 3px solid transparent;
@@ -108,9 +108,29 @@
 
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-            margin-top: 30px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-input-section {
+            grid-column: span 2;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .data-input-controls {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .input-method-selector {
+            max-width: 200px;
         }
 
         .params-panel {
@@ -325,19 +345,100 @@
                     </select>
                 </div>
 
+                <div class="data-input-section">
+                    <h3>📊 Data Input & Analysis</h3>
+                    <div class="data-input-controls">
+                        <div class="input-method-selector">
+                            <label for="dataMethodSelect">Data Source:</label>
+                            <select id="dataMethodSelect" onchange="changeDataMethod()">
+                                <option value="upload">📁 Upload CSV/Excel</option>
+                                <option value="random">🎲 Generate Random</option>
+                                <option value="manual">✏️ Manual Entry</option>
+                            </select>
+                        </div>
+
+                        <div id="uploadControls" style="display: block;">
+                            <div class="param-control">
+                                <label>Upload Data File:</label>
+                                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt"
+                                       onchange="handleFileUpload(event)" style="margin: 5px 0;">
+                            </div>
+                            <div class="param-control">
+                                <label for="columnSelect">Column:</label>
+                                <select id="columnSelect"></select>
+                            </div>
+                            <button onclick="processUploadedData()" class="btn" style="margin-top: 5px;">Process Data</button>
+                        </div>
+
+                        <div id="randomControls" style="display: none;">
+                            <div class="param-control">
+                                <label for="sampleSize">Sample Size:</label>
+                                <input type="number" id="sampleSize" value="100" min="10" max="10000" step="10">
+                            </div>
+                            <button onclick="generateRandomData()" class="btn" style="margin-top: 5px;">Generate</button>
+                        </div>
+
+                        <div id="manualControls" style="display: none;">
+                            <div class="param-control">
+                                <label>Data (comma-separated):</label>
+                                <textarea id="manualDataInput" rows="3" placeholder="1.2, 3.4, 2.1, 5.6..."
+                                          style="width: 100%; margin: 5px 0;"></textarea>
+                            </div>
+                            <button onclick="processManualData()" class="btn" style="margin-top: 5px;">Process</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="content-grid">
                     <div class="params-panel">
-                        <h3>Parameters</h3>
+                        <h3>Distribution Parameters</h3>
                         <div id="paramsContainer">
                             <div class="loading">Loading distribution parameters...</div>
                         </div>
                     </div>
 
                     <div class="stats-panel">
-                        <h3>Statistical Properties</h3>
-                        <div class="stats-grid" id="statsContainer">
-                            <div class="loading">Loading statistics...</div>
+                        <h3>Data Analysis Results</h3>
+                        <div class="stats-grid" id="dataAnalysisResults">
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Data Points</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Sample Mean</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Sample Std Dev</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Skewness</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">KS Statistic</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">KS P-Value</div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <h3>Statistical Properties</h3>
+                    <div class="stats-grid" id="statsContainer">
+                        <div class="loading">Loading distribution statistics...</div>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <h3>Distribution Fitting</h3>
+                    <div id="fittingResults">
+                        <p style="color: #666; margin: 0;">Upload data to see fitted parameters and goodness-of-fit results.</p>
                     </div>
                 </div>
             </div>
