@@ -26,11 +26,14 @@
         <button onclick="fetchStockData()">Fetch Data</button>
         <p id="callCount">API calls today: 0/25</p>
         <div id="toggles">
-            <label><input type="checkbox" id="smaToggle" checked> Show SMA</label>
-            <label><input type="checkbox" id="emaToggle" checked> Show EMA</label>
+            <label><input type="checkbox" id="smaToggle" checked> Show SMA (20)</label>
+            <label><input type="checkbox" id="ema8Toggle"> Show EMA (8)</label>
+            <label><input type="checkbox" id="ema13Toggle"> Show EMA (13)</label>
+            <label><input type="checkbox" id="ema21Toggle"> Show EMA (21)</label>
+            <label><input type="checkbox" id="ema34Toggle"> Show EMA (34)</label>
+            <label><input type="checkbox" id="ema50Toggle"> Show EMA (50)</label>
             <label><input type="checkbox" id="rsiToggle"> Show RSI</label>
             <label><input type="checkbox" id="atrToggle" checked> Show ATR Levels</label>
-            <label><input type="checkbox" id="vpaToggle"> Show VPA</label>
         </div>
         <div id="stockData"></div>
         <canvas id="myChart"></canvas>
@@ -156,11 +159,72 @@
             return bullish ? 'Bullish' : bearish ? 'Bearish' : 'Neutral';
         }
 
-        function renderChart(times, prices, sma, ema, rsi, atrLevels, vpaData) {
+        function renderChart(times, prices, sma, ema8, ema13, ema21, ema34, ema50, rsi, atrLevels) {
             const ctx = document.getElementById('myChart');
-            const datasets = [{ label: 'Price', data: prices, borderColor: 'blue', fill: false }];
-            if (document.getElementById('smaToggle').checked && sma) datasets.push({ label: 'SMA 20', data: sma, borderColor: 'red', fill: false });
-            if (document.getElementById('emaToggle').checked && ema) datasets.push({ label: 'EMA 20', data: ema, borderColor: 'green', fill: false });
+            const datasets = [{
+                label: 'Price',
+                data: prices,
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4
+            }];
+
+            if (document.getElementById('smaToggle').checked && sma) datasets.push({
+                label: 'SMA (20)',
+                data: sma,
+                borderColor: '#F44336',
+                borderWidth: 1,
+                fill: false,
+                borderDash: [5, 5],
+                pointRadius: 0
+            });
+
+            if (document.getElementById('ema8Toggle').checked && ema8) datasets.push({
+                label: 'EMA (8)',
+                data: ema8,
+                borderColor: '#4CAF50',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            });
+
+            if (document.getElementById('ema13Toggle').checked && ema13) datasets.push({
+                label: 'EMA (13)',
+                data: ema13,
+                borderColor: '#FF9800',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            });
+
+            if (document.getElementById('ema21Toggle').checked && ema21) datasets.push({
+                label: 'EMA (21)',
+                data: ema21,
+                borderColor: '#9C27B0',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            });
+
+            if (document.getElementById('ema34Toggle').checked && ema34) datasets.push({
+                label: 'EMA (34)',
+                data: ema34,
+                borderColor: '#00BCD4',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            });
+
+            if (document.getElementById('ema50Toggle').checked && ema50) datasets.push({
+                label: 'EMA (50)',
+                data: ema50,
+                borderColor: '#795548',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            });
 
             // Add ATR levels as horizontal lines
             if (document.getElementById('atrToggle').checked && atrLevels) {
@@ -168,7 +232,8 @@
                 datasets.push({
                     label: 'Previous Close',
                     data: new Array(chartLength).fill(atrLevels.previousClose),
-                    borderColor: 'white',
+                    borderColor: '#424242',
+                    borderWidth: 1,
                     borderDash: [5, 5],
                     pointRadius: 0,
                     fill: false
@@ -176,7 +241,8 @@
                 datasets.push({
                     label: 'Lower Trigger',
                     data: new Array(chartLength).fill(atrLevels.lowerTrigger),
-                    borderColor: 'yellow',
+                    borderColor: '#FFC107',
+                    borderWidth: 1,
                     borderDash: [5, 5],
                     pointRadius: 0,
                     fill: false
@@ -184,7 +250,8 @@
                 datasets.push({
                     label: 'Upper Trigger',
                     data: new Array(chartLength).fill(atrLevels.upperTrigger),
-                    borderColor: 'aqua',
+                    borderColor: '#00BCD4',
+                    borderWidth: 1,
                     borderDash: [5, 5],
                     pointRadius: 0,
                     fill: false
@@ -192,7 +259,8 @@
                 datasets.push({
                     label: 'ATR -1',
                     data: new Array(chartLength).fill(atrLevels.lower1000),
-                    borderColor: 'white',
+                    borderColor: '#FF5722',
+                    borderWidth: 1,
                     borderDash: [10, 5],
                     pointRadius: 0,
                     fill: false
@@ -200,17 +268,11 @@
                 datasets.push({
                     label: 'ATR +1',
                     data: new Array(chartLength).fill(atrLevels.upper1000),
-                    borderColor: 'white',
+                    borderColor: '#4CAF50',
+                    borderWidth: 1,
                     borderDash: [10, 5],
                     pointRadius: 0,
                     fill: false
-                });
-            }
-
-            // Add VPA data if available
-            if (document.getElementById('vpaToggle').checked && vpaData && vpaData.boxes) {
-                vpaData.boxes.forEach(box => {
-                    datasets.push(box);
                 });
             }
 
@@ -221,18 +283,53 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     scales: {
-                        y: { beginAtZero: false }
+                        x: {
+                            display: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
                     },
                     plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
                         tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
                             callbacks: {
                                 afterBody: function(context) {
-                                    if (rsi && rsi[context.dataIndex]) {
-                                        return 'RSI: ' + rsi[context.dataIndex].toFixed(2);
+                                    let tooltipText = [];
+                                    if (rsi && rsi[context[0].dataIndex]) {
+                                        tooltipText.push('RSI: ' + rsi[context[0].dataIndex].toFixed(2));
                                     }
+                                    return tooltipText;
                                 }
                             }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0,
+                            hoverRadius: 4
                         }
                     }
                 }
@@ -275,20 +372,31 @@
                     const sum = prices.slice(index - 19, index + 1).reduce((a, b) => a + b, 0);
                     return sum / 20;
                 });
-                const ema = calculateEMA(prices, 20);
+                const ema8 = calculateEMA(prices, 8);
+                const ema13 = calculateEMA(prices, 13);
+                const ema21 = calculateEMA(prices, 21);
+                const ema34 = calculateEMA(prices, 34);
+                const ema50 = calculateEMA(prices, 50);
                 const rsi = calculateRSI(closes, 14);
                 const atr = calculateATR(highs, lows, closes, 14);
                 const previousClose = closes[closes.length - 1];
                 const latestATR = atr[atr.length - 1];
-                const { levels: atrLevels, trPercentOfATR, range } = calculateATRLevels(previousClose, latestATR, highs, lows);
+
+                // Calculate range for current session (last ~24 hours of data, roughly one trading session)
+                const sessionLength = Math.min(closes.length, Math.floor(closes.length * 0.8)); // Use ~80% of available data for current session
+                const sessionHighs = highs.slice(-sessionLength);
+                const sessionLows = lows.slice(-sessionLength);
+                const sessionRange = Math.max(...sessionHighs) - Math.min(...sessionLows);
+
+                const { levels: atrLevels, trPercentOfATR } = calculateATRLevels(previousClose, latestATR, sessionHighs, sessionLows);
 
                 // Trend calculation
-                const fastEMA8 = calculateEMA(closes, 8);
-                const pivotEMA21 = calculateEMA(closes, 21);
-                const slowEMA34 = calculateEMA(closes, 34);
-                const trend = determineTrend(closes[closes.length - 1], fastEMA8[fastEMA8.length - 1], pivotEMA21[pivotEMA21.length - 1], slowEMA34[slowEMA34.length - 1]);
+                const trend = determineTrend(closes[closes.length - 1], ema8[ema8.length - 1], ema21[ema21.length - 1], ema34[ema34.length - 1]);
 
-                dataCache = { times, prices, sma, ema, rsi, atr, atrLevels, trPercentOfATR, range, trend, highs, lows, closes, volumes };
+                dataCache = {
+                    times, prices, sma, ema8, ema13, ema21, ema34, ema50, rsi, atr,
+                    atrLevels, trPercentOfATR, range: sessionRange, trend, highs, lows, closes, volumes
+                };
 
                 // Update UI
                 const latestPrice = prices[prices.length - 1];
@@ -304,7 +412,7 @@
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr style="background-color: ${trend === 'Bullish' ? '#d4edda' : trend === 'Bearish' ? '#f8d7da' : '#fff3cd'};">
                                     <td><strong>Trend:</strong> ${trend}</td>
-                                    <td><strong>Range ($${range.toFixed(2)}) is ${trPercentOfATR.toFixed(1)}% of ATR ($${latestATR.toFixed(2)})</strong></td>
+                                    <td><strong>Range ($${dataCache.range.toFixed(2)}) is ${trPercentOfATR.toFixed(1)}% of ATR ($${latestATR.toFixed(2)})</strong></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Calls > $${atrLevels.upperTrigger.toFixed(2)}</strong></td>
@@ -319,18 +427,30 @@
                     `;
                 }
 
+                // Create EMA display text
+                let emaDisplay = '';
+                const emaInfo = [
+                    { period: 8, value: ema8[ema8.length - 1] },
+                    { period: 13, value: ema13[ema13.length - 1] },
+                    { period: 21, value: ema21[ema21.length - 1] },
+                    { period: 34, value: ema34[ema34.length - 1] },
+                    { period: 50, value: ema50[ema50.length - 1] }
+                ];
+
+                emaDisplay = emaInfo.map(ema => `<p><strong>EMA (${ema.period}):</strong> $${ema.value.toFixed(2)}</p>`).join('');
+
                 document.getElementById('stockData').innerHTML = `
                     <h2>${symbol} - Latest Data</h2>
                     <p><strong>Time:</strong> ${latestTime}</p>
                     <p><strong>Price:</strong> $${latestPrice.toFixed(2)}</p>
                     <p><strong>Volume:</strong> ${volumes[volumes.length - 1].toLocaleString()}</p>
                     <p><strong>SMA (20):</strong> ${sma[sma.length - 1] ? `$${sma[sma.length - 1].toFixed(2)}` : 'N/A'}</p>
-                    <p><strong>EMA (20):</strong> $${ema[ema.length - 1].toFixed(2)}</p>
+                    ${emaDisplay}
                     <p><strong>RSI (14):</strong> ${latestRsi ? latestRsi.toFixed(2) : 'N/A'}</p>
                     ${atrInfoHTML}
                 `;
 
-                renderChart(times, prices, sma, ema, rsi, atrLevels);
+                renderChart(times, prices, sma, ema8, ema13, ema21, ema34, ema50, rsi, atrLevels);
             } catch (error) {
                 document.getElementById('stockData').innerHTML = 'Error fetching data. Check network or API limit.';
                 console.error(error);
@@ -338,11 +458,28 @@
         }
 
         // Event listeners
-        document.getElementById('smaToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi, dataCache.atrLevels); });
-        document.getElementById('emaToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi, dataCache.atrLevels); });
-        document.getElementById('rsiToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi, dataCache.atrLevels); });
+        document.getElementById('smaToggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('ema8Toggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('ema13Toggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('ema21Toggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('ema34Toggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('ema50Toggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
+        document.getElementById('rsiToggle').addEventListener('change', () => {
+            if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema8, dataCache.ema13, dataCache.ema21, dataCache.ema34, dataCache.ema50, dataCache.rsi, dataCache.atrLevels);
+        });
         document.getElementById('atrToggle').addEventListener('change', () => { if (dataCache) fetchStockData(); }); // Need to re-run to update UI with ATR info
-        document.getElementById('vpaToggle').addEventListener('change', () => { if (dataCache) renderChart(dataCache.times, dataCache.prices, dataCache.sma, dataCache.ema, dataCache.rsi, dataCache.atrLevels); });
 
         // Initialize
         updateCallCount();
