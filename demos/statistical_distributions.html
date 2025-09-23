@@ -51,11 +51,11 @@
 
         .nav-tabs button {
             flex: 1;
-            padding: 15px 20px;
+            padding: 12px 15px;
             border: none;
             background: none;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.9em;
             font-weight: 500;
             color: #666;
             border-bottom: 3px solid transparent;
@@ -285,9 +285,10 @@
         </div>
 
         <div class="nav-tabs">
-            <button class="active" onclick="showTab('parameters')">Parameters & Controls</button>
+            <button class="active" onclick="showTab('parameters')">Parameters</button>
             <button onclick="showTab('visualizations')">Visualizations</button>
-            <button onclick="showTab('explanations')">Explanations & Theory</button>
+            <button onclick="showTab('dataanalysis')">Data Analysis</button>
+            <button onclick="showTab('explanations')">Theory</button>
         </div>
 
         <div class="tab-content">
@@ -376,30 +377,39 @@
                     { name: "σ (standard deviation)", id: "sigma", default: 1, min: 0.1, max: 5, step: 0.1 }
                 ],
                 explanation: `
-                    <p>The Normal (or Gaussian) distribution is the most important continuous probability distribution in statistics.</p>
+                    <p>The Normal distribution, discovered by Carl Friedrich Gauss, is the cornerstone of statistical inference and the Central Limit Theorem. It describes phenomena where many small, independent random effects combine additively.</p>
 
                     <div class="formula">
-                    f(x) = (1/(σ√(2π))) * exp(-((x-μ)²)/(2σ²))
+                    f(x; μ, σ) = (1/(σ√(2π))) * exp(-((x-μ)²)/(2σ²))
                     </div>
 
                     <p><strong>Parameters:</strong></p>
                     <ul>
-                        <li><strong>μ (mean)</strong>: Center of the distribution</li>
-                        <li><strong>σ (standard deviation)</strong>: Spread of the distribution (σ > 0)</li>
+                        <li><strong>μ (mean)</strong>: Location parameter - determines the center/peak of the distribution</li>
+                        <li><strong>σ (standard deviation)</strong>: Scale parameter - controls the spread/variance (σ > 0)</li>
                     </ul>
 
                     <div class="applications">
-                    <p><strong>Applications:</strong></p>
+                    <p><strong>Applications & Examples:</strong></p>
                     <ul>
-                        <li>Measurement errors</li>
-                        <li>Heights and weights of populations</li>
-                        <li>Test scores</li>
-                        <li>Financial returns (under certain assumptions)</li>
-                        <li>Many natural phenomena (Central Limit Theorem)</li>
+                        <li><strong>Measurement Science</strong>: Heights, weights, IQ scores, blood pressure</li>
+                        <li><strong>Quality Control</strong>: Manufacturing tolerances, product specifications</li>
+                        <li><strong>Finance</strong>: Stock returns (under log-normal assumptions), option pricing</li>
+                        <li><strong>Natural Phenomena</strong>: Light intensity, particle velocities, astronomical measurements</li>
+                        <li><strong>Psychometrics</strong>: Test scores, reaction times, cognitive abilities</li>
                     </ul>
                     </div>
 
-                    <p><strong>Properties:</strong> Symmetric, bell-shaped curve. Mean = Median = Mode. About 68% of data falls within 1σ, 95% within 2σ, and 99.7% within 3σ of the mean (68-95-99.7 rule).</p>
+                    <p><strong>Theoretical Properties:</strong></p>
+                    <ul>
+                        <li>Symmetric with mean = median = mode = μ</li>
+                        <li>68-95-99.7 rule: 68% within 1σ, 95% within 1.96σ, 99.7% within 3σ</li>
+                        <li>Inflection points at μ ± σ</li>
+                        <li>Maximum entropy distribution for given mean and variance</li>
+                        <li>Stable under addition (Central Limit Theorem)</li>
+                    </ul>
+
+                    <p><strong>Historical Context:</strong> First derived by Abraham de Moivre in 1733 for binomial approximations. Gauss proved its universal importance in the theory of errors.</p>
                 `,
                 pdf: (x, params) => {
                     const mu = params.mu, sigma = params.sigma;
@@ -431,30 +441,46 @@
                     { name: "p (success probability)", id: "p", default: 0.5, min: 0, max: 1, step: 0.01 }
                 ],
                 explanation: `
-                    <p>The Binomial distribution models the number of successes in a fixed number of independent Bernoulli trials.</p>
+                    <p>The Binomial distribution was developed by Jacob Bernoulli and is one of the earliest distributions in probability theory. It models scenarios where we conduct a fixed number of independent trials, each having exactly two possible outcomes (success/failure).</p>
 
                     <div class="formula">
-                    P(X = k) = C(n,k) * p^k * (1-p)^(n-k)
+                    P(X = k) = C(n,k) × p^k × (1-p)^(n-k)
+                    </div>
+
+                    <div class="formula" style="margin-top: 10px;">
+                    C(n,k) = n! / (k! × (n-k)!)
                     </div>
 
                     <p><strong>Parameters:</strong></p>
                     <ul>
-                        <li><strong>n</strong>: Number of trials (n ≥ 1)</li>
-                        <li><strong>p</strong>: Probability of success in each trial (0 ≤ p ≤ 1)</li>
+                        <li><strong>n (number of trials)</strong>: Fixed sample size (must be a positive integer)</li>
+                        <li><strong>p (success probability)</strong>: Probability of success on any single trial (0 ≤ p ≤ 1)</li>
                     </ul>
 
                     <div class="applications">
-                    <p><strong>Applications:</strong></p>
+                    <p><strong>Applications & Examples:</strong></p>
                     <ul>
-                        <li>Coin flips or dice rolls</li>
-                        <li>Quality control (defective items)</li>
-                        <li>Medical trials (success/failure outcomes)</li>
-                        <li>Survey responses (yes/no questions)</li>
-                        <li>Sports statistics (hits, goals, etc.)</li>
+                        <li><strong>Clinical Trials</strong>: Number of patients who respond to a treatment</li>
+                        <li><strong>Quality Assurance</strong>: Proportion of defective products in a batch</li>
+                        <li><strong>Elections</strong>: Number of votes for a candidate in exit polls</li>
+                        <li><strong>A/B Testing</strong>: Conversion rates in website optimization</li>
+                        <li><strong>Risk Assessment</strong>: Number of claims in an insurance portfolio</li>
+                        <li><strong>Biology</strong>: Number of males in a litter of fixed size</li>
                     </ul>
                     </div>
 
-                    <p><strong>Properties:</strong> Discrete distribution. Mean = np, Variance = np(1-p). Skewed when p ≠ 0.5, symmetric when p = 0.5.</p>
+                    <p><strong>Theoretical Properties:</strong></p>
+                    <ul>
+                        <li>Mean = np, Variance = np(1-p)</li>
+                        <li>Symmetric when p = 0.5, right-skewed when p < 0.5, left-skewed when p > 0.5</li>
+                        <li>Maximum value is n (all successes), minimum is 0 (no successes)</li>
+                        <li>Approaches Poisson distribution as n→∞ and p→0 (with λ = np fixed)</li>
+                        <li>Approaches Normal distribution as n→∞ (Central Limit Theorem)</li>
+                    </ul>
+
+                    <p><strong>Theoretical Foundations:</strong> Based on Bernoulli trials with independence assumption. Each trial must be identical and the outcome probabilities must remain constant across trials.</p>
+
+                    <p><strong>Assumptions:</strong> Fixed number of trials, independence between trials, constant success probability, only two possible outcomes per trial.</p>
                 `,
                 pmf: (k, params) => {
                     const n = params.n, p = params.p;
