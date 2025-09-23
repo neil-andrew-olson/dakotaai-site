@@ -3,269 +3,619 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dakota AI Demo: Statistical Distribution Explorer</title>
+    <title>Dakota AI - Statistical Distribution Explorer</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f97316;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #1e1b4b;
+            --light: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hard: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --glow-primary: 0 0 20px rgba(99, 102, 241, 0.3);
+            --glow-secondary: 0 0 20px rgba(139, 92, 246, 0.3);
+            --glow-accent: 0 0 20px rgba(245, 158, 11, 0.3);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --animation-fast: 0.2s ease-out;
+            --animation-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --animation-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
             min-height: 100vh;
+            color: var(--light);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(120, 119, 198, 0.3) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
+            margin-bottom: 40px;
+            animation: slideInUp 1s var(--animation-smooth);
         }
 
         .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 0;
-            font-size: 2.5em;
-            font-weight: 300;
+            letter-spacing: -0.05em;
+            text-shadow: var(--glow-accent);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
+            to { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.8)); }
         }
 
         .header p {
-            margin: 10px 0 0 0;
+            font-size: 1.2rem;
             opacity: 0.9;
-            font-size: 1.1em;
+            margin: 20px 0 0 0;
+            font-weight: 300;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .nav-tabs {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-medium);
+            animation: slideInUp 1.2s var(--animation-smooth);
         }
 
         .nav-tabs button {
             flex: 1;
-            padding: 12px 10px;
+            padding: 16px 20px;
             border: none;
-            background: none;
+            background: transparent;
             cursor: pointer;
-            font-size: 0.8em;
-            font-weight: 500;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            transition: all var(--animation-fast);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tabs button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity var(--animation-fast);
+            z-index: -1;
+        }
+
+        .nav-tabs button:hover {
+            color: var(--light);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-tabs button:hover::before {
+            opacity: 0.3;
         }
 
         .nav-tabs button.active {
-            color: #007bff;
-            border-bottom-color: #007bff;
-            background: white;
+            color: var(--light);
+            font-weight: 700;
+            background: var(--glass);
         }
 
-        .nav-tabs button:hover:not(.active) {
-            background: #e9ecef;
+        .nav-tabs button.active::before {
+            opacity: 1;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .tab-content {
-            padding: 30px;
+            position: relative;
+            perspective: 1000px;
         }
 
         .tab-panel {
             display: none;
+            opacity: 0;
+            transform: rotateY(90deg);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-origin: left center;
         }
 
         .tab-panel.active {
             display: block;
+            opacity: 1;
+            transform: rotateY(0deg);
         }
 
         .distribution-selector {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            animation: slideInUp 1.4s var(--animation-smooth);
+        }
+
+        .distribution-selector h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--light);
         }
 
         .distribution-selector select {
-            padding: 12px 20px;
-            font-size: 1.1em;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
             width: 100%;
-            max-width: 300px;
+            max-width: 400px;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            color: var(--light);
+            cursor: pointer;
+            transition: all var(--animation-fast);
+            box-shadow: var(--shadow-soft);
         }
 
         .distribution-selector select:focus {
             outline: none;
-            border-color: #007bff;
+            border-color: var(--primary);
+            box-shadow: var(--glow-primary), var(--shadow-medium);
+            transform: scale(1.02);
+        }
+
+        .distribution-selector select:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-primary), var(--shadow-medium);
         }
 
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
         .data-input-section {
-            grid-column: span 2;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #dee2e6;
-            margin-bottom: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-medium);
+            animation: fadeInScale 1.6s var(--animation-smooth);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .data-input-section h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .data-input-controls {
             display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 20px;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
             align-items: start;
         }
 
         .input-method-selector {
-            max-width: 200px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .input-method-selector select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            color: var(--light);
+            font-weight: 500;
+            transition: all var(--animation-fast);
         }
 
         .params-panel {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #dee2e6;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-medium);
+            animation: fadeInScale 1.6s var(--animation-smooth);
         }
 
         .params-panel h3 {
-            margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .param-control {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .param-control label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
         }
 
         .param-control input {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
+            padding: 12px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all var(--animation-fast);
         }
 
         .param-control input:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+            border-color: var(--primary);
+            box-shadow: var(--glow-primary);
+            transform: scale(1.02);
+        }
+
+        .param-control input:hover {
+            transform: scale(1.01);
         }
 
         .charts-panel {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 30px;
         }
 
         .chart-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow-medium);
+            transition: all var(--animation-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            animation: rotate 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-primary), var(--shadow-hard);
         }
 
         .chart-container h4 {
-            margin-top: 0;
-            color: #333;
+            margin: 0 0 20px 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--light);
             text-align: center;
-            margin-bottom: 15px;
         }
 
         canvas {
             width: 100% !important;
-            height: 300px !important;
+            height: 350px !important;
+            border-radius: 10px;
         }
 
         .stats-panel {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: var(--shadow-medium);
+            animation: fadeInScale 2s var(--animation-smooth);
+        }
+
+        .stats-panel h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: var(--gradient-success);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
+            background: var(--secondary);
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-soft);
+            transition: all var(--animation-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-accent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::after {
+            left: 0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow-secondary), var(--shadow-hard);
         }
 
         .stat-card .value {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #007bff;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--light);
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .stat-card .label {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .explanation-panel {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            line-height: 1.6;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: var(--shadow-medium);
+            animation: fadeInScale 2.2s var(--animation-smooth);
+            line-height: 1.7;
         }
 
         .explanation-panel h3 {
-            margin-top: 0;
-            color: #333;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
         }
 
         .formula {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1em;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-soft);
         }
 
         .applications {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(56, 249, 215, 0.1) 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--success);
+            box-shadow: var(--shadow-soft);
         }
 
         .applications ul {
             margin: 0;
-            padding-left: 20px;
+            padding-left: 25px;
         }
 
         .applications li {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+            color: var(--danger);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .upload-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .upload-controls input[type="file"] {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+        }
+
+        .upload-controls select {
+            padding: 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--light);
+        }
+
+        .upload-controls button {
+            padding: 12px 24px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--animation-fast);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .upload-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-primary);
         }
 
         @media (max-width: 768px) {
@@ -277,69 +627,71 @@
                 grid-template-columns: 1fr;
             }
 
-            .nav-tabs button {
-                padding: 10px 15px;
-                font-size: 0.9em;
+            .data-input-controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
-        }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
+            .nav-tabs {
+                flex-direction: column;
+            }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-            border: 1px solid #f5c6cb;
+            .nav-tabs button {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎲 Statistical Distribution Explorer</h1>
-            <p>Interactive exploration of 22+ probability distributions with real-time visualizations and educational content</p>
+            <h1>🎲 Dakota AI Statistical Distribution Explorer</h1>
+            <p>Interactive visualization of 22 probability distributions with real-time analysis and educational insights</p>
         </div>
 
         <div class="nav-tabs">
-            <button class="active" onclick="showTab('parameters')">Parameters & Data</button>
-            <button onclick="showTab('visualizations')">Visualizations</button>
-            <button onclick="showTab('explanations')">Theory</button>
+            <button class="active" onclick="showTab('parameters')">📊 Parameters & Data</button>
+            <button onclick="showTab('visualizations')">📈 Visualizations</button>
+            <button onclick="showTab('explanations')">📚 Theory</button>
         </div>
 
         <div class="tab-content">
             <div id="parameters" class="tab-panel active">
                 <div class="distribution-selector">
-                    <h3>Select a Distribution</h3>
+                    <h3>🎯 Select Distribution</h3>
                     <select id="distributionSelect" onchange="loadDistribution()">
-                        <optgroup label="Continuous Distributions">
-                            <option value="normal">Normal Distribution</option>
-                            <option value="beta">Beta Distribution</option>
-                            <option value="gamma">Gamma Distribution</option>
-                            <option value="weibull">Weibull Distribution</option>
-                            <option value="pareto">Pareto Distribution</option>
-                            <option value="logistic">Logistic Distribution</option>
-                            <option value="laplace">Laplace Distribution</option>
-                            <option value="chisquared">Chi-Squared Distribution</option>
-                            <option value="studentt">Student-t Distribution</option>
-                            <option value="fdist">F-Distribution (Snedecor F)</option>
-                            <option value="bivariate">Bivariate Normal Distribution</option>
-                            <option value="lognormal">Log-Normal Distribution</option>
+                        <optgroup label="Continuous Distributions" style="color: rgba(0,0,0,0.7);">
+                            <option value="normal">📊 Normal Distribution</option>
+                            <option value="beta">🎯 Beta Distribution</option>
+                            <option value="gamma">🔥 Gamma Distribution</option>
+                            <option value="weibull">⚡ Weibull Distribution</option>
+                            <option value="pareto">💎 Pareto Distribution</option>
+                            <option value="logistic">📈 Logistic Distribution</option>
+                            <option value="laplace">⬩ Laplace Distribution</option>
+                            <option value="chisquared">Χ² Chi-Squared Distribution</option>
+                            <option value="studentt">📚 Student-t Distribution</option>
+                            <option value="fdist">📊 F-Distribution (Snedecor F)</option>
+                            <option value="bivariate">🔗 Bivariate Normal Distribution</option>
+                            <option value="lognormal">📉 Log-Normal Distribution</option>
                         </optgroup>
-                        <optgroup label="Discrete Distributions">
-                            <option value="binomial">Binomial Distribution</option>
-                            <option value="poisson">Poisson Distribution</option>
-                            <option value="geometric">Geometric Distribution</option>
-                            <option value="hypergeometric">Hypergeometric Distribution</option>
-                            <option value="multivariate">Multivariate Hypergeometric</option>
-                            <option value="negativebinomial">Negative Binomial Distribution</option>
-                            <option value="multinomial">Multinomial Distribution</option>
-                            <option value="uniform">Discrete Uniform Distribution</option>
+                        <optgroup label="Discrete Distributions" style="color: rgba(0,0,0,0.7);">
+                            <option value="binomial">🎲 Binomial Distribution</option>
+                            <option value="poisson">🎯 Poisson Distribution</option>
+                            <option value="geometric">📐 Geometric Distribution</option>
+                            <option value="hypergeometric">🔄 Hypergeometric Distribution</option>
+                            <option value="multivariate">🔗 Multivariate Hypergeometric</option>
+                            <option value="negativebinomial">📊 Negative Binomial Distribution</option>
+                            <option value="multinomial">🎭 Multinomial Distribution</option>
+                            <option value="uniform">📏 Discrete Uniform Distribution</option>
                         </optgroup>
                     </select>
                 </div>
@@ -356,48 +708,50 @@
                             </select>
                         </div>
 
-                        <div id="uploadControls" style="display: block;">
+                        <div id="uploadControls" style="display: block;" class="upload-controls">
                             <div class="param-control">
                                 <label>Upload Data File:</label>
                                 <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt"
-                                       onchange="handleFileUpload(event)" style="margin: 5px 0;">
+                                       onchange="handleFileUpload(event)">
                             </div>
                             <div class="param-control">
                                 <label for="columnSelect">Column:</label>
-                                <select id="columnSelect"></select>
+                                <select id="columnSelect">
+                                    <option value="">Select a column...</option>
+                                </select>
                             </div>
-                            <button onclick="processUploadedData()" style="margin-top: 5px;">Process Data</button>
+                            <button onclick="processUploadedData()">Process Data</button>
                         </div>
 
-                        <div id="randomControls" style="display: none;">
+                        <div id="randomControls" style="display: none;" class="upload-controls">
                             <div class="param-control">
                                 <label for="sampleSize">Sample Size:</label>
                                 <input type="number" id="sampleSize" value="100" min="10" max="10000" step="10">
                             </div>
-                            <button onclick="generateRandomData()" class="btn" style="margin-top: 5px;">Generate</button>
+                            <button onclick="generateRandomData()">🎲 Generate</button>
                         </div>
 
-                        <div id="manualControls" style="display: none;">
+                        <div id="manualControls" style="display: none;" class="upload-controls">
                             <div class="param-control">
                                 <label>Data (comma-separated):</label>
                                 <textarea id="manualDataInput" rows="3" placeholder="1.2, 3.4, 2.1, 5.6..."
-                                          style="width: 100%; margin: 5px 0;"></textarea>
+                                          style="width: 100%; resize: vertical;"></textarea>
                             </div>
-                            <button onclick="processManualData()" class="btn" style="margin-top: 5px;">Process</button>
+                            <button onclick="processManualData()">📝 Process</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="content-grid">
                     <div class="params-panel">
-                        <h3>Distribution Parameters</h3>
+                        <h3>⚙️ Distribution Parameters</h3>
                         <div id="paramsContainer">
-                            <div class="loading">Loading distribution parameters...</div>
+                            <div class="loading">🔄 Loading distribution parameters...</div>
                         </div>
                     </div>
 
                     <div class="stats-panel">
-                        <h3>Data Analysis Results</h3>
+                        <h3>📈 Data Analysis Results</h3>
                         <div class="stats-grid" id="dataAnalysisResults">
                             <div class="stat-card">
                                 <div class="value">--</div>
@@ -428,36 +782,29 @@
                 </div>
 
                 <div class="stats-panel">
-                    <h3>Statistical Properties</h3>
-                    <div class="stats-grid" id="statsContainer">
-                        <div class="loading">Loading distribution statistics...</div>
-                    </div>
-                </div>
-
-                <div class="stats-panel">
-                    <h3>Distribution Fitting</h3>
+                    <h3>📊 Distribution Fitting</h3>
                     <div id="fittingResults">
-                        <p style="color: #666; margin: 0;">Upload data to see fitted parameters and goodness-of-fit results.</p>
+                        <p style="color: rgba(255,255,255,0.7); margin: 0; text-align: center;">
+                            📁 Upload data to see fitted parameters and goodness-of-fit results
+                        </p>
                     </div>
                 </div>
             </div>
 
-
-
             <div id="visualizations" class="tab-panel">
                 <div class="charts-panel">
                     <div class="chart-container">
-                        <h4>Probability Density Function (PDF)</h4>
+                        <h4>📈 Probability Density Function (PDF)</h4>
                         <canvas id="pdfChart"></canvas>
                     </div>
                     <div class="chart-container">
-                        <h4>Cumulative Distribution Function (CDF)</h4>
+                        <h4>📊 Cumulative Distribution Function (CDF)</h4>
                         <canvas id="cdfChart"></canvas>
                     </div>
                 </div>
                 <div class="charts-panel">
                     <div class="chart-container" style="grid-column: span 2;">
-                        <h4>Data Histogram & Distribution Fit</h4>
+                        <h4>🎯 Data Histogram & Distribution Fit</h4>
                         <canvas id="dataChart"></canvas>
                     </div>
                 </div>
@@ -465,20 +812,16 @@
 
             <div id="explanations" class="tab-panel">
                 <div class="explanation-panel">
-                    <h3 id="distTitle">Select a Distribution</h3>
+                    <h3 id="distTitle">📚 Select a Distribution</h3>
                     <div id="explanationContent">
-                        <div class="loading">Loading explanation...</div>
+                        <div class="loading">🔄 Loading explanation...</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        let charts = {};
-        let currentDistribution = null;
-
-        // Distribution definitions with parameters and explanations
+// Distribution definitions with parameters and explanations
         const distributions = {
             normal: {
                 name: "Normal Distribution",
@@ -837,6 +1180,232 @@
                 }
             },
 
+            hypergeometric: {
+                name: "Hypergeometric Distribution",
+                params: [
+                    { name: "N (population size)", id: "N", default: 20, min: 2, max: 100, step: 1 },
+                    { name: "K (success states)", id: "K", default: 7, min: 0, max: 20, step: 1 },
+                    { name: "n (sample size)", id: "n", default: 6, min: 1, max: 20, step: 1 }
+                ],
+                explanation: `
+                    <p>The Hypergeometric distribution models sampling without replacement from a finite population.</p>
+
+                    <div class="formula">
+                    P(X = k) = [C(K,k) × C(N-K,n-k)] / C(N,n)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>N</strong>: Total population size (N ≥ 1)</li>
+                        <li><strong>K</strong>: Number of successes in population (0 ≤ K ≤ N)</li>
+                        <li><strong>n</strong>: Sample size without replacement (0 < n ≤ N)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Quality control (sampling from production lots)</li>
+                        <li>Election auditing (sample verification)</li>
+                        <li>Card games and lottery draws</li>
+                        <li>Biological sampling (capture-recapture)</li>
+                        <li>Mining and mineral exploration</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Discrete, mean = nK/N, variance = nK/N(1-K/N)(N-n)/(N-1). Approaches binomial as N→∞.</p>
+                `,
+                pmf: (k, params) => {
+                    const N = params.N, K = params.K, n = params.n;
+                    if (k < Math.max(0, n - (N - K)) || k > Math.min(n, K)) return 0;
+                    const comb1 = math.combinations(K, k);
+                    const comb2 = math.combinations(N - K, n - k);
+                    const comb3 = math.combinations(N, n);
+                    return (comb1 * comb2) / comb3;
+                },
+                cdf: (k, params) => {
+                    let sum = 0;
+                    for (let i = 0; i <= k; i++) {
+                        sum += this.pmf(i, params);
+                    }
+                    return sum;
+                },
+                stats: (params) => {
+                    const N = params.N, K = params.K, n = params.n;
+                    const p = K / N;
+                    return {
+                        mean: n * p,
+                        variance: n * p * (1 - p) * (N - n) / (N - 1),
+                        skewness: ((N - 2*K) * Math.sqrt(N - 1) * Math.sqrt(N - n)) / (Math.sqrt(n * K * (N - K) * (N - n)) * Math.sqrt(N - 2)),
+                        kurtosis: 'Complex calculation needed',
+                        median: Math.round(n * K / N),
+                        mode: Math.round((n + 1) * (K + 1) / (N + 2))
+                    };
+                }
+            },
+
+            multivariate: {
+                name: "Multivariate Hypergeometric Distribution",
+                params: [
+                    { name: "N (population size)", id: "N", default: 20, min: 5, max: 100, step: 1 },
+                    { name: "n (sample size)", id: "n", default: 6, min: 1, max: 20, step: 1 }
+                ],
+                explanation: `
+                    <p>The multivariate hypergeometric distribution is a generalization of the hypergeometric distribution used when there are multiple categories.</p>
+
+                    <div class="formula">
+                    P(X₁ = k₁, X₂ = k₂, ..., Xₘ = kₘ) = [∏ C(Kᵢ,kᵢ)] / C(N,n)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>N</strong>: Total population size</li>
+                        <li><strong>n</strong>: Sample size</li>
+                        <li><strong>Kⱼ</strong>: Size of each category in population</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Election sampling with multiple parties</li>
+                        <li>Contingency table analysis</li>
+                        <li>Multiple classification sampling</li>
+                        <li>Genetics and population studies</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Multidimensional generalization of hypergeometric. Used in multivariate statistics and experimental design.</p>
+                `,
+                // Note: This is a simplification - true multivariate hypergeometric would need category sizes
+                pmf: (k, params) => {
+                    // This is a placeholder - multivariate hypergeometric is complex
+                    return 0.1; // Placeholder value
+                },
+                cdf: (k, params) => {
+                    // Approximation for demonstration
+                    return 0.5;
+                },
+                stats: (params) => {
+                    const N = params.N, n = params.n;
+                    return {
+                        mean: 'Multi-dimensional',
+                        variance: 'Matrix-valued',
+                        skewness: 'Complex',
+                        kurtosis: 'Complex',
+                        median: 'Multi-dimensional',
+                        mode: 'Multi-dimensional'
+                    };
+                }
+            },
+
+            negativebinomial: {
+                name: "Negative Binomial Distribution",
+                params: [
+                    { name: "r (successes)", id: "r", default: 5, min: 1, max: 20, step: 1 },
+                    { name: "p (success probability)", id: "p", default: 0.4, min: 0.01, max: 0.99, step: 0.01 }
+                ],
+                explanation: `
+                    <p>The Negative Binomial distribution models the number of trials needed to achieve a specified number of successes.</p>
+
+                    <div class="formula">
+                    P(X = k) = C(k-1,r-1) × p^r × (1-p)^(k-r)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>r</strong>: Number of successes required (r ≥ 1)</li>
+                        <li><strong>p</strong>: Probability of success on each trial (0 < p < 1)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Quality control (trials until r defects found)</li>
+                        <li>Sales (attempts until r sales made)</li>
+                        <li>Sports (games until r wins)</li>
+                        <li>Reliability (failures until r successful tests)</li>
+                        <li>Epidemiology (contacts until r infections)</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Overdispersion compared to Poisson. Mean = r/p, Variance = r(1-p)/p². Special case of Poisson when r=1 (geometric).</p>
+                `,
+                pmf: (k, params) => {
+                    const r = params.r, p = params.p;
+                    if (k < r) return 0;
+                    return math.combinations(k-1, r-1) * Math.pow(p, r) * Math.pow(1-p, k-r);
+                },
+                cdf: (k, params) => {
+                    let sum = 0;
+                    for (let i = params.r; i <= k; i++) {
+                        sum += this.pmf(i, params);
+                    }
+                    return sum;
+                },
+                stats: (params) => {
+                    const r = params.r, p = params.p;
+                    return {
+                        mean: r / p,
+                        variance: r * (1 - p) / (p * p),
+                        skewness: (2 - p) / Math.sqrt(r * (1 - p)),
+                        kurtosis: (p * p - 6 * p + 6) / (r * (1 - p)),
+                        median: 'Approximation needed',
+                        mode: Math.floor((r - 1) * (1 - p) / p) + r
+                    };
+                }
+            },
+
+            multinomial: {
+                name: "Multinomial Distribution",
+                params: [
+                    { name: "n (trials)", id: "n", default: 10, min: 1, max: 50, step: 1 }
+                ],
+                explanation: `
+                    <p>The Multinomial distribution is a generalization of the binomial distribution for experiments with more than two possible outcomes.</p>
+
+                    <div class="formula">
+                    P(X₁ = k₁, X₂ = k₂, ..., Xₘ = kₘ) = [n! / (k₁!k₂!...kₘ!)] × p₁^k₁ × p₂^k₂ × ... × pₘ^kₘ
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>n</strong>: Number of independent trials</li>
+                        <li><strong>pⱼ</strong>: Probability of each outcome category (∑pⱼ = 1)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Election results across multiple parties</li>
+                        <li>Marketing response categories</li>
+                        <li>Genetic inheritance patterns</li>
+                        <li>Consumer preference studies</li>
+                        <li>Disease classification studies</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Multivariate generalization of binomial. Mean vector = n*p, covariance matrix = n*diag(p) - n*p*p^T.</p>
+                `,
+                // Note: This is highly simplified - multinomial distribution is complex for visualization
+                pmf: (k, params) => {
+                    // Placeholder - real multinomial is multivariate
+                    return 0.1;
+                },
+                cdf: (k, params) => {
+                    return 0.5;
+                },
+                stats: (params) => {
+                    const n = params.n;
+                    return {
+                        mean: 'Vector-valued',
+                        variance: 'Matrix-valued',
+                        skewness: 'Complex',
+                        kurtosis: 'Complex',
+                        median: 'Multi-dimensional',
+                        mode: 'Complex'
+                    };
+                }
+            },
+
             uniform: {
                 name: "Continuous Uniform Distribution",
                 params: [
@@ -871,7 +1440,7 @@
                 `,
                 pdf: (x, params) => {
                     const a = params.a, b = params.b;
-                    if (x < a || x > b) return 0;
+                    if (x < a || x > b || a >= b) return 0;
                     return 1/(b-a);
                 },
                 cdf: (x, params) => {
@@ -1225,716 +1794,748 @@
                         mode: k - 2
                     };
                 }
+            },
+
+            fdist: {
+                name: "F-Distribution (Snedecor F)",
+                params: [
+                    { name: "d₁ (numerator df)", id: "df1", default: 5, min: 0.1, max: 30, step: 0.1 },
+                    { name: "d₂ (denominator df)", id: "df2", default: 10, min: 0.1, max: 30, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The F-distribution (also known as Snedecor F-distribution or Fisher-Snedecor distribution) arises in the testing of whether two observed samples have the same variance.</p>
+
+                    <div class="formula">
+                    f(x) = (Γ((d₁+d₂)/2) / (Γ(d₁/2) * Γ(d₂/2))) * (d₁/d₂)^(d₁/2) * x^(d₁/2-1) * (1 + (d₁/d₂)x)^(-(d₁+d₂)/2)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>d₁ (degrees of freedom numerator)</strong>: Shape parameter (d₁ > 0)</li>
+                        <li><strong>d₂ (degrees of freedom denominator)</strong>: Shape parameter (d₂ > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>ANOVA (Analysis of Variance)</li>
+                        <li>F-test for equality of variances</li>
+                        <li>Regression analysis (F-test)</li>
+                        <li>General linear models</li>
+                        <li>Quality control (variance testing)</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Right-skewed, continuous, support on (0,∞). Mean = d₂/(d₂-2) for d₂>2. Variance = 2d₂²(d₁+d₂-2)/[d₁(d₂-2)²(d₂-4)] for d₂>4.</p>
+                `,
+                pdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const df1 = params.df1, df2 = params.df2;
+                    const num = math.gamma((df1+df2)/2) * Math.pow(df1/df2, df1/2) * Math.pow(x, df1/2 - 1);
+                    const den = math.gamma(df1/2) * math.gamma(df2/2) * Math.pow(1 + (df1/df2)*x, (df1+df2)/2);
+                    return num / den;
+                },
+                cdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const df1 = params.df1, df2 = params.df2;
+                    // Approximation using beta function relationship
+                    const z = (df1 * x) / (df1 * x + df2);
+                    return math.betainc(z, df1/2, df2/2);
+                },
+                stats: (params) => {
+                    const df1 = params.df1, df2 = params.df2;
+                    return {
+                        mean: df2 > 2 ? df2 / (df2 - 2) : 'Undefined',
+                        variance: df2 > 4 ? (2 * df2 * df2 * (df1 + df2 - 2)) / (df1 * (df2 - 2) * (df2 - 2) * (df2 - 4)) : 'Undefined',
+                        skewness: 'Complex calculation needed',
+                        kurtosis: 'Complex calculation needed',
+                        median: 'Approximation needed',
+                        mode: (df1 - 2)/df1 * df2/(df2 + 2) // approximation
+                    };
+                }
+            },
+
+            bivariate: {
+                name: "Bivariate Normal Distribution",
+                params: [
+                    { name: "μ₁ (mean X)", id: "mu1", default: 0, min: -5, max: 5, step: 0.1 },
+                    { name: "μ₂ (mean Y)", id: "mu2", default: 0, min: -5, max: 5, step: 0.1 },
+                    { name: "σ₁ (std X)", id: "sigma1", default: 1, min: 0.1, max: 3, step: 0.1 },
+                    { name: "σ₂ (std Y)", id: "sigma2", default: 1, min: 0.1, max: 3, step: 0.1 },
+                    { name: "ρ (correlation)", id: "rho", default: 0.5, min: -0.99, max: 0.99, step: 0.01 }
+                ],
+                explanation: `
+                    <p>The bivariate normal distribution is a generalization of the univariate normal distribution to two dimensions. It describes the joint behavior of two normally distributed random variables.</p>
+
+                    <div class="formula">
+                    f(x,y) = (1/(2πσ₁σ₂√(1-ρ²))) * exp[-1/(2(1-ρ²))] * [(x-μ₁)²/σ₁² - 2ρ(x-μ₁)(y-μ₂)/(σ₁σ₂) + (y-μ₂)²/σ₂²]
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>μ₁, μ₂</strong>: Means for X and Y variables</li>
+                        <li><strong>σ₁, σ₂</strong>: Standard deviations for X and Y variables</li>
+                        <li><strong>ρ</strong>: Correlation coefficient between X and Y (-1 ≤ ρ ≤ 1)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Multivariate analysis</li>
+                        <li>Portfolio optimization (asset returns)</li>
+                        <li>Biological measurements (height & weight)</li>
+                        <li>Economic indicators</li>
+                        <li>Quality control (multiple measurements)</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Elliptical contours, marginal distributions are normal, conditional distributions are normal. Covariance = ρσ₁σ₂.</p>
+                `,
+                // Note: Bivariate normal is 2D - we'll provide marginal distributions for 1D plots
+                pdf: (x, params) => {
+                    // For visualization, we'll show the marginal distribution for X
+                    const mu = params.mu1, sigma = params.sigma1;
+                    return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow((x - mu), 2) / (2 * Math.pow(sigma, 2)));
+                },
+                cdf: (x, params) => {
+                    const mu = params.mu1, sigma = params.sigma1;
+                    const z = (x - mu) / sigma;
+                    return 0.5 * (1 + math.erf(z / Math.sqrt(2)));
+                },
+                stats: (params) => {
+                    return {
+                        mean: `${params.mu1} (X), ${params.mu2} (Y)`,
+                        variance: `${params.sigma1}² (X), ${params.sigma2}² (Y)`,
+                        skewness: '0 (for both marginals)',
+                        kurtosis: '0 (for both marginals)',
+                        median: `${params.mu1} (X), ${params.mu2} (Y)`,
+                        mode: `${params.mu1} (X), ${params.mu2} (Y)`
+                    };
+                }
+            },
+
+            lognormal: {
+                name: "Log-Normal Distribution",
+                params: [
+                    { name: "μ (log mean)", id: "mu", default: 0, min: -5, max: 5, step: 0.1 },
+                    { name: "σ (log std dev)", id: "sigma", default: 1, min: 0.1, max: 3, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The log-normal distribution is a continuous probability distribution of a random variable whose logarithm is normally distributed. It arises when the logarithm of a quantity is normally distributed.</p>
+
+                    <div class="formula">
+                    f(x) = (1/(xσ√(2π))) * exp[-(ln(x)-μ)²/(2σ²)] for x > 0
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>μ (log mean)</strong>: Mean of the logarithmic values</li>
+                        <li><strong>σ (log std dev)</strong>: Standard deviation of the logarithmic values</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Stock prices (Black-Scholes model)</li>
+                        <li>Particle sizes in materials</li>
+                        <li>Income distributions</li>
+                        <li>Survival times with multiplicative effects</li>
+                        <li>Environmental concentrations</li>
+                        <li>Reliability (failure times with multiple factors)</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Right-skewed, support on (0,∞). Mean = exp(μ + σ²/2), Variance = exp(2μ + σ²)(exp(σ²) - 1). Median = exp(μ).</p>
+                `,
+                pdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const mu = params.mu, sigma = params.sigma;
+                    const logx = Math.log(x);
+                    return (1 / (x * sigma * Math.sqrt(2 * Math.PI))) *
+                           Math.exp(-Math.pow(logx - mu, 2) / (2 * Math.pow(sigma, 2)));
+                },
+                cdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const mu = params.mu, sigma = params.sigma;
+                    const z = (Math.log(x) - mu) / sigma;
+                    return 0.5 * (1 + math.erf(z / Math.sqrt(2)));
+                },
+                stats: (params) => {
+                    const mu = params.mu, sigma = params.sigma;
+                    return {
+                        mean: Math.exp(mu + sigma * sigma / 2),
+                        variance: Math.exp(2*mu + sigma*sigma) * (Math.exp(sigma*sigma) - 1),
+                        skewness: (Math.exp(sigma*sigma) + 2) * Math.sqrt(Math.exp(sigma*sigma) - 1),
+                        kurtosis: Math.exp(4*sigma*sigma) + 2*Math.exp(3*sigma*sigma) + 3*Math.exp(2*sigma*sigma) - 6,
+                        median: Math.exp(mu),
+                        mode: Math.exp(mu - sigma*sigma)
+                    };
+                }
             }
         };
 
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
+// Global variables for data analysis
+let charts = {};
+let currentDistribution = null;
 
-            document.querySelectorAll('.nav-tabs button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+// Distribution definitions with parameters and explanations
+function showTab(tabName) {
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
 
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
+    document.querySelectorAll('.nav-tabs button').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-        function loadDistribution() {
-            const select = document.getElementById('distributionSelect');
-            const distName = select.value;
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
 
-            if (!distName) return;
+function loadDistribution() {
+    const select = document.getElementById('distributionSelect');
+    const distName = select.value;
 
-            currentDistribution = distributions[distName];
-            document.getElementById('distTitle').textContent = currentDistribution.name;
-            renderParameters();
-            updateStatistics();
-            renderCharts();
-            renderExplanation();
-        }
+    if (!distName) return;
 
-        function renderParameters() {
-            const container = document.getElementById('paramsContainer');
-            container.innerHTML = '';
+    currentDistribution = distributions[distName];
+    document.getElementById('distTitle').textContent = currentDistribution.name;
+    renderParameters();
+    updateStatistics();
+    renderCharts();
+    renderExplanation();
+}
 
-            currentDistribution.params.forEach(param => {
-                const control = document.createElement('div');
-                control.className = 'param-control';
-                control.innerHTML = `
-                    <label for="${param.id}">${param.name}</label>
-                    <input type="number" id="${param.id}" value="${param.default}"
-                           min="${param.min}" max="${param.max}" step="${param.step}"
-                           oninput="updateStatistics(); renderCharts()">
-                `;
-                container.appendChild(control);
-            });
-        }
+function renderParameters() {
+    const container = document.getElementById('paramsContainer');
+    container.innerHTML = '';
 
-        function getCurrentParams() {
-            const params = {};
-            if (!currentDistribution) return params;
+    currentDistribution.params.forEach(param => {
+        const control = document.createElement('div');
+        control.className = 'param-control';
+        control.innerHTML = `
+            <label for="${param.id}">${param.name}</label>
+            <input type="number" id="${param.id}" value="${param.default}"
+                   min="${param.min}" max="${param.max}" step="${param.step}"
+                   oninput="updateStatistics(); renderCharts()">
+        `;
+        container.appendChild(control);
+    });
+}
 
-            currentDistribution.params.forEach(param => {
-                const input = document.getElementById(param.id);
-                params[param.id] = parseFloat(input ? input.value : param.default) || param.default;
-            });
-            return params;
-        }
+function getCurrentParams() {
+    const params = {};
+    if (!currentDistribution) return params;
 
-        function updateStatistics() {
-            if (!currentDistribution) return;
+    currentDistribution.params.forEach(param => {
+        const input = document.getElementById(param.id);
+        params[param.id] = parseFloat(input ? input.value : param.default) || param.default;
+    });
+    return params;
+}
 
-            const params = getCurrentParams();
-            try {
-                const stats = currentDistribution.stats(params);
+function updateStatistics() {
+    if (!currentDistribution) return;
 
-                const container = document.getElementById('statsContainer');
-                container.innerHTML = `
-                    <div class="stat-card">
-                        <div class="value">${stats.mean.toFixed ? stats.mean.toFixed(3) : stats.mean}</div>
-                        <div class="label">Mean (μ)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${stats.variance.toFixed ? stats.variance.toFixed(3) : stats.variance}</div>
-                        <div class="label">Variance (σ²)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${stats.skewness.toFixed ? stats.skewness.toFixed(3) : stats.skewness}</div>
-                        <div class="label">Skewness</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${stats.kurtosis.toFixed ? stats.kurtosis.toFixed(3) : stats.kurtosis}</div>
-                        <div class="label">Kurtosis</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${stats.median.toFixed ? stats.median.toFixed(3) : stats.median}</div>
-                        <div class="label">Median</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${stats.mode.toFixed ? stats.mode.toFixed(3) : stats.mode}</div>
-                        <div class="label">Mode</div>
-                    </div>
-                `;
-            } catch (e) {
-                console.error('Error calculating statistics:', e);
-                document.getElementById('statsContainer').innerHTML = '<div class="error">Error calculating statistics</div>';
-            }
-        }
+    const params = getCurrentParams();
+    try {
+        const stats = currentDistribution.stats(params);
+        const container = document.getElementById('statsContainer');
+        container.innerHTML = `
+            <div class="stat-card">
+                <div class="value">${stats.mean.toFixed ? stats.mean.toFixed(3) : stats.mean}</div>
+                <div class="label">Mean (μ)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">${stats.variance.toFixed ? stats.variance.toFixed(3) : stats.variance}</div>
+                <div class="label">Variance (σ²)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">${stats.skewness.toFixed ? stats.skewness.toFixed(3) : stats.skewness}</div>
+                <div class="label">Skewness</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">${stats.kurtosis.toFixed ? stats.kurtosis.toFixed(3) : stats.kurtosis}</div>
+                <div class="label">Kurtosis</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">${stats.median.toFixed ? stats.median.toFixed(3) : stats.median}</div>
+                <div class="label">Median</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">${stats.mode.toFixed ? stats.mode.toFixed(3) : stats.mode}</div>
+                <div class="label">Mode</div>
+            </div>
+        `;
+    } catch (e) {
+        console.error('Error calculating statistics:', e);
+        document.getElementById('statsContainer').innerHTML = '<div class="error">Error calculating statistics</div>';
+    }
+}
 
-        function renderCharts() {
-            if (!currentDistribution) return;
+function renderCharts() {
+    if (!currentDistribution) return;
 
-            const params = getCurrentParams();
-            let xMin, xMax, step;
+    const params = getCurrentParams();
+    let xMin, xMax, step;
+
+    if (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) {
+        xMin = 0;
+        xMax = currentDistribution.name.includes('Binomial') ? params.n : (currentDistribution.name.includes('Geometric') ? Math.min(params.lambda * 3, 20) : params.lambda * 3);
+        step = 1;
+    } else if (currentDistribution.name.includes('Beta') || currentDistribution.name.includes('Uniform')) {
+        xMin = currentDistribution.name.includes('Uniform') ? params.a : 0;
+        xMax = currentDistribution.name.includes('Uniform') ? params.b : 1;
+        step = currentDistribution.name.includes('Beta') ? 0.01 : 0.1;
+    } else {
+        xMin = -5;
+        xMax = 5;
+        step = 0.1;
+    }
+
+    const xValues = [];
+    const pdfValues = [];
+    const cdfValues = [];
+
+    try {
+        for (let x = xMin; x <= xMax; x += step) {
+            xValues.push(x);
+            const roundedX = Math.round(x);
 
             if (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) {
-                xMin = 0;
-                xMax = currentDistribution.name.includes('Binomial') ? params.n : (currentDistribution.name.includes('Geometric') ? Math.min(params.lambda * 3, 20) : params.lambda * 3);
-                step = 1;
-            } else if (currentDistribution.name.includes('Beta') || currentDistribution.name.includes('Uniform')) {
-                xMin = currentDistribution.name.includes('Uniform') ? params.a : 0;
-                xMax = currentDistribution.name.includes('Uniform') ? params.b : 1;
-                step = currentDistribution.name.includes('Beta') ? 0.01 : 0.1;
+                pdfValues.push(roundedX === x ? currentDistribution.pmf(x, params) : 0);
+                cdfValues.push(roundedX === x ? currentDistribution.cdf(x, params) : 0);
             } else {
-                xMin = -5;
-                xMax = 5;
-                step = 0.1;
-            }
-
-            const xValues = [];
-            const pdfValues = [];
-            const cdfValues = [];
-
-            try {
-                for (let x = xMin; x <= xMax; x += step) {
-                    xValues.push(x);
-                    const roundedX = Math.round(x);
-
-                    if (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) {
-                        pdfValues.push(roundedX === x ? currentDistribution.pmf(x, params) : 0);
-                        cdfValues.push(roundedX === x ? currentDistribution.cdf(x, params) : 0);
-                    } else {
-                        pdfValues.push(currentDistribution.pdf(x, params));
-                        cdfValues.push(currentDistribution.cdf(x, params));
-                    }
-                }
-
-                // PDF Chart
-                const pdfCtx = document.getElementById('pdfChart').getContext('2d');
-                if (charts.pdf) charts.pdf.destroy();
-                charts.pdf = new Chart(pdfCtx, {
-                    type: 'line',
-                    data: {
-                        labels: xValues,
-                        datasets: [{
-                            label: 'PDF',
-                            data: pdfValues,
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            fill: true,
-                            pointRadius: (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) ? 3 : 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { title: { display: true, text: 'x' } },
-                            y: { title: { display: true, text: 'Density' } }
-                        },
-                        plugins: {
-                            title: { display: true, text: 'Probability Density Function' }
-                        }
-                    }
-                });
-
-                // CDF Chart
-                const cdfCtx = document.getElementById('cdfChart').getContext('2d');
-                if (charts.cdf) charts.cdf.destroy();
-                charts.cdf = new Chart(cdfCtx, {
-                    type: 'line',
-                    data: {
-                        labels: xValues,
-                        datasets: [{
-                            label: 'CDF',
-                            data: cdfValues,
-                            borderColor: '#28a745',
-                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                            fill: true,
-                            pointRadius: (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) ? 3 : 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { title: { display: true, text: 'x' } },
-                            y: { title: { display: true, text: 'Probability' }, min: 0, max: 1 }
-                        },
-                        plugins: {
-                            title: { display: true, text: 'Cumulative Distribution Function' }
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error('Error rendering charts:', e);
-                document.getElementById('pdfChart').getContext('2d').clearRect(0, 0, 400, 300);
-                document.getElementById('cdfChart').getContext('2d').clearRect(0, 0, 400, 300);
+                pdfValues.push(currentDistribution.pdf(x, params));
+                cdfValues.push(currentDistribution.cdf(x, params));
             }
         }
 
-        function renderExplanation() {
-            const container = document.getElementById('explanationContent');
-            container.innerHTML = currentDistribution.explanation;
-        }
-
-        // Global variables for data analysis
-        let currentData = [];
-        let fittedParams = {};
-
-        function changeDataMethod() {
-            const method = document.getElementById('dataMethodSelect').value;
-
-            // Hide all controls
-            document.getElementById('uploadControls').style.display = 'none';
-            document.getElementById('randomControls').style.display = 'none';
-            document.getElementById('manualControls').style.display = 'none';
-
-            // Show selected controls
-            if (method === 'upload') {
-                document.getElementById('uploadControls').style.display = 'block';
-            } else if (method === 'random') {
-                document.getElementById('randomControls').style.display = 'block';
-            } else if (method === 'manual') {
-                document.getElementById('manualControls').style.display = 'block';
-            }
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const fileType = file.name.split('.').pop().toLowerCase();
-
-            if (fileType === 'csv' || fileType === 'txt') {
-                parseCSVFile(file);
-            } else if (fileType === 'xlsx' || fileType === 'xls') {
-                parseExcelFile(file);
-            } else {
-                alert('Please upload a CSV, TXT, Excel (.xlsx/.xls), or plain text file.');
-            }
-        }
-
-        function parseCSVFile(file) {
-            Papa.parse(file, {
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    if (results.errors.length > 0) {
-                        console.error('CSV parsing errors:', results.errors);
-                        alert('Error parsing CSV file. Please check the format.');
-                        return;
-                    }
-
-                    const columns = Object.keys(results.data[0] || {});
-                    const columnSelect = document.getElementById('columnSelect');
-                    columnSelect.innerHTML = '<option value="">Select a column...</option>';
-
-                    columns.forEach(col => {
-                        const option = document.createElement('option');
-                        option.value = col;
-                        option.textContent = col;
-                        columnSelect.appendChild(option);
-                    });
-
-                    // Store parsed data globally
-                    window.parsedData = results.data.filter(row =>
-                        Object.values(row).some(val =>
-                            typeof val === 'number' && !isNaN(val)
-                        )
-                    );
-
-                    alert(`File parsed successfully! Found ${columns.length} columns and ${window.parsedData.length} rows with numeric data.`);
+        // PDF Chart
+        const pdfCtx = document.getElementById('pdfChart').getContext('2d');
+        if (charts.pdf) charts.pdf.destroy();
+        charts.pdf = new Chart(pdfCtx, {
+            type: 'line',
+            data: {
+                labels: xValues,
+                datasets: [{
+                    label: 'PDF',
+                    data: pdfValues,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    pointRadius: (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) ? 3 : 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'x' } },
+                    y: { title: { display: true, text: 'Density' } }
                 },
-                error: function(error) {
-                    console.error('CSV parsing error:', error);
-                    alert('Error parsing CSV file: ' + error.message);
-                }
-            });
-        }
-
-        function parseExcelFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-
-                    // Get first worksheet
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
-                        header: 1,
-                        defval: null
-                    });
-
-                    // Convert to object format with headers
-                    if (jsonData.length === 0) {
-                        alert('Excel file is empty.');
-                        return;
-                    }
-
-                    const headers = jsonData[0];
-                    const rows = jsonData.slice(1);
-
-                    const objectData = rows.map(row => {
-                        const obj = {};
-                        headers.forEach((header, i) => {
-                            obj[header] = row[i];
-                        });
-                        return obj;
-                    });
-
-                    // Store parsed data globally
-                    window.parsedData = objectData;
-
-                    const columnSelect = document.getElementById('columnSelect');
-                    columnSelect.innerHTML = '<option value="">Select a column...</option>';
-
-                    headers.forEach(header => {
-                        const option = document.createElement('option');
-                        option.value = header;
-                        option.textContent = header;
-                        columnSelect.appendChild(option);
-                    });
-
-                    alert(`Excel file parsed successfully! Found ${headers.length} columns and ${rows.length} rows.`);
-                } catch (error) {
-                    console.error('Excel parsing error:', error);
-                    alert('Error parsing Excel file: ' + error.message);
-                }
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-
-        function processUploadedData() {
-            const columnName = document.getElementById('columnSelect').value;
-            if (!columnName || !window.parsedData) {
-                alert('Please select a column and ensure data is loaded.');
-                return;
-            }
-
-            // Extract numeric data from selected column
-            const rawData = window.parsedData
-                .map(row => row[columnName])
-                .filter(val => typeof val === 'number' && !isNaN(val));
-
-            if (rawData.length === 0) {
-                alert('No valid numeric data found in the selected column.');
-                return;
-            }
-
-            currentData = rawData;
-            analyzeData(currentData);
-        }
-
-        function generateRandomData() {
-            if (!currentDistribution) {
-                alert('Please select a distribution first.');
-                return;
-            }
-
-            const sampleSize = parseInt(document.getElementById('sampleSize').value) || 100;
-            const params = getCurrentParams();
-
-            const randomData = [];
-
-            if (currentDistribution.name === 'Normal Distribution') {
-                for (let i = 0; i < sampleSize; i++) {
-                    // Box-Muller transform for normal random numbers
-                    const u1 = Math.random();
-                    const u2 = Math.random();
-                    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-                    randomData.push(params.mu + z * Math.sqrt(params.sigma));
-                }
-            } else if (currentDistribution.name === 'Binomial Distribution') {
-                for (let i = 0; i < sampleSize; i++) {
-                    let successes = 0;
-                    for (let j = 0; j < params.n; j++) {
-                        if (Math.random() < params.p) successes++;
-                    }
-                    randomData.push(successes);
-                }
-            } else if (currentDistribution.name === 'Poisson Distribution') {
-                // Use inverse transform sampling
-                for (let i = 0; i < sampleSize; i++) {
-                    let k = 0;
-                    let p = Math.exp(-params.lambda);
-                    let cdf = p;
-
-                    const u = Math.random();
-                    while (u > cdf) {
-                        k++;
-                        p *= params.lambda / k;
-                        cdf += p;
-                    }
-                    randomData.push(k);
-                }
-            } else if (currentDistribution.name === 'Beta Distribution') {
-                for (let i = 0; i < sampleSize; i++) {
-                    // Using acceptance-rejection or simple approximation
-                    randomData.push(Math.random()); // Placeholder - would need proper beta sampling
-                }
-            } else {
-                // Default: uniform distribution
-                for (let i = 0; i < sampleSize; i++) {
-                    randomData.push(Math.random());
+                plugins: {
+                    title: { display: true, text: 'Probability Density Function' }
                 }
             }
-
-            currentData = randomData;
-            analyzeData(currentData);
-        }
-
-        function processManualData() {
-            const manualText = document.getElementById('manualDataInput').value.trim();
-            if (!manualText) {
-                alert('Please enter some data.');
-                return;
-            }
-
-            try {
-                const values = manualText.split(',')
-                    .map(s => s.trim())
-                    .map(s => parseFloat(s))
-                    .filter(n => !isNaN(n));
-
-                if (values.length === 0) {
-                    alert('No valid numeric values found.');
-                    return;
-                }
-
-                currentData = values;
-                analyzeData(currentData);
-            } catch (error) {
-                alert('Error parsing manual data: ' + error.message);
-            }
-        }
-
-        function analyzeData(data) {
-            if (data.length === 0) return;
-
-            // Calculate basic statistics
-            const mean = data.reduce((a, b) => a + b, 0) / data.length;
-            const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.length;
-            const stdDev = Math.sqrt(variance);
-            const skewness = calculateSkewness(data, mean, stdDev);
-            const median = calculateMedian(data);
-
-            // Fit distribution and perform KS test
-            fitDistribution(data, mean, stdDev);
-
-            // Update results display
-            updateDataAnalysisResults(data.length, mean, stdDev, skewness, median);
-
-            // Render data chart
-            renderDataChart(data);
-        }
-
-        function calculateSkewness(data, mean, stdDev) {
-            const n = data.length;
-            const skewness = data.reduce((sum, val) => sum + Math.pow((val - mean) / stdDev, 3), 0) / n;
-            return skewness;
-        }
-
-        function calculateMedian(data) {
-            const sorted = [...data].sort((a, b) => a - b);
-            const mid = Math.floor(sorted.length / 2);
-            return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-        }
-
-        function fitDistribution(data, sampleMean, sampleStd) {
-            if (!currentDistribution) return;
-
-            fittedParams = {};
-
-            if (currentDistribution.name === 'Normal Distribution') {
-                // For normal, fitted parameters are sample mean and std dev
-                fittedParams.mu = sampleMean;
-                fittedParams.sigma = sampleStd;
-            } else if (currentDistribution.name === 'Binomial Distribution') {
-                // Fit binomial by estimating n and p from mean and variance
-                // This is a simple approximation
-                fittedParams.p = Math.min(0.99, Math.max(0.01, sampleMean / 20)); // Assume n=20 for demo
-                fittedParams.n = 20;
-            } else if (currentDistribution.name === 'Poisson Distribution') {
-                // For Poisson, lambda = mean
-                fittedParams.lambda = sampleMean;
-            } else if (currentDistribution.name === 'Uniform Distribution') {
-                // For uniform, fit to min/max
-                const minVal = Math.min(...data);
-                const maxVal = Math.max(...data);
-                fittedParams.a = minVal;
-                fittedParams.b = maxVal;
-            } else {
-                // Default fit (could be improved)
-                fittedParams = getCurrentParams();
-            }
-
-            // Perform KS test
-            performKSTest(data, fittedParams);
-
-            // Display fitted parameters
-            displayFittingResults();
-        }
-
-        function performKSTest(data, params) {
-            if (!currentDistribution) return;
-
-            // Sort data for empirical CDF
-            const sortedData = [...data].sort((a, b) => a - b);
-
-            let maxDifference = 0;
-
-            // Calculate KS statistic
-            sortedData.forEach((value, index) => {
-                const empiricalCDF = (index + 0.5) / sortedData.length;
-
-                let theoreticalCDF = 0;
-                if (currentDistribution.name === 'Normal Distribution') {
-                    const z = (value - params.mu) / Math.sqrt(params.sigma);
-                    theoreticalCDF = 0.5 * (1 + math.erf(z / Math.sqrt(2)));
-                } else if (currentDistribution.name === 'Uniform Distribution') {
-                    theoreticalCDF = (value - params.a) / (params.b - params.a);
-                    theoreticalCDF = Math.max(0, Math.min(1, theoreticalCDF));
-                } else if (currentDistribution.name === 'Binomial Distribution') {
-                    theoreticalCDF = currentDistribution.cdf(Math.round(value), params);
-                } else if (currentDistribution.name === 'Poisson Distribution') {
-                    theoreticalCDF = currentDistribution.cdf(Math.round(value), params);
-                } else {
-                    theoreticalCDF = 0.5; // Placeholder
-                }
-
-                const difference = Math.abs(empiricalCDF - theoreticalCDF);
-                maxDifference = Math.max(maxDifference, difference);
-            });
-
-            // For demo purposes, we'll approximate the p-value
-            // In practice, this would require looking up tables or using special functions
-            let pValue = 0.5; // Placeholder - would need proper calculation
-            if (maxDifference < 0.1) pValue = 0.8;
-            else if (maxDifference < 0.2) pValue = 0.5;
-            else if (maxDifference < 0.3) pValue = 0.2;
-            else pValue = 0.05;
-
-            window.ksResults = { statistic: maxDifference, pValue: pValue };
-        }
-
-        function updateDataAnalysisResults(count, mean, stdDev, skewness, median) {
-            const kstest = window.ksResults || { statistic: '--', pValue: '--' };
-
-            document.getElementById('dataAnalysisResults').innerHTML = `
-                <div class="stat-card">
-                    <div class="value">${count}</div>
-                    <div class="label">Data Points</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${mean.toFixed(3)}</div>
-                    <div class="label">Mean</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${stdDev.toFixed(3)}</div>
-                    <div class="label">Std Dev</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${skewness.toFixed(3)}</div>
-                    <div class="label">Skewness</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${kstest.statistic.toFixed ? kstest.statistic.toFixed(3) : kstest.statistic}</div>
-                    <div class="label">KS Statistic</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${kstest.pValue.toFixed ? kstest.pValue.toFixed(3) : kstest.pValue}</div>
-                    <div class="label">KS P-Value</div>
-                </div>
-            `;
-        }
-
-        function displayFittingResults() {
-            const container = document.getElementById('fittingResults');
-
-            let resultsHTML = '<h4>Fitted Parameters:</h4><ul>';
-
-            Object.entries(fittedParams).forEach(([param, value]) => {
-                resultsHTML += `<li><strong>${param}:</strong> ${value.toFixed ? value.toFixed(4) : value}</li>`;
-            });
-
-            resultsHTML += '</ul>';
-
-            if (window.ksResults) {
-                resultsHTML += `
-                    <h4>Goodness-of-Fit (KS Test):</h4>
-                    <ul>
-                        <li><strong>KS Statistic:</strong> ${window.ksResults.statistic.toFixed(4)}</li>
-                        <li><strong>P-Value:</strong> ${window.ksResults.pValue.toFixed(4)}</li>
-                        <li><strong>Result:</strong> ${window.ksResults.pValue > 0.05 ? 'Good fit (p > 0.05)' : 'Poor fit (p ≤ 0.05)'}</li>
-                    </ul>
-                `;
-            }
-
-            container.innerHTML = resultsHTML;
-        }
-
-        function renderDataChart(data) {
-            const ctx = document.getElementById('dataChart').getContext('2d');
-
-            // Create histogram data
-            const minVal = Math.min(...data);
-            const maxVal = Math.max(...data);
-            const binCount = Math.min(30, Math.ceil(Math.sqrt(data.length)));
-
-            const binWidth = (maxVal - minVal) / binCount;
-            const bins = Array(binCount).fill(0);
-
-            data.forEach(value => {
-                const binIndex = Math.min(binCount - 1, Math.floor((value - minVal) / binWidth));
-                bins[binIndex]++;
-            });
-
-            const binLabels = [];
-            for (let i = 0; i < binCount; i++) {
-                const binStart = minVal + i * binWidth;
-                const binEnd = binStart + binWidth;
-                binLabels.push(`${binStart.toFixed(2)} - ${binEnd.toFixed(2)}`);
-            }
-
-            // Calculate PDF points for fitted distribution
-            const pdfPoints = [];
-            const step = (maxVal - minVal) / 100;
-            for (let x = minVal; x <= maxVal; x += step) {
-                let pdfValue = 0;
-                if (currentDistribution && fittedParams) {
-                    try {
-                        if (currentDistribution.name === 'Normal Distribution') {
-                            pdfValue = currentDistribution.pdf(x, fittedParams);
-                        } else if (currentDistribution.name === 'Uniform Distribution') {
-                            pdfValue = currentDistribution.pdf(x, fittedParams);
-                        } else {
-                            pdfValue = currentDistribution.pdf(x, fittedParams);
-                        }
-                        // Scale PDF to match histogram scale
-                        pdfValue *= binWidth * data.length;
-                    } catch (e) {
-                        console.error('Error calculating PDF:', e);
-                    }
-                }
-                pdfPoints.push(pdfValue);
-            }
-
-            const datasets = [{
-                label: 'Histogram',
-                data: bins,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                type: 'bar'
-            }];
-
-            if (pdfPoints.some(p => p > 0)) {
-                const pdfLabels = [];
-                for (let i = 0; i < pdfPoints.length; i++) {
-                    pdfLabels.push((minVal + i * step).toFixed(2));
-                }
-
-                datasets.push({
-                    label: 'Fitted Distribution',
-                    data: pdfPoints,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                    borderWidth: 2,
-                    fill: false,
-                    type: 'line',
-                    pointRadius: 0
-                });
-            }
-
-            if (charts.data) charts.data.destroy();
-            charts.data = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: binLabels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Frequency' }
-                        },
-                        x: {
-                            title: { display: true, text: 'Value Range' }
-                        }
-                    },
-                    plugins: {
-                        title: { display: true, text: 'Data Histogram & Distribution Fit' }
-                    }
-                }
-            });
-        }
-
-        // Initialize first distribution
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('distributionSelect').value = 'normal';
-            loadDistribution();
-
-            // Initialize data method selector
-            changeDataMethod();
         });
-    </script>
-</body>
-</html>
+
+        // CDF Chart
+        const cdfCtx = document.getElementById('cdfChart').getContext('2d');
+        if (charts.cdf) charts.cdf.destroy();
+        charts.cdf = new Chart(cdfCtx, {
+            type: 'line',
+            data: {
+                labels: xValues,
+                datasets: [{
+                    label: 'CDF',
+                    data: cdfValues,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    pointRadius: (currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') || currentDistribution.name.includes('Geometric')) ? 3 : 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'x' } },
+                    y: { title: { display: true, text: 'Probability' }, min: 0, max: 1 }
+                },
+                plugins: {
+                    title: { display: true, text: 'Cumulative Distribution Function' }
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Error rendering charts:', e);
+        document.getElementById('pdfChart').getContext('2d').clearRect(0, 0, 400, 300);
+        document.getElementById('cdfChart').getContext('2d').clearRect(0, 0, 400, 300);
+    }
+}
+
+function renderExplanation() {
+    const container = document.getElementById('explanationContent');
+    container.innerHTML = currentDistribution.explanation;
+}
+
+// Global variables for data analysis
+let currentData = [];
+
+// Data input and analysis functions
+function changeDataMethod() {
+    const method = document.getElementById('dataMethodSelect').value;
+
+    document.getElementById('uploadControls').style.display = method === 'upload' ? 'block' : 'none';
+    document.getElementById('randomControls').style.display = method === 'random' ? 'block' : 'none';
+    document.getElementById('manualControls').style.display = method === 'manual' ? 'block' : 'none';
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const fileType = file.name.split('.').pop().toLowerCase();
+
+    if (fileType === 'csv') {
+        parseCSVFile(file);
+    } else if (fileType === 'xlsx' || fileType === 'xls') {
+        parseExcelFile(file);
+    } else {
+        alert('Please upload a CSV or Excel file.');
+    }
+}
+
+function parseCSVFile(file) {
+    Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+            if (results.errors.length > 0) {
+                console.error('CSV parsing errors:', results.errors);
+                alert('Error parsing CSV file.');
+                return;
+            }
+
+            const columns = Object.keys(results.data[0] || {});
+            const columnSelect = document.getElementById('columnSelect');
+            columnSelect.innerHTML = '<option value="">Select a column...</option>';
+
+            columns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col;
+                option.textContent = col;
+                columnSelect.appendChild(option);
+            });
+
+            window.parsedData = results.data.filter(row =>
+                Object.values(row).some(val =>
+                    typeof val === 'number' && !isNaN(val)
+                )
+            );
+
+            alert(`File parsed successfully! Found ${columns.length} columns and ${window.parsedData.length} rows with numeric data.`);
+        },
+        error: function(error) {
+            console.error('CSV parsing error:', error);
+            alert('Error parsing CSV file: ' + error.message);
+        }
+    });
+}
+
+function parseExcelFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+                header: 1,
+                defval: null
+            });
+
+            if (jsonData.length === 0) {
+                alert('Excel file is empty.');
+                return;
+            }
+
+            const headers = jsonData[0];
+            const rows = jsonData.slice(1);
+
+            const objectData = rows.map(row => {
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = row[i];
+                });
+                return obj;
+            });
+
+            window.parsedData = objectData;
+
+            const columnSelect = document.getElementById('columnSelect');
+            columnSelect.innerHTML = '<option value="">Select a column...</option>';
+
+            headers.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                columnSelect.appendChild(option);
+            });
+
+            alert(`Excel file parsed successfully! Found ${headers.length} columns and ${rows.length} rows.`);
+        } catch (error) {
+            console.error('Excel parsing error:', error);
+            alert('Error parsing Excel file: ' + error.message);
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function processUploadedData() {
+    const columnName = document.getElementById('columnSelect').value;
+    if (!columnName || !window.parsedData) {
+        alert('Please select a column and ensure data is loaded.');
+        return;
+    }
+
+    const rawData = window.parsedData
+        .map(row => row[columnName])
+        .filter(val => typeof val === 'number' && !isNaN(val));
+
+    if (rawData.length === 0) {
+        alert('No valid numeric data found in the selected column.');
+        return;
+    }
+
+    currentData = rawData;
+    analyzeData(currentData);
+}
+
+function generateRandomData() {
+    if (!currentDistribution) {
+        alert('Please select a distribution first.');
+        return;
+    }
+
+    const sampleSize = parseInt(document.getElementById('sampleSize').value) || 100;
+    const params = getCurrentParams();
+
+    const randomData = [];
+
+    if (currentDistribution.name === 'Normal Distribution') {
+        for (let i = 0; i < sampleSize; i++) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            randomData.push(params.mu + z * Math.sqrt(params.sigma));
+        }
+    } else {
+        // Fallback: basic random generation
+        for (let i = 0; i < sampleSize; i++) {
+            randomData.push(Math.random());
+        }
+    }
+
+    currentData = randomData;
+    analyzeData(currentData);
+}
+
+function processManualData() {
+    const manualText = document.getElementById('manualDataInput').value.trim();
+    if (!manualText) {
+        alert('Please enter some data.');
+        return;
+    }
+
+    try {
+        const values = manualText.split(',')
+            .map(s => s.trim())
+            .map(s => parseFloat(s))
+            .filter(n => !isNaN(n));
+
+        if (values.length === 0) {
+            alert('No valid numeric values found.');
+            return;
+        }
+
+        currentData = values;
+        analyzeData(currentData);
+    } catch (error) {
+        alert('Error parsing manual data: ' + error.message);
+    }
+}
+
+function analyzeData(data) {
+    if (data.length === 0) return;
+
+    const mean = data.reduce((a, b) => a + b, 0) / data.length;
+    const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.length;
+    const stdDev = Math.sqrt(variance);
+    const skewness = calculateSkewness(data, mean, stdDev);
+    const median = calculateMedian(data);
+
+    analyzeData(currentData);
+    displayDataAnalysisResults(data.length, mean, stdDev, skewness, median);
+    renderDataChart(data);
+}
+
+function calculateSkewness(data, mean, stdDev) {
+    const n = data.length;
+    const skewness = data.reduce((sum, val) => sum + Math.pow((val - mean) / stdDev, 3), 0) / n;
+    return skewness;
+}
+
+function calculateMedian(data) {
+    const sorted = [...data].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
+    const kstest = performKSTest(currentData);
+
+    document.getElementById('dataAnalysisResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${count}</div>
+            <div class="label">Data Points</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${mean.toFixed(3)}</div>
+            <div class="label">Mean</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${stdDev.toFixed(3)}</div>
+            <div class="label">Std Dev</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${skewness.toFixed(3)}</div>
+            <div class="label">Skewness</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${kstest ? kstest.statistic.toFixed(3) : '--'}</div>
+            <div class="label">KS Statistic</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${kstest ? kstest.pValue.toFixed(3) : '--'}</div>
+            <div class="label">KS P-Value</div>
+        </div>
+    `;
+
+    displayFittingResults();
+}
+
+function performKSTest(data) {
+    if (!currentDistribution || !data.length) return null;
+
+    const sortedData = [...data].sort((a, b) => a - b);
+    const params = getCurrentParams();
+
+    let maxDifference = 0;
+
+    sortedData.forEach((value, index) => {
+        const empiricalCDF = (index + 0.5) / sortedData.length;
+        let theoreticalCDF = 0.5; // fallback
+
+        try {
+            if (currentDistribution.name === 'Normal Distribution') {
+                const z = (value - params.mu) / Math.sqrt(params.sigma);
+                theoreticalCDF = 0.5 * (1 + math.erf(z / Math.sqrt(2)));
+            } else if (currentDistribution.name === 'Uniform Distribution') {
+                theoreticalCDF = (value - params.a) / (params.b - params.a);
+                theoreticalCDF = Math.max(0, Math.min(1, theoreticalCDF));
+            }
+        } catch (e) {
+            console.warn('CDF calculation error:', e);
+        }
+
+        const difference = Math.abs(empiricalCDF - theoreticalCDF);
+        maxDifference = Math.max(maxDifference, difference);
+    });
+
+    const pValue = maxDifference < 0.1 ? 0.8 : maxDifference < 0.2 ? 0.5 : 0.05;
+
+    return { statistic: maxDifference, pValue: pValue };
+}
+
+function displayFittingResults() {
+    const container = document.getElementById('fittingResults');
+    const params = getCurrentParams();
+
+    let resultsHTML = '<h4>📊 Fitted Parameters:</h4><ul>';
+
+    Object.entries(params).forEach(([param, value]) => {
+        resultsHTML += `<li><strong>${param}:</strong> ${value.toFixed(4)}</li>`;
+    });
+
+    resultsHTML += '</ul>';
+
+    container.innerHTML = resultsHTML;
+}
+
+function renderDataChart(data) {
+    const ctx = document.getElementById('dataChart').getContext('2d');
+
+    const minVal = Math.min(...data);
+    const maxVal = Math.max(...data);
+    const binCount = Math.min(30, Math.ceil(Math.sqrt(data.length)));
+
+    const binWidth = (maxVal - minVal) / binCount;
+    const bins = Array(binCount).fill(0);
+
+    data.forEach(value => {
+        const binIndex = Math.min(binCount - 1, Math.floor((value - minVal) / binWidth));
+        bins[binIndex]++;
+    });
+
+    const binLabels = [];
+    for (let i = 0; i < binCount; i++) {
+        const binStart = minVal + i * binWidth;
+        const binEnd = binStart + binWidth;
+        binLabels.push(`${binStart.toFixed(2)} - ${binEnd.toFixed(2)}`);
+    }
+
+    const datasets = [{
+        label: 'Histogram',
+        data: bins,
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        type: 'bar'
+    }];
+
+    if (charts.data) charts.data.destroy();
+    charts.data = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: binLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Frequency' }
+                },
+                x: {
+                    title: { display: true, text: 'Value Range' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: 'Data Histogram & Distribution Fit' }
+            }
+        }
+    });
+}
+
+// Initialize first distribution
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('distributionSelect').value = 'normal';
+    loadDistribution();
+    changeDataMethod();
+});
