@@ -307,9 +307,8 @@
         </div>
 
         <div class="nav-tabs">
-            <button class="active" onclick="showTab('parameters')">Parameters</button>
+            <button class="active" onclick="showTab('parameters')">Parameters & Data</button>
             <button onclick="showTab('visualizations')">Visualizations</button>
-            <button onclick="showTab('dataanalysis')">Data Analysis</button>
             <button onclick="showTab('explanations')">Theory</button>
         </div>
 
@@ -367,7 +366,7 @@
                                 <label for="columnSelect">Column:</label>
                                 <select id="columnSelect"></select>
                             </div>
-                            <button onclick="processUploadedData()" class="btn" style="margin-top: 5px;">Process Data</button>
+                            <button onclick="processUploadedData()" style="margin-top: 5px;">Process Data</button>
                         </div>
 
                         <div id="randomControls" style="display: none;">
@@ -443,89 +442,7 @@
                 </div>
             </div>
 
-            <div id="dataanalysis" class="tab-panel">
-                <div class="content-grid">
-                    <div class="params-panel">
-                        <h3>Data Input Methods</h3>
-                        <div class="param-control">
-                            <label for="dataMethodSelect">Choose Data Source:</label>
-                            <select id="dataMethodSelect" onchange="changeDataMethod()">
-                                <option value="upload">📁 Upload CSV/Excel File</option>
-                                <option value="random">🎲 Generate Random Sample</option>
-                                <option value="manual">✏️ Manual Data Entry</option>
-                            </select>
-                        </div>
 
-                        <div id="uploadControls" style="display: block;">
-                            <label>Upload Data File:</label>
-                            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt"
-                                   onchange="handleFileUpload(event)" style="margin: 10px 0;">
-                            <div class="param-control">
-                                <label for="columnSelect">Select Column:</label>
-                                <select id="columnSelect"></select>
-                            </div>
-                            <button onclick="processUploadedData()" class="btn" style="margin-top: 10px;">Process Data</button>
-                        </div>
-
-                        <div id="randomControls" style="display: none;">
-                            <div class="param-control">
-                                <label for="sampleSize">Sample Size:</label>
-                                <input type="number" id="sampleSize" value="100" min="10" max="10000" step="10">
-                            </div>
-                            <button onclick="generateRandomData()" class="btn" style="margin-top: 10px;">Generate Data</button>
-                        </div>
-
-                        <div id="manualControls" style="display: none;">
-                            <label>Enter Data (comma-separated):</label>
-                            <textarea id="manualDataInput" rows="4" placeholder="1.2, 3.4, 2.1, 5.6, ..."
-                                      style="width: 100%; margin: 10px 0; padding: 8px;"></textarea>
-                            <button onclick="processManualData()" class="btn" style="margin-top: 10px;">Process Data</button>
-                        </div>
-                    </div>
-
-                    <div class="charts-panel">
-                        <div class="chart-container">
-                            <h4>Data Histogram & Distribution Fit</h4>
-                            <canvas id="dataChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-panel">
-                    <h3>Data Analysis Results</h3>
-                    <div class="stats-grid" id="dataAnalysisResults">
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">Data Points</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">Mean</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">Std Dev</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">Skewness</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">KS Statistic</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">--</div>
-                            <div class="label">KS P-Value</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-panel">
-                    <h3>Distribution Fitting Results</h3>
-                    <div id="fittingResults"></div>
-                </div>
-            </div>
 
             <div id="visualizations" class="tab-panel">
                 <div class="charts-panel">
@@ -536,6 +453,12 @@
                     <div class="chart-container">
                         <h4>Cumulative Distribution Function (CDF)</h4>
                         <canvas id="cdfChart"></canvas>
+                    </div>
+                </div>
+                <div class="charts-panel">
+                    <div class="chart-container" style="grid-column: span 2;">
+                        <h4>Data Histogram & Distribution Fit</h4>
+                        <canvas id="dataChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1026,6 +949,280 @@
                         kurtosis: df > 4 ? 6/(df-4) : 'Undefined',
                         median: 0,
                         mode: 0
+                    };
+                }
+            },
+
+            weibull: {
+                name: "Weibull Distribution",
+                params: [
+                    { name: "k (shape)", id: "k", default: 1.5, min: 0.1, max: 10, step: 0.1 },
+                    { name: "λ (scale)", id: "lambda", default: 1, min: 0.1, max: 10, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The Weibull distribution is widely used in reliability engineering and survival analysis.</p>
+
+                    <div class="formula">
+                    f(x) = (k/λ) * (x/λ)^(k-1) * exp(-(x/λ)^k)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>k (shape)</strong>: Shape parameter (k > 0)</li>
+                        <li><strong>λ (scale)</strong>: Scale parameter (λ > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Reliability engineering (failure times)</li>
+                        <li>Survival analysis</li>
+                        <li>Wind speed modeling</li>
+                        <li>Material fatigue life</li>
+                        <li>Product lifetime analysis</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Flexible shape - exponential when k=1, right-skewed for k<1, approaches normal for large k. Mean = λΓ(1+1/k), Variance = λ²[Γ(1+2/k) - Γ²(1+1/k)].</p>
+                `,
+                pdf: (x, params) => {
+                    if (x < 0) return 0;
+                    const k = params.k, lambda = params.lambda;
+                    return (k/lambda) * Math.pow(x/lambda, k-1) * Math.exp(-Math.pow(x/lambda, k));
+                },
+                cdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const k = params.k, lambda = params.lambda;
+                    return 1 - Math.exp(-Math.pow(x/lambda, k));
+                },
+                stats: (params) => {
+                    const k = params.k, lambda = params.lambda;
+                    return {
+                        mean: lambda * math.gamma(1 + 1/k),
+                        variance: lambda*lambda * (math.gamma(1 + 2/k) - Math.pow(math.gamma(1 + 1/k), 2)),
+                        skewness: (math.gamma(1 + 3/k) - 3*math.gamma(1 + 1/k)*math.gamma(1 + 2/k) + 2*Math.pow(math.gamma(1 + 1/k), 3)) / Math.pow(math.gamma(1 + 2/k) - Math.pow(math.gamma(1 + 1/k), 2), 1.5),
+                        kurtosis: 'Complex calculation needed',
+                        median: lambda * Math.pow(Math.log(2), 1/k),
+                        mode: lambda * Math.pow((k-1)/k, 1/k)
+                    };
+                }
+            },
+
+            pareto: {
+                name: "Pareto Distribution",
+                params: [
+                    { name: "α (shape)", id: "alpha", default: 2, min: 0.1, max: 10, step: 0.1 },
+                    { name: "x₀ (scale)", id: "x0", default: 1, min: 0.1, max: 10, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The Pareto distribution models phenomena where a small number of events account for a large proportion of outcomes.</p>
+
+                    <div class="formula">
+                    f(x) = α x₀^α / x^(α+1)  for x ≥ x₀
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>α (shape)</strong>: Shape parameter (α > 0)</li>
+                        <li><strong>x₀ (scale)</strong>: Minimum value (x₀ > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Income distribution (80/20 rule)</li>
+                        <li>City population sizes</li>
+                        <li>File size distribution</li>
+                        <li>Insurance claims</li>
+                        <li>Ecosystem species abundance</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Heavy tail, used in power-law phenomena. Mean = αx₀/(α-1) for α>1. Variance undefined for α≤2.</p>
+                `,
+                pdf: (x, params) => {
+                    const alpha = params.alpha, x0 = params.x0;
+                    if (x < x0) return 0;
+                    return alpha * Math.pow(x0/alpha, alpha) / Math.pow(x, alpha + 1);
+                },
+                cdf: (x, params) => {
+                    const alpha = params.alpha, x0 = params.x0;
+                    if (x <= x0) return 0;
+                    return 1 - Math.pow(x0/x, alpha);
+                },
+                stats: (params) => {
+                    const alpha = params.alpha, x0 = params.x0;
+                    return {
+                        mean: alpha > 1 ? (alpha * x0) / (alpha - 1) : 'Undefined',
+                        variance: alpha > 2 ? (x0*x0 * alpha) / ((alpha - 1)*(alpha - 1) * (alpha - 2)) : 'Undefined',
+                        skewness: alpha > 3 ? (2*(alpha + 1)/(alpha - 3)) * Math.sqrt((alpha - 2)/alpha) : 'Undefined',
+                        kurtosis: 'Complex calculation needed',
+                        median: x0 * Math.pow(2, 1/alpha),
+                        mode: x0
+                    };
+                }
+            },
+
+            logistic: {
+                name: "Logistic Distribution",
+                params: [
+                    { name: "μ (location)", id: "mu", default: 0, min: -10, max: 10, step: 0.1 },
+                    { name: "s (scale)", id: "s", default: 1, min: 0.1, max: 5, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The Logistic distribution is used in growth models and as a smooth approximation to the normal distribution.</p>
+
+                    <div class="formula">
+                    f(x) = (1/s) * exp(-(x-μ)/s) / (1 + exp(-(x-μ)/s))²
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>μ (location)</strong>: Location parameter</li>
+                        <li><strong>s (scale)</strong>: Scale parameter (s > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Growth models</li>
+                        <li>Regression analysis</li>
+                        <li>Neural networks (sigmoid activation)</li>
+                        <li>Demographic modeling</li>
+                        <li>Risk assessment models</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Symmetric distribution with heavier tails than normal. Mean = μ, Variance = s²π²/3. Used as link function in logistic regression.</p>
+                `,
+                pdf: (x, params) => {
+                    const mu = params.mu, s = params.s;
+                    const exp_term = Math.exp(-(x - mu) / s);
+                    return (1/s) * exp_term / Math.pow(1 + exp_term, 2);
+                },
+                cdf: (x, params) => {
+                    const mu = params.mu, s = params.s;
+                    return 1 / (1 + Math.exp(-(x - mu) / s));
+                },
+                stats: (params) => {
+                    const mu = params.mu, s = params.s;
+                    return {
+                        mean: mu,
+                        variance: s * s * Math.PI * Math.PI / 3,
+                        skewness: 0,
+                        kurtosis: 6/5,
+                        median: mu,
+                        mode: mu
+                    };
+                }
+            },
+
+            laplace: {
+                name: "Laplace Distribution",
+                params: [
+                    { name: "μ (location)", id: "mu", default: 0, min: -10, max: 10, step: 0.1 },
+                    { name: "b (scale)", id: "b", default: 1, min: 0.1, max: 5, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The Laplace distribution (also called double exponential) has heavier tails than the normal distribution.</p>
+
+                    <div class="formula">
+                    f(x) = (1/(2b)) * exp(-|x-μ|/b)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>μ (location)</strong>: Location parameter</li>
+                        <li><strong>b (scale)</strong>: Scale parameter (b > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Modeling absolute deviations</li>
+                        <li>Robust statistics</li>
+                        <li>Signal processing</li>
+                        <li>Finance (heavy tail modeling)</li>
+                        <li>Atmospheric data analysis</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Symmetric with sharper peak and heavier tails than normal. Mean = μ, Variance = 2b². Maximum entropy distribution for given mean absolute deviation.</p>
+                `,
+                pdf: (x, params) => {
+                    const mu = params.mu, b = params.b;
+                    return (1/(2*b)) * Math.exp(-Math.abs(x - mu)/b);
+                },
+                cdf: (x, params) => {
+                    const mu = params.mu, b = params.b;
+                    if (x < mu) {
+                        return 0.5 * Math.exp((x - mu)/b);
+                    } else {
+                        return 1 - 0.5 * Math.exp((mu - x)/b);
+                    }
+                },
+                stats: (params) => {
+                    const mu = params.mu, b = params.b;
+                    return {
+                        mean: mu,
+                        variance: 2 * b * b,
+                        skewness: 0,
+                        kurtosis: 3,
+                        median: mu,
+                        mode: mu
+                    };
+                }
+            },
+
+            chisquared: {
+                name: "Chi-Squared Distribution",
+                params: [
+                    { name: "k (degrees of freedom)", id: "k", default: 5, min: 0.1, max: 20, step: 0.1 }
+                ],
+                explanation: `
+                    <p>The Chi-Squared distribution arises from the sum of squares of independent standard normal random variables.</p>
+
+                    <div class="formula">
+                    f(x) = (1/(2^(k/2) * Γ(k/2))) * x^(k/2 - 1) * exp(-x/2)
+                    </div>
+
+                    <p><strong>Parameters:</strong></p>
+                    <ul>
+                        <li><strong>k (degrees of freedom)</strong>: Shape parameter (k > 0)</li>
+                    </ul>
+
+                    <div class="applications">
+                    <p><strong>Applications:</strong></p>
+                    <ul>
+                        <li>Chi-squared tests for independence</li>
+                        <li>Confidence interval construction</li>
+                        <li>Goodness-of-fit tests</li>
+                        <li>Variance estimation</li>
+                        <li>Process capability analysis</li>
+                    </ul>
+                    </div>
+
+                    <p><strong>Properties:</strong> Right-skewed for small k, approaches normal for large k. Mean = k, Variance = 2k. Support on (0,∞).</p>
+                `,
+                pdf: (x, params) => {
+                    if (x < 0) return 0;
+                    const k = params.k;
+                    return (1 / (Math.pow(2, k/2) * math.gamma(k/2))) * Math.pow(x, k/2 - 1) * Math.exp(-x/2);
+                },
+                cdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const k = params.k;
+                    return math.gammainc(k/2, x/2);
+                },
+                stats: (params) => {
+                    const k = params.k;
+                    return {
+                        mean: k,
+                        variance: 2 * k,
+                        skewness: Math.sqrt(8/k),
+                        kurtosis: 12/k,
+                        median: k * Math.pow(1 - 2/(9*k), 3), // approximation
+                        mode: k - 2
                     };
                 }
             }
