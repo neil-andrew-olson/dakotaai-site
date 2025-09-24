@@ -1775,6 +1775,31 @@
                     { name: "d₁ (numerator df)", id: "df1", default: 5, min: 0.1, max: 30, step: 0.1 },
                     { name: "d₂ (denominator df)", id: "df2", default: 10, min: 0.1, max: 30, step: 0.1 }
                 ],
+                pdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const df1 = params.df1, df2 = params.df2;
+                    const num = math.gamma((df1+df2)/2) * Math.pow(df1/df2, df1/2) * Math.pow(x, df1/2 - 1);
+                    const den = math.gamma(df1/2) * math.gamma(df2/2) * Math.pow(1 + (df1/df2)*x, (df1+df2)/2);
+                    return num / den;
+                },
+                cdf: (x, params) => {
+                    if (x <= 0) return 0;
+                    const df1 = params.df1, df2 = params.df2;
+                    // Approximation using beta function relationship
+                    const z = (df1 * x) / (df1 * x + df2);
+                    return math.betainc(z, df1/2, df2/2);
+                },
+                stats: (params) => {
+                    const df1 = params.df1, df2 = params.df2;
+                    return {
+                        mean: df2 > 2 ? df2 / (df2 - 2) : 'Undefined',
+                        variance: df2 > 4 ? (2 * df2 * df2 * (df1 + df2 - 2)) / (df1 * (df2 - 2) * (df2 - 2) * (df2 - 4)) : 'Undefined',
+                        skewness: 'Complex calculation needed',
+                        kurtosis: 'Complex calculation needed',
+                        median: 'Approximation needed',
+                        mode: (df1 - 2)/df1 * df2/(df2 + 2) // approximation
+                    };
+                }
                 explanation: `
                     <p>The F-distribution (also known as Snedecor F-distribution or Fisher-Snedecor distribution) arises in the testing of whether two observed samples have the same variance.</p>
 
@@ -2451,7 +2476,12 @@ function generateRandomData() {
                 case 'Student-t Distribution':
                     // Normal/Z divided by sqrt(Chisquare/df)
                     const normal = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
-                    const chi2 = -2 * Math.log(Math.product(Array.from({length: Math.floor(params.df/2)}, () => Math.random())));
+                    // Generate chi-squared by summing squares of normal variables
+                    let chi2 = 0;
+                    for (let j = 0; j < Math.floor(params.df); j++) {
+                        const norm = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+                        chi2 += norm * norm;
+                    }
                     value = normal / Math.sqrt(chi2 / params.df);
                     break;
 
@@ -2838,60 +2868,14 @@ function displayFittingResults() {
 }
 
 function renderDataChart(data) {
-    const ctx = document.getElementById('mainChart').getContext('2d');
+    // Create histogram using the main chart system
+    const params = getCurrentParams();
+    const titleElement = document.getElementById('chartTitle');
+    titleElement.textContent = '📊 Data Histogram';
 
-    const minVal = Math.min(...data);
-    const maxVal = Math.max(...data);
-    const binCount = Math.min(30, Math.ceil(Math.sqrt(data.length)));
-
-    const binWidth = (maxVal - minVal) / binCount;
-    const bins = Array(binCount).fill(0);
-
-    data.forEach(value => {
-        const binIndex = Math.min(binCount - 1, Math.floor((value - minVal) / binWidth));
-        bins[binIndex]++;
-    });
-
-    const binLabels = [];
-    for (let i = 0; i < binCount; i++) {
-        const binStart = minVal + i * binWidth;
-        const binEnd = binStart + binWidth;
-        binLabels.push(`${binStart.toFixed(2)} - ${binEnd.toFixed(2)}`);
-    }
-
-    const datasets = [{
-        label: 'Histogram',
-        data: bins,
-        backgroundColor: 'rgba(16, 185, 129, 0.5)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        borderWidth: 1,
-        type: 'bar'
-    }];
-
-    if (charts.data) charts.data.destroy();
-    charts.data = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: binLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: { display: true, text: 'Frequency' }
-                },
-                x: {
-                    title: { display: true, text: 'Value Range' }
-                }
-            },
-            plugins: {
-                title: { display: true, text: 'Data Histogram & Distribution Fit' }
-            }
-        }
-    });
+    // Switch to histogram mode
+    currentChartType = 'histogram';
+    renderMainChart();
 }
 
 // Chart type and style management
@@ -3206,6 +3190,9 @@ function createHistogramChart(params) {
         curvePoints.push({ x: x, y: density * data.length * binWidth });
     }
 
+    const style1 = getChartStyleConfig(currentChartStyle);
+    const style2 = getChartStyleConfig('vibrant'); // Different style for the fit line
+
     return {
         chartType: 'bar',
         chartData: {
@@ -3213,19 +3200,19 @@ function createHistogramChart(params) {
             datasets: [{
                 label: 'Data Histogram',
                 data: bins,
-                backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                borderColor: '#10b981',
+                backgroundColor: style1.backgroundColor,
+                borderColor: style1.borderColor,
                 borderWidth: 1,
                 yAxisID: 'y'
             }, {
                 label: 'Distribution Fit',
                 data: curvePoints.map(p => p.y),
                 type: 'line',
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderColor: style2.borderColor,
+                backgroundColor: style2.backgroundColor,
                 fill: false,
-                pointRadius: 0,
-                tension: 0.4,
+                pointRadius: style1.pointRadius || 0,
+                tension: style1.tension || 0.4,
                 yAxisID: 'y'
             }]
         },
@@ -3284,16 +3271,19 @@ function createQQPlot(params) {
         theoreticalQuantiles.push(theoreticalValue);
     });
 
+    const style1 = getChartStyleConfig(currentChartStyle);
+    const style2 = getChartStyleConfig('professional'); // Different style for reference line
+
     return {
         chartType: 'scatter',
         chartData: {
             datasets: [{
                 label: 'Q-Q Plot',
                 data: sampleQuantiles.map((y, i) => ({ x: theoreticalQuantiles[i], y: y })),
-                backgroundColor: '#8b5cf6',
-                borderColor: '#8b5cf6',
-                pointRadius: 6,
-                pointHoverRadius: 8
+                backgroundColor: style1.pointBackgroundColor || style1.borderColor,
+                borderColor: style1.borderColor,
+                pointRadius: style1.pointRadius || 6,
+                pointHoverRadius: style1.pointHoverRadius || 8
             }, {
                 label: 'Reference Line',
                 data: [
@@ -3301,7 +3291,7 @@ function createQQPlot(params) {
                     { x: Math.max(...theoreticalQuantiles), y: Math.max(...theoreticalQuantiles) }
                 ],
                 type: 'line',
-                borderColor: '#ef4444',
+                borderColor: style2.borderColor,
                 borderDash: [5, 5],
                 fill: false,
                 pointRadius: 0
@@ -3356,6 +3346,8 @@ function createBoxPlot(params) {
     const outliers = data.filter(x => x < lowerFence || x > upperFence);
     const nonOutliers = data.filter(x => x >= lowerFence && x <= upperFence);
 
+    const style = getChartStyleConfig(currentChartStyle);
+
     return {
         chartType: 'boxplot',
         chartData: {
@@ -3369,9 +3361,9 @@ function createBoxPlot(params) {
                     q3: q3,
                     max: Math.max(...data)
                 }],
-                backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                borderColor: '#3b82f6',
-                borderWidth: 1,
+                backgroundColor: style.backgroundColor,
+                borderColor: style.borderColor,
+                borderWidth: style.borderWidth || 1,
                 outlierColor: '#ef4444',
                 outlierRadius: 4
             }]
@@ -3421,16 +3413,18 @@ function createScatterPlot(params) {
         scatterData.push({ x: xValues[i], y: y });
     });
 
+    const style = getChartStyleConfig(currentChartStyle);
+
     return {
         chartType: 'scatter',
         chartData: {
             datasets: [{
                 label: `Value vs ${xParam}`,
                 data: scatterData,
-                backgroundColor: '#f59e0b',
-                borderColor: '#f59e0b',
-                pointRadius: 3,
-                pointHoverRadius: 6
+                backgroundColor: style.pointBackgroundColor || style.borderColor,
+                borderColor: style.borderColor,
+                pointRadius: style.pointRadius || 3,
+                pointHoverRadius: style.pointHoverRadius || 6
             }]
         },
         chartOptions: {
@@ -3463,6 +3457,7 @@ function createScatterPlot(params) {
 function createRadarComparison(params) {
     // Compare different aspects of the distribution
     const stats = currentDistribution.stats(params);
+    const style = getChartStyleConfig(currentChartStyle);
 
     return {
         chartType: 'radar',
@@ -3477,11 +3472,11 @@ function createRadarComparison(params) {
                     Math.min(stats.kurtosis / 10, 1),
                     0.8 // symmetry measure
                 ],
-                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                borderColor: '#8b5cf6',
-                borderWidth: 2,
-                pointBackgroundColor: '#8b5cf6',
-                pointRadius: 4
+                backgroundColor: style.backgroundColor.replace('0.1', '0.2'), // More opaque for radar
+                borderColor: style.borderColor,
+                borderWidth: style.borderWidth || 2,
+                pointBackgroundColor: style.pointBackgroundColor || style.borderColor,
+                pointRadius: style.pointRadius || 4
             }]
         },
         chartOptions: {
