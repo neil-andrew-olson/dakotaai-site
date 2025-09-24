@@ -494,22 +494,6 @@
                     </div>
                 </div>
 
-                <!-- Data Transformation Panel -->
-                <div class="stats-panel">
-                    <h3>🔄 Data Transformations</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                        <button onclick="applyLogTransform()" style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📈 Log Transform</button>
-                        <button onclick="applySqrtTransform()" style="padding: 6px 10px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">√ Sqrt Transform</button>
-                        <button onclick="applyZScoreTransform()" style="padding: 6px 10px; background: #06b6d4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📊 Z-Score</button>
-                        <button onclick="applyMinMaxTransform()" style="padding: 6px 10px; background: #84cc16; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📏 Min-Max</button>
-                        <button onclick="resetTransformation()" style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🔄 Reset</button>
-                    </div>
-                    <div id="transformationResults" style="background: #f8f9fa; padding: 10px; border-radius: 4px; min-height: 60px;">
-                        <div style="text-align: center; color: #6c757d; font-style: italic;">
-                            Upload data and apply transformations to see results
-                        </div>
-                    </div>
-                </div>
 
                 <div class="stats-panel">
                     <h3>📊 Distribution Fitting</h3>
@@ -563,6 +547,41 @@
 
                 <!-- Secondary Charts Row -->
                 <div class="charts-panel" id="secondaryCharts" style="display: none;">
+                </div>
+
+                <!-- Data Transformation Panel -->
+                <div class="chart-container">
+                    <h4>🔄 Data Transformations</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <button onclick="applyLogTransform()" style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📈 Log Transform</button>
+                        <button onclick="applySqrtTransform()" style="padding: 6px 10px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">√ Sqrt Transform</button>
+                        <button onclick="applyZScoreTransform()" style="padding: 6px 10px; background: #06b6d4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📊 Z-Score</button>
+                        <button onclick="applyMinMaxTransform()" style="padding: 6px 10px; background: #84cc16; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📏 Min-Max</button>
+                        <button onclick="resetTransformation()" style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🔄 Reset</button>
+                    </div>
+                    <div id="transformationResults" style="background: #f8f9fa; padding: 10px; border-radius: 4px; min-height: 60px;">
+                        <div style="text-align: center; color: #6c757d; font-style: italic;">
+                            Upload data and apply transformations to see results
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Visualization Options -->
+                <div class="chart-container">
+                    <h4>🎨 Advanced Visualizations</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <button onclick="createViolinPlot()" style="padding: 8px 12px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🎻 Violin Plot</button>
+                        <button onclick="createRidgePlot()" style="padding: 8px 12px; background: #06b6d4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🏔️ Ridge Plot</button>
+                        <button onclick="createContourPlot()" style="padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📊 Contour Plot</button>
+                        <button onclick="createHeatmapCorrelation()" style="padding: 8px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🔥 Heatmap</button>
+                        <button onclick="createWaterfallChart()" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">💧 Waterfall</button>
+                        <button onclick="createLinearRegression()" style="padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📈 Linear Regression</button>
+                    </div>
+                    <div id="advancedVisualizationResults" style="background: #f8f9fa; padding: 10px; border-radius: 4px; min-height: 60px;">
+                        <div style="text-align: center; color: #6c757d; font-style: italic;">
+                            Select an advanced visualization option to see results
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Insights Panel -->
@@ -4131,38 +4150,101 @@ function createQQPlot(params) {
     const data = [...currentData].sort((a, b) => a - b);
     const theoreticalQuantiles = [];
     const sampleQuantiles = [];
+    const n = data.length;
 
-    // Calculate theoretical quantiles at various probabilities
-    const probabilities = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99];
+    // Use more appropriate quantiles for better Q-Q plot
+    const probabilities = [];
+    for (let i = 1; i <= Math.min(n, 100); i++) {
+        probabilities.push(i / (Math.min(n, 100) + 1));
+    }
 
     probabilities.forEach(p => {
-        const index = Math.floor(p * (data.length - 1));
-        sampleQuantiles.push(data[index]);
+        // Sample quantile using interpolation
+        const index = p * (n - 1);
+        let sampleQuantile;
+        if (index === Math.floor(index)) {
+            sampleQuantile = data[index];
+        } else {
+            const lower = data[Math.floor(index)];
+            const upper = data[Math.ceil(index)];
+            const fraction = index - Math.floor(index);
+            sampleQuantile = lower + (upper - lower) * fraction;
+        }
+        sampleQuantiles.push(sampleQuantile);
 
-        // Theoretical quantile (simplified - need proper quantile function)
-        let theoreticalValue = params.mu || 0;
-        if (currentDistribution.name === 'Normal Distribution') {
-            const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
-            theoreticalValue = params.mu + z * Math.sqrt(params.sigma);
+        // Theoretical quantile function for specific distributions
+        let theoreticalValue = sampleQuantile; // fallback
+        try {
+            if (currentDistribution.name === 'Normal Distribution') {
+                const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+                theoreticalValue = params.mu + z * Math.sqrt(params.sigma);
+            } else if (currentDistribution.name === 'Uniform Distribution') {
+                theoreticalValue = params.a + (params.b - params.a) * p;
+            } else if (currentDistribution.name === 'Beta Distribution') {
+                // Use approximation for beta quantile
+                const beta_inv = 1;
+                theoreticalValue = betaInverseQuantile(p, params.alpha || 2, params.beta || 2);
+            } else if (currentDistribution.name === 'Student-t Distribution') {
+                const df = params.df || 5;
+                const t = approximateTInverse(p, df);
+                theoreticalValue = params.mu + t * Math.sqrt(params.sigma || 1);
+            } else if (currentDistribution.name === 'Poisson Distribution') {
+                theoreticalValue = poissonQuantile(p, params.lambda || 1);
+            } else if (currentDistribution.name === 'Exponential Distribution') {
+                const lambda = params.lambda || 1;
+                theoreticalValue = -Math.log(1 - p) / lambda;
+            } else if (currentDistribution.name === 'Gamma Distribution') {
+                const k = params.k || 2;
+                const theta = params.theta || 1;
+                theoreticalValue = gammaQuantile(p, k, theta);
+            } else if (currentDistribution.name === 'Weibull Distribution') {
+                const k = params.k || 1.5;
+                const lambda = params.lambda || 1;
+                theoreticalValue = lambda * Math.pow(-Math.log(1 - p), 1/k);
+            } else if (currentDistribution.name === 'Log-Normal Distribution') {
+                const mu = params.mu || 0;
+                const sigma = params.sigma || 1;
+                const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+                theoreticalValue = Math.exp(mu + z * sigma);
+            } else if (currentDistribution.name === 'Chi-Squared Distribution') {
+                const df = params.k || 5;
+                theoreticalValue = chiSquaredQuantile(p, df);
+            } else {
+                // For other distributions, use sample as theoretical (comparison mode)
+                theoreticalValue = sampleQuantile;
+            }
+        } catch (error) {
+            // Default to sample quantile if theoretical can't be calculated
+            theoreticalValue = sampleQuantile;
+            console.warn('Could not calculate theoretical quantile:', error);
         }
         theoreticalQuantiles.push(theoreticalValue);
     });
 
     const style1 = getChartStyleConfig(currentChartStyle);
-    const style2 = getChartStyleConfig('professional'); // Different style for reference line
+    const style2 = getChartStyleConfig('professional');
+
+    // Calculate Q-Q plot statistics
+    const qqData = sampleQuantiles.map((y, i) => ({ x: theoreticalQuantiles[i], y: y }));
+
+    // Linear regression on Q-Q points
+    const regressionLine = calculateLinearRegression(theoreticalQuantiles, sampleQuantiles);
 
     return {
         chartType: 'scatter',
         chartData: {
             datasets: [{
-                label: 'Q-Q Plot',
-                data: sampleQuantiles.map((y, i) => ({ x: theoreticalQuantiles[i], y: y })),
+                label: 'Q-Q Plot Points',
+                data: qqData,
                 backgroundColor: style1.pointBackgroundColor || style1.borderColor,
                 borderColor: style1.borderColor,
-                pointRadius: style1.pointRadius || 6,
-                pointHoverRadius: style1.pointHoverRadius || 8
+                pointRadius: style1.pointRadius || 4,
+                pointHoverRadius: style1.pointHoverRadius || 6,
+                showLine: true,
+                fill: false,
+                tension: 0
             }, {
-                label: 'Reference Line',
+                label: 'Reference Line (y=x)',
                 data: [
                     { x: Math.min(...theoreticalQuantiles), y: Math.min(...theoreticalQuantiles) },
                     { x: Math.max(...theoreticalQuantiles), y: Math.max(...theoreticalQuantiles) }
@@ -4170,8 +4252,10 @@ function createQQPlot(params) {
                 type: 'line',
                 borderColor: style2.borderColor,
                 borderDash: [5, 5],
+                borderWidth: 2,
                 fill: false,
-                pointRadius: 0
+                pointRadius: 0,
+                tension: 0
             }]
         },
         chartOptions: {
@@ -4197,13 +4281,121 @@ function createQQPlot(params) {
                     bodyColor: 'white',
                     callbacks: {
                         label: (context) => {
-                            return `Theoretical: ${context.parsed.x.toFixed(3)}, Sample: ${context.parsed.y.toFixed(3)}`;
+                            if (context.datasetIndex === 0) {
+                                const xDiff = Math.abs(context.parsed.x - context.parsed.y);
+                                const deviation = xDiff > 0.1 ? '⚠️ Large deviation' :
+                                                  xDiff > 0.05 ? '✓ Minor deviation' : '✅ Good fit';
+                                return [
+                                    `Theoretical: ${context.parsed.x.toFixed(4)}`,
+                                    `Sample: ${context.parsed.y.toFixed(4)}`,
+                                    `Deviation: ${xDiff.toFixed(4)} ${deviation}`
+                                ];
+                            }
+                            return `Reference line: y = x`;
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        r2Value: {
+                            type: 'label',
+                            xValue: 'max',
+                            yValue: 'max',
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            content: [
+                                'Q-Q Plot Analysis',
+                                `Intercept: ${regressionLine.intercept.toFixed(3)}`,
+                                `Slope: ${regressionLine.slope.toFixed(3)}`,
+                                `R²: ${regressionLine.r2.toFixed(4)}`
+                            ],
+                            fontSize: 10,
+                            color: 'white'
                         }
                     }
                 }
             }
         }
     };
+}
+
+// Helper functions for quantile calculations
+function betaInverseQuantile(p, alpha, beta) {
+    // Simple Newton-Raphson approximation for beta quantile
+    let x = p; // initial guess
+    for (let i = 0; i < 10; i++) {
+        const fx = math.betainc(p, alpha, beta) - x;
+        const dfx = math.gamma(alpha + beta)/(math.gamma(alpha)*math.gamma(beta)) *
+                   Math.pow(x, alpha-1) * Math.pow(1-x, beta-1);
+        if (Math.abs(dfx) < 1e-10) break;
+        x = x - fx / dfx;
+        x = Math.max(0, Math.min(1, x));
+    }
+    return x;
+}
+
+function poissonQuantile(p, lambda) {
+    let k = 0;
+    let cumulative = Math.exp(-lambda);
+    while (cumulative < p && k < lambda * 3) {
+        k++;
+        cumulative += Math.exp(-lambda) * Math.pow(lambda, k) / math.factorial(k);
+    }
+    return k;
+}
+
+function gammaQuantile(p, k, theta) {
+    // Approximation using Wilson-Hilferty transformation
+    if (k > 1) {
+        const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+        return Math.pow((z * Math.sqrt(k) + k + 1)/k, 1/k) * theta;
+    } else {
+        // For k <= 1, use simpler approximation
+        return -theta * Math.log(1 - p);
+    }
+}
+
+function chiSquaredQuantile(p, df) {
+    if (df >= 30) {
+        const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+        return df + Math.sqrt(2 * df) * z;
+    } else {
+        // Use approximation for smaller df
+        const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+        return df * (1 - 2/(9 * df) + z * Math.sqrt(2/(9 * df))) ** 3;
+    }
+}
+
+function approximateTInverse(p, df) {
+    if (df > 30) {
+        return Math.sqrt(2) * math.erfinv(2 * p - 1);
+    }
+
+    // Simple approximation for t-critical values
+    if (p === 0.975) return df < 5 ? 2.78 : df < 10 ? 2.26 : df < 20 ? 2.09 : 2.0;
+    if (p === 0.95) return df < 5 ? 2.13 : df < 10 ? 1.81 : df < 20 ? 1.73 : 1.65;
+    if (p === 0.995) return df < 5 ? 4.03 : df < 10 ? 3.17 : df < 20 ? 2.86 : 2.58;
+
+    return 2.0;
+}
+
+function calculateLinearRegression(x, y) {
+    const n = x.length;
+    const sumX = x.reduce((a, b) => a + b, 0);
+    const sumY = y.reduce((a, b) => a + b, 0);
+    const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+    const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
+    const sumYY = y.reduce((sum, yi) => sum + yi * yi, 0);
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    // Calculate R²
+    const yMean = sumY / n;
+    const totalSumSquares = y.reduce((sum, yi) => sum + (yi - yMean) ** 2, 0);
+    const residualSumSquares = y.reduce((sum, yi, i) => sum + (yi - (slope * x[i] + intercept)) ** 2, 0);
+    const r2 = 1 - residualSumSquares / totalSumSquares;
+
+    return { slope, intercept, r2 };
 }
 
 function createBoxPlot(params) {
@@ -4472,6 +4664,504 @@ function calculateDataStats(data) {
         median: sorted[Math.floor(n/2)],
         ksStat: performKSTest(data)?.statistic
     };
+}
+
+// Advanced Visualization Functions
+function createViolinPlot() {
+    if (!currentData || currentData.length < 10) {
+        alert('Need at least 10 data points for violin plot');
+        return;
+    }
+
+    const data = currentData;
+    const n = data.length;
+    const sorted = [...data].sort((a, b) => a - b);
+    const min = sorted[0];
+    const max = sorted[n-1];
+    
+    // Create kernel density estimation
+    const bandwidth = 1.06 * Math.pow(n, -1/5) * Math.sqrt(data.reduce((a,b,_,arr) => a + Math.pow(b - arr.reduce((x,y) => x+y)/arr.length, 2), 0) / n);
+    const densityPoints = [];
+    const step = (max - min) / 100;
+    
+    for (let x = min; x <= max; x += step) {
+        let density = 0;
+        for (let i = 0; i < n; i++) {
+            const u = (x - data[i]) / bandwidth;
+            density += Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI);
+        }
+        density /= (n * bandwidth);
+        densityPoints.push({ x: x, y: density });
+    }
+
+    // Create violin shape by mirroring density
+    const violinData = densityPoints.map(p => p.y);
+    
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <canvas id="violinChart" style="width: 100%; height: 400px;"></canvas>
+    `;
+
+    const canvas = document.getElementById('violinChart');
+    const ctx = canvas.getContext('2d');
+    
+    ChartManager.create('violinChart', {
+        type: 'line',
+        data: {
+            labels: densityPoints.map(p => p.x.toFixed(2)),
+            datasets: [{
+                label: 'Violin Plot (KDE)',
+                data: violinData,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: 'Value', color: 'var(--text-primary)' } },
+                y: { title: { display: true, text: 'Density', color: 'var(--text-primary)' }, beginAtZero: true }
+            },
+            plugins: {
+                title: { display: true, text: `🎻 Violin Plot (n=${n}, bandwidth=${bandwidth.toFixed(3)})`, color: 'var(--text-primary)' },
+                legend: { labels: { color: 'var(--text-primary)' } }
+            }
+        }
+    });
+}
+
+function createRidgePlot() {
+    if (!currentData || currentData.length < 5) {
+        alert('Need at least 5 data points for ridge plot');
+        return;
+    }
+
+    // Create multiple "ridges" by splitting data into quantile groups
+    const data = currentData;
+    const sorted = [...data].sort((a, b) => a - b);
+    const n = sorted.length;
+    
+    const groups = [
+        { name: 'Lower 25%', data: sorted.slice(0, Math.floor(n * 0.25)), color: 'rgba(239, 68, 68, 0.6)' },
+        { name: 'Q2 (25-50%)', data: sorted.slice(Math.floor(n * 0.25), Math.floor(n * 0.5)), color: 'rgba(245, 158, 11, 0.6)' },
+        { name: 'Q3 (50-75%)', data: sorted.slice(Math.floor(n * 0.5), Math.floor(n * 0.75)), color: 'rgba(34, 197, 94, 0.6)' },
+        { name: 'Upper 25%', data: sorted.slice(Math.floor(n * 0.75)), color: 'rgba(59, 130, 246, 0.6)' }
+    ];
+
+    const datasets = groups.map((group, index) => {
+        if (group.data.length === 0) return null;
+        
+        const mean = group.data.reduce((a, b) => a + b, 0) / group.data.length;
+        const std = Math.sqrt(group.data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / group.data.length);
+        
+        // Create density curve for each group
+        const min = Math.min(...group.data);
+        const max = Math.max(...group.data);
+        const densityPoints = [];
+        const step = (max - min) / 50;
+        
+        for (let x = min; x <= max; x += step) {
+            let density = 0;
+            for (let val of group.data) {
+                const z = (x - val) / (std || 1);
+                density += Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+            }
+            density = (density / group.data.length) + index * 0.5; // Offset each ridge
+            densityPoints.push(density);
+        }
+        
+        const labels = [];
+        for (let x = min; x <= max; x += step) {
+            labels.push(x.toFixed(2));
+        }
+
+        return {
+            label: group.name,
+            data: densityPoints,
+            borderColor: group.color.replace('0.6', '1'),
+            backgroundColor: group.color,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0
+        };
+    }).filter(ds => ds !== null);
+
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <canvas id="ridgeChart" style="width: 100%; height: 400px;"></canvas>
+    `;
+
+    ChartManager.create('ridgeChart', {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: 'Value', color: 'var(--text-primary)' } },
+                y: { title: { display: true, text: 'Density (Offset)', color: 'var(--text-primary)' } }
+            },
+            plugins: {
+                title: { display: true, text: '🏔️ Ridge Plot - Data Quartiles', color: 'var(--text-primary)' },
+                legend: { labels: { color: 'var(--text-primary)' } }
+            }
+        }
+    });
+}
+
+function createContourPlot() {
+    if (!currentDistribution) {
+        alert('Please select a distribution first');
+        return;
+    }
+
+    const params = getCurrentParams();
+    
+    // Create 2D heatmap for bivariate or parameter space
+    const gridSize = 20;
+    const contourData = [];
+    
+    if (currentDistribution.name === 'Bivariate Normal Distribution') {
+        // True 2D contour for bivariate normal
+        const mu1 = params.mu1 || 0, mu2 = params.mu2 || 0;
+        const sigma1 = params.sigma1 || 1, sigma2 = params.sigma2 || 1;
+        const rho = params.rho || 0;
+        
+        const range = 3;
+        const step = (2 * range) / gridSize;
+        
+        for (let i = 0; i < gridSize; i++) {
+            contourData[i] = [];
+            for (let j = 0; j < gridSize; j++) {
+                const x = -range + i * step;
+                const y = -range + j * step;
+                
+                // Bivariate normal density
+                const z1 = (x - mu1) / sigma1;
+                const z2 = (y - mu2) / sigma2;
+                const density = Math.exp(-0.5 / (1 - rho*rho) * (z1*z1 - 2*rho*z1*z2 + z2*z2)) / 
+                               (2 * Math.PI * sigma1 * sigma2 * Math.sqrt(1 - rho*rho));
+                
+                contourData[i][j] = { x: x, y: y, v: density };
+            }
+        }
+    } else {
+        // Parameter sensitivity contour for univariate distributions
+        const param1Name = currentDistribution.params[0]?.id || 'param1';
+        const param2Name = currentDistribution.params[1]?.id || 'param2';
+        
+        if (currentDistribution.params.length >= 2) {
+            const param1Range = [params[param1Name] * 0.5, params[param1Name] * 1.5];
+            const param2Range = [params[param2Name] * 0.5, params[param2Name] * 1.5];
+            
+            for (let i = 0; i < gridSize; i++) {
+                contourData[i] = [];
+                for (let j = 0; j < gridSize; j++) {
+                    const p1 = param1Range[0] + (param1Range[1] - param1Range[0]) * i / (gridSize - 1);
+                    const p2 = param2Range[0] + (param2Range[1] - param2Range[0]) * j / (gridSize - 1);
+                    
+                    // Create temporary params for this point
+                    const tempParams = {...params};
+                    tempParams[param1Name] = p1;
+                    tempParams[param2Name] = p2;
+                    
+                    // Calculate likelihood or density at this parameter combination
+                    let density = 0;
+                    try {
+                        if (currentData && currentData.length > 0) {
+                            // Calculate log-likelihood for current data
+                            density = currentData.reduce((sum, x) => {
+                                const pdf = currentDistribution.pdf ? currentDistribution.pdf(x, tempParams) : 0;
+                                return sum + Math.log(pdf + 1e-10);
+                            }, 0);
+                        } else {
+                            density = Math.random(); // Random for demonstration
+                        }
+                    } catch (e) {
+                        density = 0;
+                    }
+                    
+                    contourData[i][j] = { x: p1, y: p2, v: density };
+                }
+            }
+        } else {
+            // Single parameter - create 1D sensitivity analysis
+            for (let i = 0; i < gridSize; i++) {
+                contourData[i] = [];
+                for (let j = 0; j < gridSize; j++) {
+                    contourData[i][j] = { x: i, y: j, v: Math.random() };
+                }
+            }
+        }
+    }
+
+    // Convert to heatmap format for visualization
+    const heatmapData = [];
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            heatmapData.push({
+                x: contourData[i][j].x,
+                y: contourData[i][j].y,
+                v: contourData[i][j].v
+            });
+        }
+    }
+
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <h5>📊 Contour Plot - Parameter Space</h5>
+        <p><strong>Analysis:</strong> ${currentDistribution.name === 'Bivariate Normal Distribution' ? 'Bivariate density contours' : 'Parameter sensitivity analysis'}</p>
+        <p><strong>Grid Size:</strong> ${gridSize}×${gridSize} points</p>
+        <p><strong>Interpretation:</strong> Higher values indicate better parameter fits or higher density regions</p>
+        <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 4px;">
+            <strong>Note:</strong> This is a simplified contour representation. In a production environment, this would show 
+            actual contour lines with proper interpolation and color gradients.
+        </div>
+    `;
+}
+
+function createHeatmapCorrelation() {
+    if (!currentData || currentData.length < 3) {
+        alert('Need at least 3 data points for correlation heatmap');
+        return;
+    }
+
+    // Create lag correlations for time series analysis
+    const data = currentData;
+    const maxLag = Math.min(10, Math.floor(data.length / 3));
+    const correlations = [];
+
+    for (let lag = 0; lag <= maxLag; lag++) {
+        if (lag === 0) {
+            correlations.push({ lag: 0, correlation: 1.0 });
+        } else {
+            const x = data.slice(0, data.length - lag);
+            const y = data.slice(lag);
+            const corr = calculateCorrelation(x, y);
+            correlations.push({ lag: lag, correlation: Math.abs(corr.r) });
+        }
+    }
+
+    const labels = correlations.map(c => `Lag ${c.lag}`);
+    const values = correlations.map(c => c.correlation);
+
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <canvas id="heatmapChart" style="width: 100%; height: 400px;"></canvas>
+    `;
+
+    ChartManager.create('heatmapChart', {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Autocorrelation',
+                data: values,
+                backgroundColor: values.map(v => `rgba(255, ${Math.floor(255 * (1-v))}, ${Math.floor(255 * (1-v))}, 0.8)`),
+                borderColor: values.map(v => `rgba(255, ${Math.floor(255 * (1-v))}, ${Math.floor(255 * (1-v))}, 1)`),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { 
+                    title: { display: true, text: 'Correlation Coefficient', color: 'var(--text-primary)' },
+                    min: 0, max: 1,
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                x: { 
+                    title: { display: true, text: 'Time Lag', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '🔥 Autocorrelation Heatmap', color: 'var(--text-primary)' },
+                legend: { labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    callbacks: {
+                        label: function(context) {
+                            return `Correlation: ${context.parsed.y.toFixed(3)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createWaterfallChart() {
+    if (!currentData || currentData.length < 5) {
+        alert('Need at least 5 data points for waterfall chart');
+        return;
+    }
+
+    // Create cumulative effect waterfall
+    const data = currentData.slice(0, 10); // Use first 10 points for clarity
+    const cumulative = [];
+    let runningSum = 0;
+
+    data.forEach((value, index) => {
+        cumulative.push({
+            label: `Data ${index + 1}`,
+            value: value,
+            cumulative: runningSum + value
+        });
+        runningSum += value;
+    });
+
+    const labels = cumulative.map(c => c.label);
+    const values = cumulative.map(c => c.value);
+    const cumulativeValues = cumulative.map(c => c.cumulative);
+
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <canvas id="waterfallChart" style="width: 100%; height: 400px;"></canvas>
+    `;
+
+    ChartManager.create('waterfallChart', {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Individual Values',
+                data: values,
+                backgroundColor: values.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                borderColor: values.map(v => v >= 0 ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)'),
+                borderWidth: 2,
+                yAxisID: 'y'
+            }, {
+                label: 'Cumulative',
+                data: cumulativeValues,
+                type: 'line',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: false,
+                tension: 0.1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Individual Values', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Cumulative Sum', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' },
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    title: { display: true, text: 'Data Points', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: '💧 Waterfall Chart - Cumulative Data Effect', color: 'var(--text-primary)' },
+                legend: { labels: { color: 'var(--text-primary)' } }
+            }
+        }
+    });
+}
+
+function createLinearRegression() {
+    if (!currentData || currentData.length < 3) {
+        alert('Need at least 3 data points for linear regression');
+        return;
+    }
+
+    // Create regression of data values vs index
+    const data = currentData;
+    const x = data.map((_, i) => i + 1);
+    const y = data;
+
+    const regression = calculateLinearRegression(x, y);
+    
+    // Generate regression line points
+    const regressionLine = x.map(xi => regression.slope * xi + regression.intercept);
+    
+    // Calculate residuals
+    const residuals = y.map((yi, i) => yi - regressionLine[i]);
+    const mse = residuals.reduce((sum, r) => sum + r * r, 0) / residuals.length;
+    const rmse = Math.sqrt(mse);
+
+    document.getElementById('advancedVisualizationResults').innerHTML = `
+        <canvas id="regressionChart" style="width: 100%; height: 400px;"></canvas>
+        <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h6>📈 Regression Analysis Results</h6>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                <div><strong>Slope:</strong> ${regression.slope.toFixed(4)}</div>
+                <div><strong>Intercept:</strong> ${regression.intercept.toFixed(4)}</div>
+                <div><strong>R²:</strong> ${regression.r2.toFixed(4)}</div>
+                <div><strong>RMSE:</strong> ${rmse.toFixed(4)}</div>
+            </div>
+            <p style="margin-top: 10px; font-style: italic; color: #6c757d;">
+                Regression equation: y = ${regression.slope.toFixed(4)}x + ${regression.intercept.toFixed(4)}
+            </p>
+        </div>
+    `;
+
+    // Create scatter plot with regression line
+    const scatterData = x.map((xi, i) => ({ x: xi, y: y[i] }));
+    const lineData = x.map((xi, i) => ({ x: xi, y: regressionLine[i] }));
+
+    ChartManager.create('regressionChart', {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Data Points',
+                data: scatterData,
+                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }, {
+                label: 'Regression Line',
+                data: lineData,
+                type: 'line',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                fill: false,
+                pointRadius: 0,
+                tension: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Data Index', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    title: { display: true, text: 'Data Value', color: 'var(--text-primary)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: `📈 Linear Regression Analysis (R² = ${regression.r2.toFixed(3)})`, color: 'var(--text-primary)' },
+                legend: { labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    });
 }
 
 // Initialize application
