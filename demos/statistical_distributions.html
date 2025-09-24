@@ -2242,9 +2242,12 @@ function initTheme() {
 function changeDataMethod() {
     const method = document.getElementById('dataMethodSelect').value;
 
+    // Show/hide controls based on selected method
     document.getElementById('uploadControls').style.display = method === 'upload' ? 'block' : 'none';
     document.getElementById('randomControls').style.display = method === 'random' ? 'block' : 'none';
     document.getElementById('manualControls').style.display = method === 'manual' ? 'block' : 'none';
+
+    console.log('Data method changed to:', method);
 }
 
 function handleFileUpload(event) {
