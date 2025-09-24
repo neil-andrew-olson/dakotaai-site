@@ -2589,41 +2589,41 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">🧪 Normality Tests</h5>
 
         <div class="stat-card">
-            <div class="value">${swtest ? swtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${swtest && swtest.statistic ? swtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">SW W-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${swtest ? swtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${swtest && swtest.pValue ? swtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">SW p-value</div>
         </div>
         <div class="stat-card">
-            <div class="value">${swtest ? swtest.normality : '--'}</div>
+            <div class="value">${swtest && swtest.normality ? swtest.normality : '--'}</div>
             <div class="label">SW Result</div>
         </div>
 
         <div class="stat-card">
-            <div class="value">${adtest ? adtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${adtest && adtest.statistic ? adtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">AD A²-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${adtest ? adtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${adtest && adtest.pValue ? adtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">AD p-value</div>
         </div>
         <div class="stat-card">
-            <div class="value">${adtest ? adtest.normality : '--'}</div>
+            <div class="value">${adtest && adtest.normality ? adtest.normality : '--'}</div>
             <div class="label">AD Result</div>
         </div>
 
         <div class="stat-card">
-            <div class="value">${jbtest ? jbtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${jbtest && jbtest.statistic ? jbtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">JB χ²-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${jbtest ? jbtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${jbtest && jbtest.pValue ? jbtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">JB p-value</div>
         </div>
         <div class="stat-card">
-            <div class="value">${jbtest ? jbtest.normality : '--'}</div>
+            <div class="value">${jbtest && jbtest.normality ? jbtest.normality : '--'}</div>
             <div class="label">JB Result</div>
         </div>
 
