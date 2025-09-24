@@ -4751,31 +4751,36 @@ function createRidgePlot() {
         { name: 'Upper 25%', data: sorted.slice(Math.floor(n * 0.75)), color: 'rgba(59, 130, 246, 0.6)' }
     ];
 
+    // Find global min/max for consistent x-axis
+    const globalMin = Math.min(...data);
+    const globalMax = Math.max(...data);
+    const globalRange = globalMax - globalMin;
+    const step = globalRange / 50;
+    
+    // Create common x-axis labels
+    const xLabels = [];
+    for (let x = globalMin; x <= globalMax; x += step) {
+        xLabels.push(x.toFixed(2));
+    }
+
     const datasets = groups.map((group, index) => {
         if (group.data.length === 0) return null;
         
         const mean = group.data.reduce((a, b) => a + b, 0) / group.data.length;
-        const std = Math.sqrt(group.data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / group.data.length);
+        const std = Math.sqrt(group.data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / group.data.length) || 1;
         
-        // Create density curve for each group
-        const min = Math.min(...group.data);
-        const max = Math.max(...group.data);
+        // Create density curve for each group using global range
         const densityPoints = [];
-        const step = (max - min) / 50;
         
-        for (let x = min; x <= max; x += step) {
+        for (let x = globalMin; x <= globalMax; x += step) {
             let density = 0;
             for (let val of group.data) {
-                const z = (x - val) / (std || 1);
+                const z = (x - val) / std;
                 density += Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
             }
-            density = (density / group.data.length) + index * 0.5; // Offset each ridge
+            // Normalize and offset each ridge
+            density = (density / (group.data.length * std)) + index * 0.3;
             densityPoints.push(density);
-        }
-        
-        const labels = [];
-        for (let x = min; x <= max; x += step) {
-            labels.push(x.toFixed(2));
         }
 
         return {
@@ -4783,32 +4788,79 @@ function createRidgePlot() {
             data: densityPoints,
             borderColor: group.color.replace('0.6', '1'),
             backgroundColor: group.color,
-            fill: true,
+            fill: '+1', // Fill to next dataset
             tension: 0.4,
-            pointRadius: 0
+            pointRadius: 0,
+            borderWidth: 2
         };
     }).filter(ds => ds !== null);
 
     document.getElementById('advancedVisualizationResults').innerHTML = `
+        <h5>🏔️ Ridge Plot - Data Quartiles Distribution</h5>
         <canvas id="ridgeChart" style="width: 100%; height: 400px;"></canvas>
+        <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+            <p><strong>Analysis:</strong> Shows density distributions for each data quartile</p>
+            <p><strong>Interpretation:</strong> Each ridge represents the distribution shape of 25% of your data</p>
+            <p><strong>Data Points:</strong> ${data.length} total, split into 4 quartile groups</p>
+        </div>
     `;
 
-    ChartManager.create('ridgeChart', {
-        type: 'line',
-        data: { datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { title: { display: true, text: 'Value', color: 'var(--text-primary)' } },
-                y: { title: { display: true, text: 'Density (Offset)', color: 'var(--text-primary)' } }
+    try {
+        ChartManager.create('ridgeChart', {
+            type: 'line',
+            data: { 
+                labels: xLabels,
+                datasets: datasets 
             },
-            plugins: {
-                title: { display: true, text: '🏔️ Ridge Plot - Data Quartiles', color: 'var(--text-primary)' },
-                legend: { labels: { color: 'var(--text-primary)' } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Data Value', color: 'var(--text-primary)' },
+                        ticks: { color: 'var(--text-secondary)' }
+                    },
+                    y: { 
+                        title: { display: true, text: 'Density (Offset by Quartile)', color: 'var(--text-primary)' },
+                        ticks: { color: 'var(--text-secondary)' }
+                    }
+                },
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: `🏔️ Ridge Plot - Data Quartiles (n=${data.length})`, 
+                        color: 'var(--text-primary)' 
+                    },
+                    legend: { 
+                        labels: { color: 'var(--text-primary)' },
+                        display: true
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: Density ${context.parsed.y.toFixed(3)}`;
+                            }
+                        }
+                    }
+                }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Ridge plot creation error:', error);
+        document.getElementById('advancedVisualizationResults').innerHTML = `
+            <div style="color: red; padding: 10px;">
+                <strong>Ridge Plot Error:</strong> ${error.message}<br>
+                Please try with different data or contact support.
+            </div>
+        `;
+    }
 }
 
 function createContourPlot() {
@@ -4817,108 +4869,317 @@ function createContourPlot() {
         return;
     }
 
-    const params = getCurrentParams();
-    
-    // Create 2D heatmap for bivariate or parameter space
-    const gridSize = 20;
-    const contourData = [];
-    
-    if (currentDistribution.name === 'Bivariate Normal Distribution') {
-        // True 2D contour for bivariate normal
-        const mu1 = params.mu1 || 0, mu2 = params.mu2 || 0;
-        const sigma1 = params.sigma1 || 1, sigma2 = params.sigma2 || 1;
-        const rho = params.rho || 0;
+    try {
+        const params = getCurrentParams();
         
-        const range = 3;
-        const step = (2 * range) / gridSize;
-        
-        for (let i = 0; i < gridSize; i++) {
-            contourData[i] = [];
-            for (let j = 0; j < gridSize; j++) {
-                const x = -range + i * step;
-                const y = -range + j * step;
-                
-                // Bivariate normal density
-                const z1 = (x - mu1) / sigma1;
-                const z2 = (y - mu2) / sigma2;
-                const density = Math.exp(-0.5 / (1 - rho*rho) * (z1*z1 - 2*rho*z1*z2 + z2*z2)) / 
-                               (2 * Math.PI * sigma1 * sigma2 * Math.sqrt(1 - rho*rho));
-                
-                contourData[i][j] = { x: x, y: y, v: density };
-            }
-        }
-    } else {
-        // Parameter sensitivity contour for univariate distributions
-        const param1Name = currentDistribution.params[0]?.id || 'param1';
-        const param2Name = currentDistribution.params[1]?.id || 'param2';
-        
-        if (currentDistribution.params.length >= 2) {
-            const param1Range = [params[param1Name] * 0.5, params[param1Name] * 1.5];
-            const param2Range = [params[param2Name] * 0.5, params[param2Name] * 1.5];
+        // Create a simplified contour visualization using bar chart representation
+        if (currentDistribution.name === 'Bivariate Normal Distribution') {
+            // For bivariate normal, create a 2D grid representation
+            const gridSize = 8; // Smaller grid for simpler visualization
+            const mu1 = params.mu1 || 0, mu2 = params.mu2 || 0;
+            const sigma1 = params.sigma1 || 1, sigma2 = params.sigma2 || 1;
+            const rho = params.rho || 0;
+            
+            const range = 2; // Smaller range for clearer visualization
+            const step = (2 * range) / gridSize;
+            const contourValues = [];
+            const contourLabels = [];
             
             for (let i = 0; i < gridSize; i++) {
-                contourData[i] = [];
                 for (let j = 0; j < gridSize; j++) {
-                    const p1 = param1Range[0] + (param1Range[1] - param1Range[0]) * i / (gridSize - 1);
-                    const p2 = param2Range[0] + (param2Range[1] - param2Range[0]) * j / (gridSize - 1);
+                    const x = -range + i * step;
+                    const y = -range + j * step;
                     
-                    // Create temporary params for this point
-                    const tempParams = {...params};
-                    tempParams[param1Name] = p1;
-                    tempParams[param2Name] = p2;
+                    // Simplified bivariate normal density calculation
+                    const z1 = (x - mu1) / sigma1;
+                    const z2 = (y - mu2) / sigma2;
+                    const exponent = -0.5 / (1 - rho*rho) * (z1*z1 - 2*rho*z1*z2 + z2*z2);
+                    const density = Math.exp(exponent);
                     
-                    // Calculate likelihood or density at this parameter combination
-                    let density = 0;
-                    try {
-                        if (currentData && currentData.length > 0) {
-                            // Calculate log-likelihood for current data
-                            density = currentData.reduce((sum, x) => {
-                                const pdf = currentDistribution.pdf ? currentDistribution.pdf(x, tempParams) : 0;
-                                return sum + Math.log(pdf + 1e-10);
-                            }, 0);
-                        } else {
-                            density = Math.random(); // Random for demonstration
+                    contourValues.push(density);
+                    contourLabels.push(`(${x.toFixed(1)}, ${y.toFixed(1)})`);
+                }
+            }
+            
+            document.getElementById('advancedVisualizationResults').innerHTML = `
+                <h5>📊 Bivariate Normal Contour Analysis</h5>
+                <canvas id="contourChart" style="width: 100%; height: 400px;"></canvas>
+                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <p><strong>Parameters:</strong> μ₁=${mu1}, μ₂=${mu2}, σ₁=${sigma1}, σ₂=${sigma2}, ρ=${rho}</p>
+                    <p><strong>Visualization:</strong> Shows density values across ${gridSize}×${gridSize} grid</p>
+                    <p><strong>Colors:</strong> Higher bars = higher probability density</p>
+                </div>
+            `;
+            
+            ChartManager.create('contourChart', {
+                type: 'bar',
+                data: {
+                    labels: contourLabels,
+                    datasets: [{
+                        label: 'Bivariate Density',
+                        data: contourValues,
+                        backgroundColor: contourValues.map(v => {
+                            const intensity = Math.min(v / Math.max(...contourValues), 1);
+                            return `rgba(16, 185, 129, ${0.3 + intensity * 0.7})`;
+                        }),
+                        borderColor: '#10b981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Grid Points (X, Y)', color: 'var(--text-primary)' },
+                            ticks: { maxTicksLimit: 8, color: 'var(--text-secondary)' }
+                        },
+                        y: { 
+                            title: { display: true, text: 'Density', color: 'var(--text-primary)' },
+                            beginAtZero: true,
+                            ticks: { color: 'var(--text-secondary)' }
                         }
-                    } catch (e) {
-                        density = 0;
+                    },
+                    plugins: {
+                        title: { display: true, text: '📊 Bivariate Normal Contour Plot', color: 'var(--text-primary)' },
+                        legend: { labels: { color: 'var(--text-primary)' } },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                label: function(context) {
+                                    return `Density: ${context.parsed.y.toFixed(4)}`;
+                                }
+                            }
+                        }
                     }
+                }
+            });
+            
+        } else if (currentDistribution.params.length >= 2) {
+            // For distributions with 2+ parameters, show parameter sensitivity
+            const param1 = currentDistribution.params[0];
+            const param2 = currentDistribution.params[1];
+            const param1Name = param1.name;
+            const param2Name = param2.name;
+            const param1Val = params[param1.id];
+            const param2Val = params[param2.id];
+            
+            // Create parameter variation analysis
+            const variations = [];
+            const labels = [];
+            const paramVariations = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3];
+            
+            paramVariations.forEach(factor1 => {
+                paramVariations.forEach(factor2 => {
+                    const newParams = {...params};
+                    newParams[param1.id] = param1Val * factor1;
+                    newParams[param2.id] = param2Val * factor2;
                     
-                    contourData[i][j] = { x: p1, y: p2, v: density };
+                    // Calculate mean from this parameter combination
+                    try {
+                        const stats = currentDistribution.stats(newParams);
+                        const meanValue = typeof stats.mean === 'number' ? stats.mean : 0;
+                        variations.push(Math.abs(meanValue));
+                        labels.push(`${param1Name}=${(param1Val * factor1).toFixed(2)}, ${param2Name}=${(param2Val * factor2).toFixed(2)}`);
+                    } catch (e) {
+                        variations.push(0);
+                        labels.push(`${factor1.toFixed(1)}, ${factor2.toFixed(1)}`);
+                    }
+                });
+            });
+            
+            document.getElementById('advancedVisualizationResults').innerHTML = `
+                <h5>📊 Parameter Sensitivity Analysis</h5>
+                <canvas id="contourChart" style="width: 100%; height: 400px;"></canvas>
+                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <p><strong>Analysis:</strong> Shows how distribution mean changes with parameter variations</p>
+                    <p><strong>Parameters:</strong> ${param1Name} vs ${param2Name}</p>
+                    <p><strong>Base Values:</strong> ${param1Name}=${param1Val}, ${param2Name}=${param2Val}</p>
+                    <p><strong>Variations:</strong> ±30% around base parameter values</p>
+                </div>
+            `;
+            
+            ChartManager.create('contourChart', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Distribution Mean',
+                        data: variations,
+                        backgroundColor: variations.map(v => {
+                            const maxV = Math.max(...variations);
+                            const intensity = maxV > 0 ? v / maxV : 0.5;
+                            return `rgba(16, 185, 129, ${0.3 + intensity * 0.7})`;
+                        }),
+                        borderColor: '#10b981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Parameter Combinations', color: 'var(--text-primary)' },
+                            ticks: { display: false } // Hide cluttered labels
+                        },
+                        y: { 
+                            title: { display: true, text: 'Distribution Mean', color: 'var(--text-primary)' },
+                            beginAtZero: true,
+                            ticks: { color: 'var(--text-secondary)' }
+                        }
+                    },
+                    plugins: {
+                        title: { display: true, text: '📊 Parameter Sensitivity Contour', color: 'var(--text-primary)' },
+                        legend: { labels: { color: 'var(--text-primary)' } },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return `Mean: ${context.parsed.y.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            });
+            
         } else {
-            // Single parameter - create 1D sensitivity analysis
-            for (let i = 0; i < gridSize; i++) {
-                contourData[i] = [];
-                for (let j = 0; j < gridSize; j++) {
-                    contourData[i][j] = { x: i, y: j, v: Math.random() };
+            // For single parameter distributions, show parameter effect on different statistics
+            const param = currentDistribution.params[0];
+            const baseValue = params[param.id];
+            const factors = [0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5];
+            
+            const means = [], variances = [], labels = [];
+            
+            factors.forEach(factor => {
+                const newParams = {...params};
+                newParams[param.id] = baseValue * factor;
+                
+                try {
+                    const stats = currentDistribution.stats(newParams);
+                    means.push(typeof stats.mean === 'number' ? Math.abs(stats.mean) : 0);
+                    variances.push(typeof stats.variance === 'number' ? Math.abs(stats.variance) : 0);
+                    labels.push(`${param.name}=${(baseValue * factor).toFixed(2)}`);
+                } catch (e) {
+                    means.push(0);
+                    variances.push(0);
+                    labels.push(`${factor.toFixed(1)}x`);
                 }
-            }
-        }
-    }
-
-    // Convert to heatmap format for visualization
-    const heatmapData = [];
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            heatmapData.push({
-                x: contourData[i][j].x,
-                y: contourData[i][j].y,
-                v: contourData[i][j].v
+            });
+            
+            document.getElementById('advancedVisualizationResults').innerHTML = `
+                <h5>📊 Parameter Effect Analysis</h5>
+                <canvas id="contourChart" style="width: 100%; height: 400px;"></canvas>
+                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <p><strong>Analysis:</strong> Shows how distribution statistics change with parameter values</p>
+                    <p><strong>Parameter:</strong> ${param.name}</p>
+                    <p><strong>Base Value:</strong> ${baseValue}</p>
+                    <p><strong>Range:</strong> 50% to 150% of base value</p>
+                </div>
+            `;
+            
+            ChartManager.create('contourChart', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mean',
+                        data: means,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Variance',
+                        data: variances,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Parameter Values', color: 'var(--text-primary)' },
+                            ticks: { color: 'var(--text-secondary)' }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Mean', color: 'var(--text-primary)' },
+                            ticks: { color: 'var(--text-secondary)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Variance', color: 'var(--text-primary)' },
+                            ticks: { color: 'var(--text-secondary)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: '📊 Parameter Sensitivity Analysis', 
+                            color: 'var(--text-primary)' 
+                        },
+                        legend: { 
+                            labels: { color: 'var(--text-primary)' },
+                            display: true
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y.toFixed(4);
+                                    return `${context.dataset.label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
+        
+    } catch (error) {
+        console.error('Contour plot creation error:', error);
+        document.getElementById('advancedVisualizationResults').innerHTML = `
+            <div style="color: red; padding: 10px;">
+                <strong>Contour Plot Error:</strong> ${error.message}<br>
+                <p>Creating simplified parameter analysis instead...</p>
+            </div>
+            <div style="margin-top: 10px; padding: 10px; background: #f0f8ff; border-radius: 4px;">
+                <h6>📊 Parameter Analysis Summary</h6>
+                <p><strong>Distribution:</strong> ${currentDistribution.name}</p>
+                <p><strong>Parameters:</strong> ${currentDistribution.params.map(p => p.name).join(', ')}</p>
+                <p><strong>Current Values:</strong> ${JSON.stringify(getCurrentParams(), null, 2)}</p>
+                <p><strong>Note:</strong> For true contour plots, consider using specialized statistical software.</p>
+            </div>
+        `;
     }
-
-    document.getElementById('advancedVisualizationResults').innerHTML = `
-        <h5>📊 Contour Plot - Parameter Space</h5>
-        <p><strong>Analysis:</strong> ${currentDistribution.name === 'Bivariate Normal Distribution' ? 'Bivariate density contours' : 'Parameter sensitivity analysis'}</p>
-        <p><strong>Grid Size:</strong> ${gridSize}×${gridSize} points</p>
-        <p><strong>Interpretation:</strong> Higher values indicate better parameter fits or higher density regions</p>
-        <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 4px;">
-            <strong>Note:</strong> This is a simplified contour representation. In a production environment, this would show 
-            actual contour lines with proper interpolation and color gradients.
-        </div>
-    `;
 }
 
 function createHeatmapCorrelation() {
