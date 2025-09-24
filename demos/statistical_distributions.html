@@ -2191,14 +2191,33 @@ function loadDistribution() {
     const select = document.getElementById('distributionSelect');
     const distName = select.value;
 
-    if (!distName) return;
+    if (!distName || !distributions[distName]) {
+        console.warn('Distribution not found:', distName);
+        return;
+    }
 
     currentDistribution = distributions[distName];
-    document.getElementById('distTitle').textContent = currentDistribution.name;
+    console.log('Loading distribution:', currentDistribution.name);
+    
+    // Update title if element exists
+    const titleElement = document.getElementById('distTitle');
+    if (titleElement) {
+        titleElement.textContent = currentDistribution.name;
+    }
+    
     renderParameters();
     updateStatistics();
-    renderCharts();
-    renderExplanation();
+    
+    // Only render charts if we're not in the parameters tab
+    const activeTab = document.querySelector('.tab-panel.active');
+    if (activeTab && activeTab.id === 'visualizations') {
+        renderMainChart();
+    }
+    
+    // Only render explanation if we're in the explanations tab
+    if (activeTab && activeTab.id === 'explanations') {
+        renderExplanation();
+    }
 }
 
 function renderParameters() {
@@ -3780,11 +3799,22 @@ function calculateDataStats(data) {
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     initTheme();
+    
     // Set initial distribution and load it properly
     const select = document.getElementById('distributionSelect');
-    select.value = 'normal';
-    loadDistribution();
+    if (select) {
+        select.value = 'normal';
+        // Make sure the distribution is loaded
+        if (distributions && distributions.normal) {
+            currentDistribution = distributions.normal;
+            renderParameters();
+            updateStatistics();
+        }
+    }
+    
     changeDataMethod();
+    
+    console.log('Application initialized with Normal distribution');
 });
     </script>
 </body>
