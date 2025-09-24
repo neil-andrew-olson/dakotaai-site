@@ -324,14 +324,14 @@
                 </div>
 
                 <!-- Random Data Generation Controls -->
-                <div id="randomControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div id="randomControls" class="input-controls" style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="margin: 0 0 10px 0; color: #2c3e50;">🎲 Random Data Generation</h4>
                     <label style="margin-right: 10px;">Sample Size: <input type="number" id="sampleSize" value="100" min="10" max="10000" style="width: 80px; padding: 4px;"></label>
                     <button onclick="generateRandomData()" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🎯 Generate</button>
                 </div>
 
                 <!-- Manual Data Input Controls -->
-                <div id="manualControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div id="manualControls" class="input-controls" style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="margin: 0 0 10px 0; color: #2c3e50;">✏️ Manual Data Input</h4>
                     <textarea id="manualDataInput" placeholder="Enter comma-separated numbers (e.g., 1.2, 3.4, 5.6, 7.8)" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;"></textarea>
                     <button onclick="processManualData()" style="padding: 6px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer;">💾 Process</button>
@@ -1799,7 +1799,7 @@ window.distributions = {
                         median: 'Approximation needed',
                         mode: (df1 - 2)/df1 * df2/(df2 + 2) // approximation
                     };
-                }
+                },
                 explanation: `
                     <p>The F-distribution (also known as Snedecor F-distribution or Fisher-Snedecor distribution) arises in the testing of whether two observed samples have the same variance.</p>
 
@@ -2242,10 +2242,20 @@ function initTheme() {
 function changeDataMethod() {
     const method = document.getElementById('dataMethodSelect').value;
 
-    // Show/hide controls based on selected method
-    document.getElementById('uploadControls').style.display = method === 'upload' ? 'block' : 'none';
-    document.getElementById('randomControls').style.display = method === 'random' ? 'block' : 'none';
-    document.getElementById('manualControls').style.display = method === 'manual' ? 'block' : 'none';
+    // Highlight the selected method - all controls are now always visible
+    const controls = ['uploadControls', 'randomControls', 'manualControls'];
+    controls.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            if (id.includes(method)) {
+                element.style.border = '2px solid #4CAF50';
+                element.style.background = 'rgba(76, 175, 80, 0.05)';
+            } else {
+                element.style.border = '1px solid #ddd';
+                element.style.background = 'rgba(255,255,255,0.9)';
+            }
+        }
+    });
 
     console.log('Data method changed to:', method);
 }
