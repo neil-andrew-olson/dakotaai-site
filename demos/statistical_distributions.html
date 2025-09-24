@@ -21,8 +21,8 @@
             --info: #06b6d4;
             --dark: #1e1b4b;
             --light: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
             --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --shadow-hard: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -2378,7 +2378,6 @@ function analyzeData(data) {
     const skewness = calculateSkewness(data, mean, stdDev);
     const median = calculateMedian(data);
 
-    analyzeData(currentData);
     displayDataAnalysisResults(data.length, mean, stdDev, skewness, median);
     renderDataChart(data);
 }
@@ -2539,3 +2538,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDistribution();
     changeDataMethod();
 });
+    </script>
+</body>
+</html>
