@@ -387,39 +387,6 @@
             </div>
 
             <div id="visualizations" class="tab-panel">
-                <!-- Data Input Method Selection -->
-                <div class="data-input-section" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 15px 0; color: #2c3e50;">📊 Data Input Method</h4>
-                    <select id="dataMethodSelect" onchange="changeDataMethod()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: white;">
-                        <option value="upload">📁 Upload CSV/Excel File</option>
-                        <option value="random">🎲 Generate Random Data</option>
-                        <option value="manual">✏️ Manual Input</option>
-                    </select>
-                </div>
-
-                <!-- File Upload Controls -->
-                <div id="uploadControls" class="input-controls" style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">📁 File Upload</h4>
-                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFileUpload(event)" style="margin-bottom: 10px;">
-                    <select id="columnSelect" style="padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; background: white; margin-right: 10px;">
-                        <option value="">Select a column...</option>
-                    </select>
-                    <button onclick="processUploadedData()" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">📊 Process Data</button>
-                </div>
-
-                <!-- Random Data Generation Controls -->
-                <div id="randomControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">🎲 Random Data Generation</h4>
-                    <label style="margin-right: 10px;">Sample Size: <input type="number" id="sampleSize" value="100" min="10" max="10000" style="width: 80px; padding: 4px;"></label>
-                    <button onclick="generateRandomData()" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🎯 Generate</button>
-                </div>
-
-                <!-- Manual Data Input Controls -->
-                <div id="manualControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">✏️ Manual Data Input</h4>
-                    <textarea id="manualDataInput" placeholder="Enter comma-separated numbers (e.g., 1.2, 3.4, 5.6, 7.8)" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;"></textarea>
-                    <button onclick="processManualData()" style="padding: 6px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer;">💾 Process</button>
-                </div>
 
                 <div class="chart-controls">
                     <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 15px;">
@@ -2384,27 +2351,157 @@ function generateRandomData() {
         return;
     }
 
-    const sampleSize = parseInt(document.getElementById('sampleSize').value) || 100;
+    const sampleSize = Math.min(parseInt(document.getElementById('sampleSize').value) || 100, 5000); // Cap sample size
     const params = getCurrentParams();
-
     const randomData = [];
 
-    if (currentDistribution.name === 'Normal Distribution') {
+    try {
         for (let i = 0; i < sampleSize; i++) {
-            const u1 = Math.random();
-            const u2 = Math.random();
-            const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-            randomData.push(params.mu + z * Math.sqrt(params.sigma));
-        }
-    } else {
-        // Fallback: basic random generation
-        for (let i = 0; i < sampleSize; i++) {
-            randomData.push(Math.random());
-        }
-    }
+            let value;
 
-    currentData = randomData;
-    analyzeData(currentData);
+            switch (currentDistribution.name) {
+                case 'Normal Distribution':
+                    // Box-Muller transform
+                    const u1 = Math.random();
+                    const u2 = Math.random();
+                    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                    value = params.mu + z * Math.sqrt(params.sigma);
+                    break;
+
+                case 'Poisson Distribution':
+                    // Knuth's algorithm for Poisson random variables
+                    const lambda = params.lambda;
+                    if (lambda < 30) {
+                        // Direct method for small lambda
+                        const L = Math.exp(-lambda);
+                        let k = 0, p = 1;
+                        do {
+                            k++;
+                            p *= Math.random();
+                        } while (p > L);
+                        value = k - 1;
+                    } else {
+                        // Normal approximation for large lambda
+                        const normal = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+                        value = Math.round(lambda + Math.sqrt(lambda) * normal);
+                    }
+                    break;
+
+                case 'Binomial Distribution':
+                    // Generate as sum of Bernoulli trials
+                    let successCount = 0;
+                    for (let j = 0; j < params.n; j++) {
+                        if (Math.random() < params.p) successCount++;
+                    }
+                    value = successCount;
+                    break;
+
+                case 'Beta Distribution':
+                    // Use acceptance-rejection or approximation
+                    // For simplicity, use order statistics approximation
+                    const uniform1 = Math.random();
+                    const uniform2 = Math.random();
+                    value = uniform1 * params.alpha + uniform2 * params.beta;
+                    value = Math.max(0, Math.min(1, value / 2)); // Scale to [0,1] approximately
+                    break;
+
+                case 'Gamma Distribution':
+                    // Marsaglia and Tsang method (simplified)
+                    const k_shape = params.k;
+                    const theta_scale = params.theta;
+
+                    if (k_shape < 1) {
+                        // Use acceptance-rejection for shape < 1
+                        const u = Math.random();
+                        const v = Math.random();
+                        value = theta_scale * Math.pow(u, 1/k_shape) * Math.pow(-Math.log(v), (k_shape-1)/k_shape);
+                    } else {
+                        // Use Ahrens-Dieter acceptance-rejection
+                        const d = k_shape - 1/3;
+                        let x, v;
+                        do {
+                            do {
+                                x = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+                                v = 1 + x / Math.sqrt(d);
+                            } while (v <= 0);
+                            v = v * v * v;
+                            const u = Math.random();
+                            if (u < 1 - 0.0331 * x * x * x * x) break;
+                            if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) break;
+                        } while (true);
+                        value = d * v * theta_scale;
+                    }
+                    break;
+
+                case 'Geometric Distribution':
+                    // Inverse transform sampling
+                    value = Math.ceil(Math.log(Math.random()) / Math.log(1 - params.p));
+                    break;
+
+                case 'Hypergeometric Distribution':
+                    // Approximation using binomial for large populations
+                    const prob = params.n * params.K / (params.N * (params.N - params.n));
+                    let successes = 0;
+                    for (let j = 0; j < params.n; j++) {
+                        if (Math.random() < prob) successes++;
+                    }
+                    value = successes;
+                    break;
+
+                case 'Student-t Distribution':
+                    // Normal/Z divided by sqrt(Chisquare/df)
+                    const normal = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+                    const chi2 = -2 * Math.log(Math.product(Array.from({length: Math.floor(params.df/2)}, () => Math.random())));
+                    value = normal / Math.sqrt(chi2 / params.df);
+                    break;
+
+                case 'Weibull Distribution':
+                    // Inverse transform
+                    value = params.lambda * Math.pow(-Math.log(Math.random()), 1/params.k);
+                    break;
+
+                case 'Uniform Distribution':
+                    // Direct sampling
+                    value = params.a + (params.b - params.a) * Math.random();
+                    break;
+
+                case 'Exponential Distribution':
+                    // Memoryless property
+                    value = -Math.log(Math.random()) / params.lambda;
+                    break;
+
+                case 'Chi-Squared Distribution':
+                    // Sum of squares of normal variables
+                    let chi = 0;
+                    for (let j = 0; j < Math.floor(params.k); j++) {
+                        const normal = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+                        chi += normal * normal;
+                    }
+                    value = chi;
+                    break;
+
+                default:
+                    // Fallback to uniform [0,1] scaled to distribution range
+                    const range = params.sigma ? params.mu + 4 * params.sigma : params.lambda ? 4 * params.lambda : 10;
+                    value = (Math.random() - 0.5) * 2 * range;
+                    break;
+            }
+
+            if (isFinite(value) && !isNaN(value)) {
+                randomData.push(Math.round(value * 10000) / 10000); // Round to 4 decimal places
+            } else {
+                randomData.push(0); // Fallback
+            }
+        }
+
+        currentData = randomData;
+        analyzeData(currentData);
+        console.log(`Generated ${sampleSize} random samples from ${currentDistribution.name}`);
+
+    } catch (error) {
+        console.error('Error generating random data:', error);
+        alert('Error generating random data: ' + error.message);
+    }
 }
 
 function processManualData() {
