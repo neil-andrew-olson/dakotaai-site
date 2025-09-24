@@ -136,7 +136,6 @@ header:hover {
     background: rgba(30, 58, 138, 0.98);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     border-bottom-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
 }
 
 header:hover::before {
@@ -225,7 +224,6 @@ nav a:hover {
     color: white;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    transform: translateY(-1px);
 }
 
 nav a:hover::before {
