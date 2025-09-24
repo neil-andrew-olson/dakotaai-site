@@ -2778,8 +2778,9 @@ function performJarqueBeraTest(data) {
     // JB statistic
     const JB = (n / 6) * (Math.pow(skewness, 2) + Math.pow(kurtosis - 3, 2) / 4);
 
-    // Approximate p-value using chi-square approximation
-    const pValue = 1 - math.erfc(JB / Math.sqrt(2));
+    // Approximate p-value using chi-square approximation (JB ~ chi²₂)
+    // For chi-square with 2 df, we can use a simplified approximation
+    const pValue = JB < 0.5 ? 0.9 : JB < 2 ? 0.5 : JB < 5 ? 0.1 : 0.01;
 
     return {
         statistic: JB,
