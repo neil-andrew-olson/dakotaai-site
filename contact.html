@@ -27,11 +27,39 @@
     </header>
 
     <main>
-        <div class="container">
-            <h2>Contact Us</h2>
-            <p style="text-align: center; max-width: 800px; margin: 0 auto 2rem;" class="overview">Interested in our AI services? Reach out to us for more information or to discuss your needs.</p>
+        <!-- Hero Section -->
+        <section class="contact-hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6rem 0; text-align: center; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%);"></div>
+            <div class="container" style="position: relative; z-index: 2;">
+                <h1 style="font-family: var(--font-display); font-size: clamp(3rem, 6vw, 4rem); font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Get In Touch</h1>
+                <p style="font-size: 1.4rem; max-width: 800px; margin: 0 auto 3rem; line-height: 1.7; opacity: 0.95;">Ready to transform your business with AI? Let's discuss your unique needs and explore how our solutions can drive your success.</p>
+                <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 1rem 2rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-clock" style="color: #10b981;"></i>
+                        <span>24hr Response</span>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 1rem 2rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-comments" style="color: #f59e0b;"></i>
+                        <span>Free Consultation</span>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 1rem 2rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i>
+                        <span>West Fargo, ND</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            <div class="contact-content">
+        <!-- Contact Content Section -->
+        <section style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 5rem 0; position: relative;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.08) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%); pointer-events: none;"></div>
+            <div class="container" style="position: relative; z-index: 2;">
+                <div style="text-align: center; margin-bottom: 4rem;">
+                    <h2 style="font-size: clamp(2rem, 4vw, 2.5rem); color: #1e293b; font-weight: 800; margin-bottom: 1.5rem;">Start Your AI Journey Today</h2>
+                    <p style="font-size: 1.3rem; color: #374151; max-width: 700px; margin: 0 auto; line-height: 1.7;">Whether you're exploring AI for the first time or looking to enhance existing systems, we're here to help you succeed.</p>
+                </div>
+
+                <div class="contact-content">
                 <div class="contact-form">
                     <form action="https://formspree.io/f/mqadrkpn" method="POST">
                         <input type="hidden" name="_subject" value="New Contact Form Submission">

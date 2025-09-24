@@ -104,23 +104,43 @@ body {
     padding: 0 var(--space-6);
 }
 
-/* Enhanced Header with Glassmorphism */
+/* Enhanced Header with Premium Glassmorphism */
 header {
     background: rgba(30, 58, 138, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     position: sticky;
     top: 0;
     z-index: 1000;
-    min-height: 80px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 85px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 header:hover {
     background: rgba(30, 58, 138, 0.98);
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+header:hover::before {
+    opacity: 1;
 }
 
 /* Enhanced Navigation */
@@ -1928,6 +1948,49 @@ nav a:hover::before {
 
     .contact-info {
         margin: 0 1rem;
+    }
+
+    /* Enhanced mobile hero sections */
+    .about-hero,
+    .services-hero,
+    .contact-hero {
+        padding: 4rem 0 !important;
+    }
+
+    .about-hero h1,
+    .services-hero h1,
+    .contact-hero h1 {
+        font-size: 2.5rem !important;
+    }
+
+    .about-hero p,
+    .services-hero p,
+    .contact-hero p {
+        font-size: 1.1rem !important;
+    }
+
+    /* Mobile navigation improvements */
+    .nav-container {
+        padding: 1rem !important;
+    }
+
+    nav ul {
+        gap: 0.5rem !important;
+    }
+
+    nav a {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Mobile form improvements */
+    .contact-form {
+        padding: 1.5rem !important;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
     }
 }
 
