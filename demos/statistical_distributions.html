@@ -307,7 +307,7 @@
                 <div class="data-input-section" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="margin: 0 0 15px 0; color: #2c3e50;">📊 Data Input Method</h4>
                     <select id="dataMethodSelect" onchange="changeDataMethod()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: white;">
-                        <option value="upload">📁 Upload CSV/Excel File</option>
+                        <option value="upload" selected>📁 Upload CSV/Excel File</option>
                         <option value="random">🎲 Generate Random Data</option>
                         <option value="manual">✏️ Manual Input</option>
                     </select>
@@ -2589,11 +2589,11 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">🧪 Normality Tests</h5>
 
         <div class="stat-card">
-            <div class="value">${swtest && swtest.statistic ? swtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${swtest && swtest.statistic !== null && swtest.statistic !== undefined && isFinite(swtest.statistic) ? swtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">SW W-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${swtest && swtest.pValue ? swtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${swtest && swtest.pValue !== null && swtest.pValue !== undefined && isFinite(swtest.pValue) ? swtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">SW p-value</div>
         </div>
         <div class="stat-card">
@@ -2602,11 +2602,11 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         </div>
 
         <div class="stat-card">
-            <div class="value">${adtest && adtest.statistic ? adtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${adtest && adtest.statistic !== null && adtest.statistic !== undefined && isFinite(adtest.statistic) ? adtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">AD A²-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${adtest && adtest.pValue ? adtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${adtest && adtest.pValue !== null && adtest.pValue !== undefined && isFinite(adtest.pValue) ? adtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">AD p-value</div>
         </div>
         <div class="stat-card">
@@ -2615,11 +2615,11 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         </div>
 
         <div class="stat-card">
-            <div class="value">${jbtest && jbtest.statistic ? jbtest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${jbtest && jbtest.statistic !== null && jbtest.statistic !== undefined && isFinite(jbtest.statistic) ? jbtest.statistic.toFixed(3) : '--'}</div>
             <div class="label">JB χ²-stat</div>
         </div>
         <div class="stat-card">
-            <div class="value">${jbtest && jbtest.pValue ? jbtest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${jbtest && jbtest.pValue !== null && jbtest.pValue !== undefined && isFinite(jbtest.pValue) ? jbtest.pValue.toFixed(3) : '--'}</div>
             <div class="label">JB p-value</div>
         </div>
         <div class="stat-card">
@@ -2630,15 +2630,15 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">📊 Goodness-of-Fit Tests</h5>
 
         <div class="stat-card">
-            <div class="value">${kstest ? kstest.statistic.toFixed(3) : '--'}</div>
+            <div class="value">${kstest && kstest.statistic !== null && kstest.statistic !== undefined && isFinite(kstest.statistic) ? kstest.statistic.toFixed(3) : '--'}</div>
             <div class="label">KS Statistic</div>
         </div>
         <div class="stat-card">
-            <div class="value">${kstest ? kstest.pValue.toFixed(3) : '--'}</div>
+            <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) ? kstest.pValue.toFixed(3) : '--'}</div>
             <div class="label">KS P-Value</div>
         </div>
         <div class="stat-card">
-            <div class="value">${kstest && kstest.pValue > 0.05 ? 'Pass' : 'Fail'}</div>
+            <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) && kstest.pValue > 0.05 ? 'Pass' : 'Fail'}</div>
             <div class="label">KS α=0.05</div>
         </div>
     `;
@@ -2730,11 +2730,9 @@ function performAndersonDarlingTest(data) {
     const sortedData = [...data].sort((a, b) => a - b);
     const params = getCurrentParams();
 
-    const params2 = getCurrentParams();
-
     let A2 = 0;
-    let mean = params.mu || params2.mu || 0;
-    let sigma = Math.sqrt(params.sigma || params2.sigma || 1);
+    let mean = params.mu !== undefined ? params.mu : 0;
+    let sigma = params.sigma !== undefined ? Math.sqrt(params.sigma) : 1;
 
     for (let i = 0; i < n; i++) {
         const z = (sortedData[i] - mean) / sigma;
