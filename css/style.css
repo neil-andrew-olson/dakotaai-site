@@ -104,7 +104,7 @@ body {
     padding: 0 var(--space-6);
 }
 
-/* Enhanced Header with Premium Glassmorphism */
+/* Enhanced Header with Premium Glassmorphism - Completely Stationary */
 header {
     background: rgba(30, 58, 138, 0.95);
     backdrop-filter: blur(25px);
@@ -115,8 +115,9 @@ header {
     z-index: 1000;
     min-height: 85px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     position: relative;
+    transform: none !important;
 }
 
 header::before {
@@ -136,13 +137,14 @@ header:hover {
     background: rgba(30, 58, 138, 0.98);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     border-bottom-color: rgba(255, 255, 255, 0.2);
+    transform: none !important;
 }
 
 header:hover::before {
     opacity: 1;
 }
 
-/* Enhanced Navigation */
+/* Enhanced Navigation - Completely Stationary */
 .nav-container {
     display: flex;
     justify-content: space-between;
@@ -152,6 +154,8 @@ header:hover::before {
     margin: 0 auto;
     flex-wrap: wrap;
     gap: var(--space-4);
+    transform: none !important;
+    transition: none !important;
 }
 
 .logo a {
