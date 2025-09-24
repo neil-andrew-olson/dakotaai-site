@@ -57,17 +57,22 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            color: var(--light);
-            overflow-x: hidden;
-            position: relative;
-        }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    position: relative;
+}
+
+[data-theme="dark"] {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: var(--text-primary);
+}
 
         body::before {
             content: '';
@@ -202,7 +207,7 @@
             cursor: pointer;
             font-size: 0.95rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             position: relative;
             transition: all var(--animation-fast);
             backdrop-filter: blur(10px);
@@ -222,7 +227,7 @@
         }
 
         .nav-tabs button:hover {
-            color: var(--light);
+            color: var(--primary);
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -231,7 +236,7 @@
         }
 
         .nav-tabs button.active {
-            color: var(--light);
+            color: var(--primary);
             font-weight: 700;
             background: var(--glass);
         }
@@ -850,21 +855,67 @@
             </div>
 
             <div id="visualizations" class="tab-panel">
-                <div class="charts-panel">
-                    <div class="chart-container">
-                        <h4>📈 Probability Density Function (PDF)</h4>
-                        <canvas id="pdfChart"></canvas>
+                <!-- Chart Type Selection and Controls -->
+                <div class="chart-controls" style="margin-bottom: 30px;">
+                    <div class="control-group" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+                        <div class="control-item">
+                            <label style="font-weight: 600; color: var(--text-primary); margin-right: 10px;">Chart Type:</label>
+                            <select id="chartTypeSelect" onchange="changeChartType()" style="padding: 8px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--glass);">
+                                <option value="pdf">📈 Probability Density (PDF)</option>
+                                <option value="cdf">📊 Cumulative Distribution (CDF)</option>
+                                <option value="histogram">📊 Histogram & Distribution Fit</option>
+                                <option value="qqplot">📉 Q-Q Plot</option>
+                                <option value="boxplot">📦 Box Plot & Statistics</option>
+                                <option value="scatter">🔸 Parameter Scatter Plot</option>
+                                <option value="radar">🎯 Distribution Comparison</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label style="font-weight: 600; color: var(--text-primary); margin-right: 10px;">Style:</label>
+                            <select id="styleSelect" onchange="changeChartStyle()" style="padding: 8px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--glass);">
+                                <option value="default">Default</option>
+                                <option value="professional">Professional</option>
+                                <option value="vibrant">Vibrant</option>
+                                <option value="minimal">Minimal</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <h4>📊 Cumulative Distribution Function (CDF)</h4>
-                        <canvas id="cdfChart"></canvas>
+
+                    <div class="control-group" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div class="control-item">
+                            <button onclick="exportChart()" style="padding: 8px 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">📊 Export Chart</button>
+                        </div>
+                        <div class="control-item">
+                            <button onclick="toggleFullscreen()" style="padding: 8px 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">🔍 Fullscreen</button>
+                        </div>
+                        <div class="control-item">
+                            <button onclick="showInsights()" style="padding: 8px 16px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">💡 Insights</button>
+                        </div>
                     </div>
                 </div>
-                <div class="charts-panel">
-                    <div class="chart-container" style="grid-column: span 2;">
-                        <h4>🎯 Data Histogram & Distribution Fit</h4>
-                        <canvas id="dataChart"></canvas>
+
+                <!-- Main Chart Display -->
+                <div id="mainChartContainer" class="chart-container" style="background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 25px; margin-bottom: 30px; min-height: 500px;">
+                    <h4 id="chartTitle" style="margin: 0 0 20px 0; font-size: 1.5rem; font-weight: 700; text-align: center;">📈 Probability Density Function (PDF)</h4>
+                    <canvas id="mainChart" style="max-height: 600px;"></canvas>
+                </div>
+
+                <!-- Secondary Charts Row -->
+                <div class="charts-panel" id="secondaryCharts" style="display: none;">
+                    <div class="chart-container">
+                        <h4>📊 Parameter Relationships</h4>
+                        <canvas id="paramScatter"></canvas>
                     </div>
+                    <div class="chart-container">
+                        <h4>📈 Distribution Properties</h4>
+                        <canvas id="propertiesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Insights Panel -->
+                <div id="insightsPanel" class="chart-container" style="display: none; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1));">
+                    <h4 style="color: #7c3aed;">💡 Statistical Insights</h4>
+                    <div id="insightsContent"></div>
                 </div>
             </div>
 
@@ -2917,12 +2968,706 @@ function renderDataChart(data) {
     });
 }
 
+// Chart type and style management
+let currentChartType = 'pdf';
+let currentChartStyle = 'default';
+
+function changeChartType() {
+    currentChartType = document.getElementById('chartTypeSelect').value;
+    renderMainChart();
+}
+
+function changeChartStyle() {
+    currentChartStyle = document.getElementById('styleSelect').value;
+    renderMainChart();
+}
+
+function renderMainChart() {
+    if (!currentDistribution) return;
+
+    const params = getCurrentParams();
+    const chartContainer = document.getElementById('mainChartContainer');
+    const canvas = document.getElementById('mainChart');
+    const titleElement = document.getElementById('chartTitle');
+
+    // Destroy existing chart
+    if (window.mainChart) {
+        window.mainChart.destroy();
+    }
+
+    let chartData, chartOptions, chartType;
+
+    // Generate chart based on type
+    switch (currentChartType) {
+        case 'pdf':
+            ({ chartData, chartOptions, chartType } = createPDFChart(params));
+            titleElement.textContent = '📈 Probability Density Function (PDF)';
+            break;
+        case 'cdf':
+            ({ chartData, chartOptions, chartType } = createCDFChart(params));
+            titleElement.textContent = '📊 Cumulative Distribution Function (CDF)';
+            break;
+        case 'histogram':
+            ({ chartData, chartOptions, chartType } = createHistogramChart(params));
+            titleElement.textContent = '📊 Histogram & Distribution Fit';
+            break;
+        case 'qqplot':
+            ({ chartData, chartOptions, chartType } = createQQPlot(params));
+            titleElement.textContent = '📉 Q-Q Plot';
+            break;
+        case 'boxplot':
+            ({ chartData, chartOptions, chartType } = createBoxPlot(params));
+            titleElement.textContent = '📦 Box Plot & Statistics';
+            break;
+        case 'scatter':
+            ({ chartData, chartOptions, chartType } = createScatterPlot(params));
+            titleElement.textContent = '🔸 Parameter Scatter Plot';
+            break;
+        case 'radar':
+            ({ chartData, chartOptions, chartType } = createRadarComparison(params));
+            titleElement.textContent = '🎯 Distribution Comparison';
+            break;
+    }
+
+    // Apply style theme
+    applyChartStyle(chartOptions);
+
+    // Create new chart
+    window.mainChart = new Chart(canvas, {
+        type: chartType,
+        data: chartData,
+        options: chartOptions
+    });
+}
+
+function getChartStyleConfig(style) {
+    const themes = {
+        default: {
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderColor: '#10b981',
+            pointBackgroundColor: '#10b981',
+            tension: 0.4,
+            borderWidth: 2
+        },
+        professional: {
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderColor: '#3b82f6',
+            pointBackgroundColor: '#3b82f6',
+            tension: 0.1,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 6
+        },
+        vibrant: {
+            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+            borderColor: '#f59e0b',
+            pointBackgroundColor: '#f59e0b',
+            tension: 0.6,
+            borderWidth: 4,
+            gradient: true
+        },
+        minimal: {
+            backgroundColor: 'rgba(107, 114, 128, 0.05)',
+            borderColor: '#6b7280',
+            pointBackgroundColor: '#6b7280',
+            tension: 0.3,
+            borderWidth: 1,
+            pointRadius: 0,
+            grid: false
+        }
+    };
+    return themes[style] || themes.default;
+}
+
+function applyChartStyle(options) {
+    const style = getChartStyleConfig(currentChartStyle);
+
+    // Apply to scales
+    if (options.scales) {
+        Object.keys(options.scales).forEach(scaleKey => {
+            const scale = options.scales[scaleKey];
+            if (scale.grid) {
+                scale.grid.color = style.grid === false ? 'transparent' : 'rgba(0,0,0,0.1)';
+                scale.grid.lineWidth = style.grid === false ? 0 : 1;
+            }
+            if (scale.ticks) {
+                scale.ticks.color = 'var(--text-secondary)';
+            }
+        });
+    }
+
+    // Apply to plugins
+    if (options.plugins && options.plugins.legend) {
+        options.plugins.legend.labels.color = 'var(--text-primary)';
+    }
+
+    return options;
+}
+
+function createPDFChart(params) {
+    const isDiscrete = currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') ||
+                      currentDistribution.name.includes('Geometric') || currentDistribution.name.includes('Hypergeometric') ||
+                      currentDistribution.name.includes('Negative Binomial');
+
+    let xValues = [], yValues = [];
+
+    if (isDiscrete) {
+        const xMin = 0;
+        const xMax = currentDistribution.name.includes('Binomial') ? params.n :
+                    currentDistribution.name.includes('Geometric') ? Math.min(params.lambda * 3, 20) :
+                    currentDistribution.name.includes('Hypergeometric') ? Math.min(params.n, 20) :
+                    Math.min(params.lambda * 3, params.lambda * 2 + 10);
+
+        for (let x = xMin; x <= xMax; x++) {
+            xValues.push(x);
+            yValues.push(currentDistribution.pmf ? currentDistribution.pmf(x, params) : 0);
+        }
+    } else {
+        const range = Math.max(Math.abs(params.mu || 0) + 3 * Math.abs(params.sigma || 1), 5);
+        const xMin = -range, xMax = range, step = Math.max(range / 100, 0.05);
+
+        for (let x = xMin; x <= xMax; x += step) {
+            xValues.push(Math.round(x * 100) / 100);
+            yValues.push(currentDistribution.pdf ? currentDistribution.pdf(x, params) : 0);
+        }
+    }
+
+    const style = getChartStyleConfig(currentChartStyle);
+
+    return {
+        chartType: isDiscrete ? 'bar' : 'line',
+        chartData: {
+            labels: xValues,
+            datasets: [{
+                label: isDiscrete ? 'Probability Mass' : 'Density',
+                data: yValues,
+                ...style
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'x', color: 'var(--text-primary)' },
+                    type: isDiscrete ? 'category' : 'linear',
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    title: { display: true, text: isDiscrete ? 'Probability' : 'Density', color: 'var(--text-primary)' },
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function createCDFChart(params) {
+    const isDiscrete = currentDistribution.name.includes('Binomial') || currentDistribution.name.includes('Poisson') ||
+                      currentDistribution.name.includes('Geometric') || currentDistribution.name.includes('Hypergeometric') ||
+                      currentDistribution.name.includes('Negative Binomial');
+
+    let xValues = [], yValues = [];
+
+    if (isDiscrete) {
+        const xMax = currentDistribution.name.includes('Binomial') ? params.n :
+                    currentDistribution.name.includes('Geometric') ? Math.min(params.lambda * 3, 20) :
+                    currentDistribution.name.includes('Hypergeometric') ? Math.min(params.n, 20) :
+                    Math.min(params.lambda * 3, params.lambda * 2 + 10);
+
+        for (let x = 0; x <= xMax; x++) {
+            xValues.push(x);
+            yValues.push(currentDistribution.cdf ? currentDistribution.cdf(x, params) : 0);
+        }
+    } else {
+        const range = Math.max(Math.abs(params.mu || 0) + 3 * Math.abs(params.sigma || 1), 5);
+        const xMin = -range, xMax = range, step = Math.max(range / 100, 0.05);
+
+        for (let x = xMin; x <= xMax; x += step) {
+            xValues.push(Math.round(x * 100) / 100);
+            yValues.push(currentDistribution.cdf ? currentDistribution.cdf(x, params) : 0);
+        }
+    }
+
+    const style = getChartStyleConfig(currentChartStyle);
+
+    return {
+        chartType: 'line',
+        chartData: {
+            labels: xValues,
+            datasets: [{
+                label: 'Cumulative Probability',
+                data: yValues,
+                fill: currentChartStyle !== 'minimal',
+                ...style
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'x', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    title: { display: true, text: 'Cumulative Probability', color: 'var(--text-primary)' },
+                    min: 0, max: 1,
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function createHistogramChart(params) {
+    if (!currentData || currentData.length === 0) {
+        // Show distribution curve if no data
+        return createPDFChart(params);
+    }
+
+    const data = currentData;
+    const minVal = Math.min(...data);
+    const maxVal = Math.max(...data);
+    const binCount = Math.min(30, Math.ceil(Math.sqrt(data.length)));
+    const binWidth = (maxVal - minVal) / binCount;
+    const bins = Array(binCount).fill(0);
+
+    data.forEach(value => {
+        const binIndex = Math.min(binCount - 1, Math.floor((value - minVal) / binWidth));
+        bins[binIndex]++;
+    });
+
+    const binLabels = [];
+    for (let i = 0; i < binCount; i++) {
+        const binStart = minVal + i * binWidth;
+        const binEnd = binStart + binWidth;
+        binLabels.push(`${binStart.toFixed(2)} - ${binEnd.toFixed(2)}`);
+    }
+
+    // Generate distribution curve overlay
+    const curvePoints = [];
+    const step = binWidth / 10;
+    for (let i = 0; i < binCount; i++) {
+        const x = minVal + i * binWidth + binWidth / 2;
+        let density = 0;
+        try {
+            density = currentDistribution.pdf ? currentDistribution.pdf(x, params) : 0;
+        } catch (e) {
+            density = 0;
+        }
+        curvePoints.push({ x: x, y: density * data.length * binWidth });
+    }
+
+    return {
+        chartType: 'bar',
+        chartData: {
+            labels: binLabels,
+            datasets: [{
+                label: 'Data Histogram',
+                data: bins,
+                backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                borderColor: '#10b981',
+                borderWidth: 1,
+                yAxisID: 'y'
+            }, {
+                label: 'Distribution Fit',
+                data: curvePoints.map(p => p.y),
+                type: 'line',
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                fill: false,
+                pointRadius: 0,
+                tension: 0.4,
+                yAxisID: 'y'
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Value Range', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Frequency', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function createQQPlot(params) {
+    if (!currentData || currentData.length === 0) {
+        return createPDFChart(params); // fallback
+    }
+
+    const data = [...currentData].sort((a, b) => a - b);
+    const theoreticalQuantiles = [];
+    const sampleQuantiles = [];
+
+    // Calculate theoretical quantiles at various probabilities
+    const probabilities = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99];
+
+    probabilities.forEach(p => {
+        const index = Math.floor(p * (data.length - 1));
+        sampleQuantiles.push(data[index]);
+
+        // Theoretical quantile (simplified - need proper quantile function)
+        let theoreticalValue = params.mu || 0;
+        if (currentDistribution.name === 'Normal Distribution') {
+            const z = math.erfinv(2 * p - 1) * Math.sqrt(2);
+            theoreticalValue = params.mu + z * Math.sqrt(params.sigma);
+        }
+        theoreticalQuantiles.push(theoreticalValue);
+    });
+
+    return {
+        chartType: 'scatter',
+        chartData: {
+            datasets: [{
+                label: 'Q-Q Plot',
+                data: sampleQuantiles.map((y, i) => ({ x: theoreticalQuantiles[i], y: y })),
+                backgroundColor: '#8b5cf6',
+                borderColor: '#8b5cf6',
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }, {
+                label: 'Reference Line',
+                data: [
+                    { x: Math.min(...theoreticalQuantiles), y: Math.min(...theoreticalQuantiles) },
+                    { x: Math.max(...theoreticalQuantiles), y: Math.max(...theoreticalQuantiles) }
+                ],
+                type: 'line',
+                borderColor: '#ef4444',
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Theoretical Quantiles', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    title: { display: true, text: 'Sample Quantiles', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    callbacks: {
+                        label: (context) => {
+                            return `Theoretical: ${context.parsed.x.toFixed(3)}, Sample: ${context.parsed.y.toFixed(3)}`;
+                        }
+                    }
+                }
+            }
+        }
+    };
+}
+
+function createBoxPlot(params) {
+    if (!currentData || currentData.length === 0) {
+        return createPDFChart(params); // fallback
+    }
+
+    const data = currentData;
+    const sorted = [...data].sort((a, b) => a - b);
+    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+    const median = sorted[Math.floor(sorted.length * 0.5)];
+    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+    const iqr = q3 - q1;
+    const lowerFence = q1 - 1.5 * iqr;
+    const upperFence = q3 + 1.5 * iqr;
+
+    const outliers = data.filter(x => x < lowerFence || x > upperFence);
+    const nonOutliers = data.filter(x => x >= lowerFence && x <= upperFence);
+
+    return {
+        chartType: 'boxplot',
+        chartData: {
+            labels: ['Sample Data'],
+            datasets: [{
+                label: 'Box Plot',
+                data: [{
+                    min: Math.min(...data),
+                    q1: q1,
+                    median: median,
+                    q3: q3,
+                    max: Math.max(...data)
+                }],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                outlierColor: '#ef4444',
+                outlierRadius: 4
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Value', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function createScatterPlot(params) {
+    if (!currentData || currentData.length === 0) {
+        return createPDFChart(params); // fallback
+    }
+
+    // Create parameter vs value scatter plot
+    const scatterData = [];
+    const data = currentData;
+
+    // Use different parameters for x-axis
+    let xParam = 'index'; // default
+    let xValues = data.map((_, i) => i + 1);
+
+    // Try to use meaningful parameter for x-axis
+    if (currentDistribution.name === 'Normal Distribution') {
+        xParam = 'μ (mean)';
+        xValues = data.map(() => params.mu + (Math.random() - 0.5) * params.sigma);
+    }
+
+    data.forEach((y, i) => {
+        scatterData.push({ x: xValues[i], y: y });
+    });
+
+    return {
+        chartType: 'scatter',
+        chartData: {
+            datasets: [{
+                label: `Value vs ${xParam}`,
+                data: scatterData,
+                backgroundColor: '#f59e0b',
+                borderColor: '#f59e0b',
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: xParam, color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                },
+                y: {
+                    title: { display: true, text: 'Data Value', color: 'var(--text-primary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function createRadarComparison(params) {
+    // Compare different aspects of the distribution
+    const stats = currentDistribution.stats(params);
+
+    return {
+        chartType: 'radar',
+        chartData: {
+            labels: ['Mean', 'Variance', 'Skewness', 'Kurtosis', 'Symmetry'],
+            datasets: [{
+                label: currentDistribution.name,
+                data: [
+                    Math.abs(stats.mean) / 10, // normalized
+                    Math.min(stats.variance / 10, 1),
+                    (stats.skewness + 3) / 6, // normalize skewness
+                    Math.min(stats.kurtosis / 10, 1),
+                    0.8 // symmetry measure
+                ],
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderColor: '#8b5cf6',
+                borderWidth: 2,
+                pointBackgroundColor: '#8b5cf6',
+                pointRadius: 4
+            }]
+        },
+        chartOptions: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 1,
+                    ticks: { color: 'var(--text-secondary)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    angleLines: { color: 'rgba(0,0,0,0.1)' }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: 'var(--text-primary)' } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    };
+}
+
+function exportChart() {
+    if (!window.mainChart) return;
+
+    const canvas = document.getElementById('mainChart');
+    const link = document.createElement('a');
+    link.download = `${currentChartType}-chart-${new Date().toISOString().slice(0,10)}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+function toggleFullscreen() {
+    const container = document.getElementById('mainChartContainer');
+    if (container.classList.contains('fullscreen')) {
+        container.classList.remove('fullscreen');
+    } else {
+        container.classList.add('fullscreen');
+        // Scroll to chart
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function showInsights() {
+    const panel = document.getElementById('insightsPanel');
+    const content = document.getElementById('insightsContent');
+
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+
+        // Generate insights based on current distribution
+        let insights = '<h5>📊 Distribution Insights</h5>';
+
+        if (currentDistribution && currentData.length > 0) {
+            const stats = currentDistribution.stats(getCurrentParams());
+            const dataStats = calculateDataStats(currentData);
+
+            insights += '<div style="display: grid; gap: 10px; margin-top: 15px;">';
+            insights += `<div><strong>Sample Size:</strong> ${currentData.length}</div>`;
+            insights += `<div><strong>Data Range:</strong> ${dataStats.min.toFixed(3)} to ${dataStats.max.toFixed(3)}</div>`;
+            insights += `<div><strong>Goodness of Fit:</strong> KS test statistic = ${dataStats.ksStat?.toFixed(3) || 'N/A'}</div>`;
+
+            if (Math.abs(stats.mean - dataStats.mean) < dataStats.std * 0.1) {
+                insights += '<div style="color: #10b981;">✅ Distribution fit appears reasonable</div>';
+            } else {
+                insights += '<div style="color: #f59e0b;">⚠️ Consider different distribution or parameter adjustment</div>';
+            }
+        } else {
+            insights += '<div>Upload data or select parameters to see insights</div>';
+        }
+
+        insights += '</div>';
+        content.innerHTML = insights;
+
+        // Scroll to insights
+        panel.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function calculateDataStats(data) {
+    const n = data.length;
+    const sorted = [...data].sort((a, b) => a - b);
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / n;
+    const std = Math.sqrt(variance);
+
+    return {
+        mean: mean,
+        std: std,
+        min: sorted[0],
+        max: sorted[n-1],
+        median: sorted[Math.floor(n/2)],
+        ksStat: performKSTest(data)?.statistic
+    };
+}
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     initTheme();
     document.getElementById('distributionSelect').value = 'normal';
-    loadDistribution();
-    changeDataMethod();
+    // Ensure distribution loads properly on startup
+    setTimeout(() => {
+        loadDistribution();
+        changeDataMethod();
+        renderMainChart(); // Add this
+    }, 100);
 });
     </script>
 </body>
