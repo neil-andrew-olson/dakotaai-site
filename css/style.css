@@ -1356,3 +1356,261 @@ footer {
         padding: 1.5rem;
     }
 }
+
+/* ============================================
+   TEXT CONTRAST AND READABILITY FIXES
+   ============================================ */
+
+/* Fix Service Cards Text Contrast */
+.service-card p {
+    color: #1e293b !important; /* Dark text for excellent readability */
+    font-weight: 500;
+}
+
+.service-card ul li {
+    color: #374151 !important; /* Darker gray for better contrast */
+    font-weight: 500;
+}
+
+.service-card h3 {
+    color: #1e293b !important; /* Dark headings */
+    font-weight: 700;
+}
+
+/* Fix Featured Projects Text Contrast */
+.portfolio-item p {
+    color: #374151 !important; /* Much darker for readability */
+    font-weight: 500;
+}
+
+.portfolio-item h4 {
+    color: #1e293b !important; /* Dark headings */
+    font-weight: 700;
+}
+
+/* Fix Blog Content Text Contrast */
+.blog-intro {
+    color: #374151 !important; /* Darker for better readability */
+    font-weight: 500;
+}
+
+.blog-content p {
+    color: #374151 !important; /* Dark text for content */
+    font-weight: 500;
+}
+
+.blog-content li {
+    color: #374151 !important; /* Dark list items */
+    font-weight: 500;
+}
+
+.blog-meta {
+    color: #6b7280 !important; /* Slightly darker meta text */
+}
+
+.blog-tag {
+    background-color: #dbeafe !important;
+    color: #1e40af !important; /* Darker blue text */
+    font-weight: 600;
+}
+
+/* Fix General Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: #1e293b !important; /* Dark headings throughout */
+    font-weight: 700;
+}
+
+/* Fix Footer Text Contrast */
+.footer-section a {
+    color: #e5e7eb !important; /* Lighter for better contrast on dark background */
+}
+
+.footer-section a:hover {
+    color: #10b981 !important;
+}
+
+/* Fix Contact Info Text */
+.contact-info h3 {
+    color: #1e293b !important;
+    font-weight: 700;
+}
+
+.contact-info p {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+/* Fix Stats and Numbers */
+.stat-number {
+    color: #1e293b !important; /* Dark numbers for readability */
+    font-weight: 800;
+}
+
+.stat-label {
+    color: #374151 !important; /* Dark labels */
+    font-weight: 600;
+}
+
+.stat-desc {
+    color: #6b7280 !important; /* Darker description text */
+    font-weight: 500;
+}
+
+/* Fix Insight Cards */
+.insight-content h4 {
+    color: #1e293b !important;
+    font-weight: 700;
+}
+
+.insight-content p {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+/* Fix Quote Text */
+.quote-text {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+.quote-author {
+    color: #059669 !important; /* Darker green */
+    font-weight: 600;
+}
+
+/* Fix CTA and Highlight Boxes */
+.highlight-box h4 {
+    color: #1e40af !important; /* Darker blue */
+    font-weight: 700;
+}
+
+.cta-box h4 {
+    color: #f9fafb !important; /* Pure white for better contrast */
+    font-weight: 700;
+}
+
+/* Fix Form Elements */
+.form-group label {
+    color: #374151 !important;
+    font-weight: 600;
+}
+
+/* Fix Navigation Hover States */
+nav a:hover {
+    color: #ffffff !important; /* Pure white for better contrast */
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Fix AI Stats Pills */
+.ai-stat-pill {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important; /* Pure white text */
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Fix Hero Text */
+.hero h2 {
+    color: #ffffff !important; /* Pure white for better contrast */
+    font-weight: 700;
+}
+
+.hero p {
+    color: rgba(255, 255, 255, 0.95) !important; /* Slightly more opaque */
+    font-weight: 500;
+}
+
+/* Fix Button Text */
+.btn-primary {
+    color: #ffffff !important; /* Pure white */
+    font-weight: 700;
+}
+
+.btn-secondary {
+    color: #ffffff !important; /* Pure white */
+    font-weight: 600;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Fix Section Headers */
+.services-preview h2 {
+    color: #1e293b !important;
+    font-weight: 800;
+}
+
+.services-preview p {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+/* Fix About Section */
+.about-preview h2 {
+    color: #1e293b !important;
+    font-weight: 700;
+}
+
+.about-preview p {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+/* Ensure all text has proper contrast ratios */
+* {
+    text-shadow: none !important; /* Remove text shadows that reduce contrast */
+}
+
+/* Fix any remaining light text on light backgrounds */
+.services-grid .service-card p,
+.services-grid .service-card li,
+.portfolio-item p,
+.blog-content p,
+.blog-content li {
+    color: #1e293b !important;
+    font-weight: 500;
+}
+
+/* Fix any remaining dark text on dark backgrounds */
+.hero h1,
+.hero h2,
+.hero p,
+.cta-buttons .btn,
+.ai-visual-content h3,
+.ai-visual-content p {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Ensure proper contrast for all interactive elements */
+.btn:hover {
+    color: #ffffff !important;
+}
+
+nav a {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 500;
+}
+
+/* Fix footer text contrast */
+.footer-section h4 {
+    color: #10b981 !important;
+    font-weight: 700;
+}
+
+.footer-section p {
+    color: #d1d5db !important;
+    font-weight: 500;
+}
+
+.footer-bottom {
+    color: #9ca3af !important;
+    font-weight: 500;
+}
+
+.footer-bottom a {
+    color: #10b981 !important;
+    font-weight: 600;
+}
+
+.footer-bottom a:hover {
+    color: #34d399 !important;
+}
