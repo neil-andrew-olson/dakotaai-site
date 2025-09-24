@@ -9,711 +9,255 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
-        :root {
-            /* Light Theme (Default) */
-            --primary: #2563eb;
-            --secondary: #7c3aed;
-            --accent: #d97706;
-            --success: #059669;
-            --warning: #d97706;
-            --danger: #dc2626;
-            --info: #0891b2;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --text-primary: #1f2937;
-            --text-secondary: #4b5563;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --glass: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --shadow: rgba(0, 0, 0, 0.1);
-            --glow: rgba(37, 99, 235, 0.1);
-        }
-
-        [data-theme="dark"] {
-            /* Dark Theme */
-            --primary: #60a5fa;
-            --secondary: #a78bfa;
-            --accent: #fbbf24;
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --info: #22d3ee;
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --glass: rgba(30, 41, 59, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow: rgba(0, 0, 0, 0.3);
-            --glow: rgba(96, 165, 250, 0.15);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
-    color: var(--text-primary);
-    overflow-x: hidden;
-    position: relative;
-}
-
-[data-theme="dark"] {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    color: var(--text-primary);
-}
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg,
-                rgba(249, 250, 251, 0.95) 0%,
-                rgba(243, 244, 246, 0.9) 25%,
-                rgba(229, 231, 235, 0.85) 50%,
-                rgba(209, 213, 219, 0.8) 75%,
-                rgba(156, 163, 175, 0.05) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse,
-                rgba(74, 95, 213, 0.08) 0%,
-                rgba(107, 70, 193, 0.05) 30%,
-                rgba(217, 119, 6, 0.03) 60%,
-                transparent 80%);
-            animation: float 30s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-            z-index: 10;
-            padding: 20px;
-        }
-
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 8px;
-            cursor: pointer;
-            transition: all var(--animation-fast);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: var(--glow-primary), var(--shadow-hard);
-        }
-
-        .theme-toggle svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--text-primary);
-            transition: all var(--animation-fast);
-        }
-
-        .theme-toggle:hover svg {
-            transform: rotate(45deg);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            animation: slideInUp 1s var(--animation-smooth);
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
         }
 
         .header h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 0;
-            letter-spacing: -0.05em;
-            text-shadow: 0 0 20px rgba(var(--primary), 0.3);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
-            to { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.8)); }
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .header p {
-            font-size: 1.2rem;
+            margin: 0;
+            font-size: 1.1em;
             opacity: 0.9;
-            margin: 20px 0 0 0;
-            font-weight: 300;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .nav-tabs {
             display: flex;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-medium);
-            animation: slideInUp 1.2s var(--animation-smooth);
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .nav-tabs button {
             flex: 1;
-            padding: 16px 20px;
+            padding: 12px;
             border: none;
             background: transparent;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            position: relative;
-            transition: all var(--animation-fast);
-            backdrop-filter: blur(10px);
-        }
-
-        .nav-tabs button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-primary);
-            opacity: 0;
-            transition: opacity var(--animation-fast);
-            z-index: -1;
-        }
-
-        .nav-tabs button:hover {
-            color: var(--primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-tabs button:hover::before {
-            opacity: 0.3;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #666;
         }
 
         .nav-tabs button.active {
-            color: var(--primary);
-            font-weight: 700;
-            background: var(--glass);
-        }
-
-        .nav-tabs button.active::before {
-            opacity: 1;
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .tab-content {
-            position: relative;
-            perspective: 1000px;
+            background: #3498db;
+            color: white;
+            font-weight: 600;
         }
 
         .tab-panel {
             display: none;
-            opacity: 0;
-            transform: rotateY(90deg);
-            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform-origin: left center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
         .tab-panel.active {
             display: block;
-            opacity: 1;
-            transform: rotateY(0deg);
         }
 
         .distribution-selector {
-            margin-bottom: 40px;
-            animation: slideInUp 1.4s var(--animation-smooth);
+            margin-bottom: 30px;
+            text-align: center;
         }
 
         .distribution-selector h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
+            margin-bottom: 15px;
+            color: #2c3e50;
         }
 
         .distribution-selector select {
-            width: 100%;
-            max-width: 400px;
-            padding: 16px 20px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            border: 2px solid var(--glass-border);
-            border-radius: 12px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all var(--animation-fast);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .distribution-selector select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: var(--glow-primary), var(--shadow-medium);
-            transform: scale(1.02);
-        }
-
-        .distribution-selector select:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--glow-primary), var(--shadow-medium);
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            min-width: 250px;
         }
 
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .data-input-section {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: var(--shadow-medium);
-            animation: fadeInScale 1.6s var(--animation-smooth);
-        }
-
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .data-input-section h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .data-input-controls {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        .input-method-selector {
-            position: sticky;
-            top: 20px;
-        }
-
-        .input-method-selector select {
-            width: 100%;
-            padding: 14px 18px;
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            color: var(--text-primary);
-            font-weight: 500;
-            transition: all var(--animation-fast);
-        }
-
-        .params-panel {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: var(--shadow-medium);
-            animation: fadeInScale 1.6s var(--animation-smooth);
-        }
-
-        .params-panel h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            background: var(--gradient-secondary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .param-control {
-            margin-bottom: 25px;
-        }
-
-        .param-control label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-        }
-
-        .param-control input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all var(--animation-fast);
-        }
-
-        .param-control input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: var(--glow-primary);
-            transform: scale(1.02);
-        }
-
-        .param-control input:hover {
-            transform: scale(1.01);
-        }
-
-        .charts-panel {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-        }
-
-        .chart-container {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: var(--shadow-medium);
-            transition: all var(--animation-smooth);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chart-container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(99, 102, 241, 0.1), transparent);
-            animation: rotate 10s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .chart-container:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--glow-primary), var(--shadow-hard);
-        }
-
-        .chart-container h4 {
-            margin: 0 0 20px 0;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--light);
-            text-align: center;
-        }
-
-        canvas {
-            width: 100% !important;
-            height: 350px !important;
-            border-radius: 10px;
-        }
-
-        .stats-panel {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            margin-top: 30px;
-            box-shadow: var(--shadow-medium);
-            animation: fadeInScale 2s var(--animation-smooth);
-        }
-
-        .stats-panel h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            background: var(--gradient-success);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
-        }
-
-        .stat-card {
-            background: var(--secondary);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow-soft);
-            transition: all var(--animation-fast);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: var(--gradient-accent);
-            transition: left 0.5s ease;
-        }
-
-        .stat-card:hover::after {
-            left: 0;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--glow-secondary), var(--shadow-hard);
-        }
-
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--light);
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-card .label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .explanation-panel {
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 35px;
-            box-shadow: var(--shadow-medium);
-            animation: fadeInScale 2.2s var(--animation-smooth);
-            line-height: 1.7;
-        }
-
-        .explanation-panel h3 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-        }
-
-        .formula {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid var(--primary);
-            margin: 20px 0;
-            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.95);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .applications {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(56, 249, 215, 0.1) 100%);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border-left: 4px solid var(--success);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .applications ul {
-            margin: 0;
-            padding-left: 25px;
-        }
-
-        .applications li {
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.1rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        .error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
-            color: var(--danger);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .upload-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .upload-controls input[type="file"] {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            color: var(--light);
-        }
-
-        .upload-controls select {
-            padding: 12px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: var(--light);
-        }
-
-        .upload-controls button {
-            padding: 12px 24px;
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--animation-fast);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .upload-controls button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--glow-primary);
+            margin-bottom: 20px;
         }
 
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
             }
+        }
 
-            .charts-panel {
-                grid-template-columns: 1fr;
-            }
+        .params-panel, .stats-panel, .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-            .data-input-controls {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
+        .params-panel h3, .stats-panel h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
 
-            .nav-tabs {
-                flex-direction: column;
-            }
+        .param-control {
+            margin-bottom: 20px;
+        }
 
-            .nav-tabs button {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-            }
+        .param-control label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+        .param-control input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
 
-            .container {
-                padding: 15px;
-            }
+        .chart-container {
+            margin-bottom: 20px;
+        }
+
+        .chart-container h4 {
+            margin-top: 0;
+            color: #2c3e50 !important;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 350px !important;
+            background: white !important;
+        }
+
+        .fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: white !important;
+            z-index: 9999 !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+        }
+
+        .fullscreen canvas {
+            height: calc(100vh - 80px) !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-card .value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .chart-controls select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .chart-controls button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .chart-controls button:hover {
+            background: #218838;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .debug-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <button id="themeToggle" class="theme-toggle">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
-        </svg>
-    </button>
+
 
     <div class="container">
         <div class="header">
@@ -759,51 +303,7 @@ body {
                     </select>
                 </div>
 
-                <div class="data-input-section">
-                    <h3>📊 Data Input & Analysis</h3>
-                    <div class="data-input-controls">
-                        <div class="input-method-selector">
-                            <label for="dataMethodSelect">Data Source:</label>
-                            <select id="dataMethodSelect" onchange="changeDataMethod()">
-                                <option value="upload">📁 Upload CSV/Excel</option>
-                                <option value="random">🎲 Generate Random</option>
-                                <option value="manual">✏️ Manual Entry</option>
-                            </select>
-                        </div>
 
-                        <div id="uploadControls" style="display: block;" class="upload-controls">
-                            <div class="param-control">
-                                <label>Upload Data File:</label>
-                                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt"
-                                       onchange="handleFileUpload(event)">
-                            </div>
-                            <div class="param-control">
-                                <label for="columnSelect">Column:</label>
-                                <select id="columnSelect">
-                                    <option value="">Select a column...</option>
-                                </select>
-                            </div>
-                            <button onclick="processUploadedData()">Process Data</button>
-                        </div>
-
-                        <div id="randomControls" style="display: none;" class="upload-controls">
-                            <div class="param-control">
-                                <label for="sampleSize">Sample Size:</label>
-                                <input type="number" id="sampleSize" value="100" min="10" max="10000" step="10">
-                            </div>
-                            <button onclick="generateRandomData()">🎲 Generate</button>
-                        </div>
-
-                        <div id="manualControls" style="display: none;" class="upload-controls">
-                            <div class="param-control">
-                                <label>Data (comma-separated):</label>
-                                <textarea id="manualDataInput" rows="3" placeholder="1.2, 3.4, 2.1, 5.6..."
-                                          style="width: 100%; resize: vertical;"></textarea>
-                            </div>
-                            <button onclick="processManualData()">📝 Process</button>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="content-grid">
                     <div class="params-panel">
@@ -855,24 +355,57 @@ body {
             </div>
 
             <div id="visualizations" class="tab-panel">
-                <!-- Chart Type Selection and Controls -->
-                <div class="chart-controls" style="margin-bottom: 30px;">
-                    <div class="control-group" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
-                        <div class="control-item">
-                            <label style="font-weight: 600; color: var(--text-primary); margin-right: 10px;">Chart Type:</label>
-                            <select id="chartTypeSelect" onchange="changeChartType()" style="padding: 8px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--glass);">
+                <!-- Data Input Method Selection -->
+                <div class="data-input-section" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 15px 0; color: #2c3e50;">📊 Data Input Method</h4>
+                    <select id="dataMethodSelect" onchange="changeDataMethod()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                        <option value="upload">📁 Upload CSV/Excel File</option>
+                        <option value="random">🎲 Generate Random Data</option>
+                        <option value="manual">✏️ Manual Input</option>
+                    </select>
+                </div>
+
+                <!-- File Upload Controls -->
+                <div id="uploadControls" class="input-controls" style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">📁 File Upload</h4>
+                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFileUpload(event)" style="margin-bottom: 10px;">
+                    <select id="columnSelect" style="padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; background: white; margin-right: 10px;">
+                        <option value="">Select a column...</option>
+                    </select>
+                    <button onclick="processUploadedData()" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">📊 Process Data</button>
+                </div>
+
+                <!-- Random Data Generation Controls -->
+                <div id="randomControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">🎲 Random Data Generation</h4>
+                    <label style="margin-right: 10px;">Sample Size: <input type="number" id="sampleSize" value="100" min="10" max="10000" style="width: 80px; padding: 4px;"></label>
+                    <button onclick="generateRandomData()" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🎯 Generate</button>
+                </div>
+
+                <!-- Manual Data Input Controls -->
+                <div id="manualControls" class="input-controls" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">✏️ Manual Data Input</h4>
+                    <textarea id="manualDataInput" placeholder="Enter comma-separated numbers (e.g., 1.2, 3.4, 5.6, 7.8)" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;"></textarea>
+                    <button onclick="processManualData()" style="padding: 6px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer;">💾 Process</button>
+                </div>
+
+                <div class="chart-controls">
+                    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div>
+                            <label for="chartTypeSelect" style="font-weight: 600; margin-right: 8px;">Chart Type:</label>
+                            <select id="chartTypeSelect" onchange="changeChartType()">
                                 <option value="pdf">📈 Probability Density (PDF)</option>
                                 <option value="cdf">📊 Cumulative Distribution (CDF)</option>
                                 <option value="histogram">📊 Histogram & Distribution Fit</option>
-                            <option value="scatter">🔸 Scatter Plot</option>
-                            <option value="radar">🎯 Distribution Comparison</option>
+                                <option value="qqplot">📉 Q-Q Plot</option>
+                                <option value="boxplot">📦 Box Plot</option>
                                 <option value="scatter">🔸 Parameter Scatter Plot</option>
                                 <option value="radar">🎯 Distribution Comparison</option>
                             </select>
                         </div>
-                        <div class="control-item">
-                            <label style="font-weight: 600; color: var(--text-primary); margin-right: 10px;">Style:</label>
-                            <select id="styleSelect" onchange="changeChartStyle()" style="padding: 8px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--glass);">
+                        <div>
+                            <label for="styleSelect" style="font-weight: 600; margin-right: 8px;">Style:</label>
+                            <select id="styleSelect" onchange="changeChartStyle()">
                                 <option value="default">Default</option>
                                 <option value="professional">Professional</option>
                                 <option value="vibrant">Vibrant</option>
@@ -881,22 +414,16 @@ body {
                         </div>
                     </div>
 
-                    <div class="control-group" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                        <div class="control-item">
-                            <button onclick="exportChart()" style="padding: 8px 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">📊 Export Chart</button>
-                        </div>
-                        <div class="control-item">
-                            <button onclick="toggleFullscreen()" style="padding: 8px 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">🔍 Fullscreen</button>
-                        </div>
-                        <div class="control-item">
-                            <button onclick="showInsights()" style="padding: 8px 16px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">💡 Insights</button>
-                        </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button onclick="exportChart()" style="padding: 6px 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📊 Export Chart</button>
+                        <button onclick="toggleFullscreen()" style="padding: 6px 12px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🔍 Fullscreen</button>
+                        <button onclick="showInsights()" style="padding: 6px 12px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">💡 Insights</button>
                     </div>
                 </div>
 
                 <!-- Main Chart Display -->
                 <div id="mainChartContainer" class="chart-container">
-                    <h4 id="chartTitle" style="margin: 0 0 20px 0; font-size: 1.5rem; font-weight: 700; text-align: center; color: var(--text-primary);">📈 Probability Density Function (PDF)</h4>
+                    <h4 id="chartTitle">📈 Probability Density Function (PDF)</h4>
                     <canvas id="mainChart"></canvas>
                 </div>
 
@@ -922,6 +449,67 @@ body {
                     <ul>
                         <li><strong>Continuous Distributions:</strong> Random variables can take any value within a continuous range (e.g., Normal, Beta, Gamma)</li>
                         <li><strong>Discrete Distributions:</strong> Random variables take only distinct, separate values (e.g., Binomial, Poisson, Geometric)</li>
+                    </ul>
+
+                    <h4>🧪 Statistical Tests & Analysis</h4>
+
+                    <h5>📏 Normality Tests</h5>
+                    <ul>
+                        <li><strong>Shapiro-Wilk Test:</strong> Most powerful normality test for small to medium samples (n < 50). Tests null hypothesis that data comes from normal distribution.</li>
+                        <li><strong>Anderson-Darling Test:</strong> Enhanced version of Kolmogorov-Smirnov test, more sensitive to tails of distribution.</li>
+                        <li><strong>Jarque-Bera Test:</strong> Tests normality based on skewness and kurtosis. Good for large samples.</li>
+                        <li><strong>D'Agostino-Pearson Test:</strong> Omnibus test combining skewness and kurtosis assessments.</li>
+                        <li><strong>Lilliefors Test:</strong> Modification of Kolmogorov-Smirnov test when parameters are estimated from data.</li>
+                    </ul>
+
+                    <h5>📊 Goodness-of-Fit Tests</h5>
+                    <ul>
+                        <li><strong>Chi-Square Test:</strong> Tests if observed frequencies match expected frequencies under a distribution.</li>
+                        <li><strong>Kolmogorov-Smirnov Test:</strong> Tests the maximum deviation between empirical and theoretical cumulative distributions.</li>
+                        <li><strong>Anderson-Darling Test:</strong> Weighted version of KS test, more sensitive to distribution tails.</li>
+                    </ul>
+
+                    <h5>🔗 Statistical Distance Measures</h5>
+                    <ul>
+                        <li><strong>Hellinger Distance:</strong> Symmetric measure of distribution difference, bounded [0,1].</li>
+                        <li><strong>Jensen-Shannon Divergence:</strong> Symmetric version of KL divergence, always finite.</li>
+                        <li><strong>Wasserstein Distance:</strong> "Earth mover's distance" - intuitive measure of distribution difference.</li>
+                        <li><strong>Kullback-Leibler Divergence:</strong> Measures information loss when using one distribution to approximate another.</li>
+                    </ul>
+
+                    <h5>🧪 Statistical Tests Implemented</h5>
+
+                    <h6>🎯 Normality Tests</h6>
+                    <ul>
+                        <li><strong>Shapiro-Wilk Test:</strong> W = Σ(aᵢx_(n+1-i))² / Σ((xᵢ-μ)²). Most powerful normality test for n ≤ 50. Used when sample sizes are small to medium.</li>
+                        <li><strong>Anderson-Darling Test:</strong> A² = -n - Σ(2i-1)/n * [ln(F₀(xᵢ)) + ln(1-F₀(x_{(n+1-i)}))]. More sensitive to distribution tails than KS test. Good for detecting departure from normality in extreme values.</li>
+                        <li><strong>Jarque-Bera Test:</strong> JB = n/6 * (S² + (K-3)²/4) where S is skewness and K is kurtosis. Tests third and fourth moments. Good for large samples. Asymptotically chi-square with 2 df.</li>
+                        <li><strong>D'Agostino-Pearson Omnibus Test:</strong> Combines skewness and kurtosis tests into single omnibus normality test. Transformation-invariant. Valid for n ≥ 8.</li>
+                        <li><strong>Lilliefors Test:</strong> Modified Kolmogorov-Smirnov test when parameters are unknown. Uses mean and variance estimated from sample data rather than theoretical population parameters.</li>
+                    </ul>
+
+                    <h6>📏 Goodness-of-Fit Tests</h6>
+                    <ul>
+                        <li><strong>Kolmogorov-Smirnov Test:</strong> D = sup|Fₙ(x) - F₀(x)| where Fₙ is empirical CDF and F₀ is theoretical CDF. Tests maximum deviation between distributions. P-values computed using correction for estimated parameters.</li>
+                        <li><strong>Anderson-Darling Test (GoF):</strong> A² = -Σ(2i-1)/n * [ln(F₀(xᵢ)) + ln(1-F₀(x_{(n+1-i)}))]. Weights deviations more heavily in distribution tails.</li>
+                        <li><strong>Chi-Square Goodness-of-Fit:</strong> χ² = Σ(Oᵢ - Eᵢ)²/Eᵢ where Oᵢ are observed and Eᵢ are expected frequencies. Requires binned data. Asymptotically chi-square with k-1 df.</li>
+                    </ul>
+
+                    <h6>📊 Test Result Interpretation</h6>
+                    <p><strong>Hypothesis Testing Framework:</strong></p>
+                    <ul>
+                        <li>H₀ (Null): Data follows specified distribution</li>
+                        <li>H₁ (Alternative): Data does not follow specified distribution</li>
+                        <li>α (Significance Level): Usually 0.05</li>
+                        <li>If p-value ≤ α: Reject H₀ (evidence of departure from specified distribution)</li>
+                        <li>If p-value > α: Fail to reject H₀ (no strong evidence against specified distribution)</li>
+                    </ul>
+
+                    <p><strong>Normality Assessment Categories:</strong></p>
+                    <ul>
+                        <li><strong>Normal:</strong> p-value > 0.10, strongly consistent with normality</li>
+                        <li><strong>Borderline:</strong> p-value between 0.01-0.10, marginal evidence against normality</li>
+                        <li><strong>Non-Normal:</strong> p-value < 0.01, strong evidence data is not normal</li>
                     </ul>
 
                     <h4>📈 Distribution Families & Applications</h4>
@@ -2839,6 +2427,9 @@ function calculateMedian(data) {
 
 function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
     const kstest = performKSTest(currentData);
+    const swtest = performShapiroWilkTest(currentData);
+    const adtest = performAndersonDarlingTest(currentData);
+    const jbtest = performJarqueBeraTest(currentData);
 
     document.getElementById('dataAnalysisResults').innerHTML = `
         <div class="stat-card">
@@ -2847,7 +2438,7 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
         </div>
         <div class="stat-card">
             <div class="value">${mean.toFixed(3)}</div>
-            <div class="label">Mean</div>
+            <div class="label">Sample Mean</div>
         </div>
         <div class="stat-card">
             <div class="value">${stdDev.toFixed(3)}</div>
@@ -2858,6 +2449,58 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
             <div class="label">Skewness</div>
         </div>
         <div class="stat-card">
+            <div class="value">${jbtest ? jbtest.skewness.toFixed(3) : '--'}</div>
+            <div class="label">JB Skewness</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${jbtest ? jbtest.kurtosis.toFixed(3) : '--'}</div>
+            <div class="label">JB Kurtosis</div>
+        </div>
+
+        <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">🧪 Normality Tests</h5>
+
+        <div class="stat-card">
+            <div class="value">${swtest ? swtest.statistic.toFixed(3) : '--'}</div>
+            <div class="label">SW W-stat</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${swtest ? swtest.pValue.toFixed(3) : '--'}</div>
+            <div class="label">SW p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${swtest ? swtest.normality : '--'}</div>
+            <div class="label">SW Result</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="value">${adtest ? adtest.statistic.toFixed(3) : '--'}</div>
+            <div class="label">AD A²-stat</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${adtest ? adtest.pValue.toFixed(3) : '--'}</div>
+            <div class="label">AD p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${adtest ? adtest.normality : '--'}</div>
+            <div class="label">AD Result</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="value">${jbtest ? jbtest.statistic.toFixed(3) : '--'}</div>
+            <div class="label">JB χ²-stat</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${jbtest ? jbtest.pValue.toFixed(3) : '--'}</div>
+            <div class="label">JB p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${jbtest ? jbtest.normality : '--'}</div>
+            <div class="label">JB Result</div>
+        </div>
+
+        <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">📊 Goodness-of-Fit Tests</h5>
+
+        <div class="stat-card">
             <div class="value">${kstest ? kstest.statistic.toFixed(3) : '--'}</div>
             <div class="label">KS Statistic</div>
         </div>
@@ -2865,9 +2508,157 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
             <div class="value">${kstest ? kstest.pValue.toFixed(3) : '--'}</div>
             <div class="label">KS P-Value</div>
         </div>
+        <div class="stat-card">
+            <div class="value">${kstest && kstest.pValue > 0.05 ? 'Pass' : 'Fail'}</div>
+            <div class="label">KS α=0.05</div>
+        </div>
     `;
 
     displayFittingResults();
+}
+
+// Statistical Tests Implementation
+function performShapiroWilkTest(data) {
+    if (!data.length || data.length < 3 || data.length > 50) {
+        // SW test requires 3 <= n <= 50
+        return { statistic: null, pValue: null, note: 'Requires 3-50 observations' };
+    }
+
+    const n = data.length;
+    const sortedData = [...data].sort((a, b) => a - b);
+    const mean = sortedData.reduce((a, b) => a + b, 0) / n;
+
+    // Calculate coefficients a_i (simplified version for small n)
+    const a = calculateSWCoefficients(n);
+
+    // Calculate W statistic
+    let numerator = 0;
+    for (let i = 0; i < n; i++) {
+        numerator += a[i] * sortedData[i];
+    }
+    numerator *= numerator;
+
+    let denominator = 0;
+    for (let i = 0; i < n; i++) {
+        denominator += Math.pow(sortedData[i] - mean, 2);
+    }
+
+    if (denominator === 0) return { statistic: null, pValue: null, note: 'No variance in data' };
+
+    const W = numerator / denominator;
+
+    // Calculate approximate p-value (simplified)
+    const pValue = approximateSWPValue(W, n);
+
+    return { statistic: W, pValue: pValue, normality: W > 0.9 ? 'normal' : W < 0.8 ? 'non-normal' : 'borderline' };
+}
+
+function calculateSWCoefficients(n) {
+    // Simplified coefficient calculation for Shapiro-Wilk test
+    // For more accuracy, these would be pre-computed from statistical tables
+    const a = new Array(n);
+    const m = Math.floor(n / 2);
+
+    // Approximation based on polynomial formulas
+    for (let i = 0; i < m; i++) {
+        const j = i + 1;
+        const phi = (n - 2*j + 1) / Math.sqrt(n * (n - 1));
+        const poly = 1 - 2.706056e-4 * n + 0.884474 * phi - 0.0232 * phi * phi +
+                    0.002961 * phi * phi * phi - 0.00028 * n * phi * phi;
+
+        a[i] = poly / Math.sqrt(n * (n - 1) / 12);
+        a[n - 1 - i] = a[i]; // symmetric
+    }
+
+    if (n % 2 === 1) {
+        a[m] = 0; // middle coefficient (approximately 0)
+    }
+
+    return a;
+}
+
+function approximateSWPValue(W, n) {
+    // Simplified p-value approximation
+    // For accurate p-values, would need statistical tables or more complex calculation
+    if (n <= 20) {
+        // Rough approximation for small samples
+        if (W > 0.99) return 0.99;
+        if (W > 0.95) return 0.8;
+        if (W > 0.90) return 0.5;
+        if (W > 0.85) return 0.1;
+        return 0.01;
+    } else {
+        // For larger samples, use normal approximation
+        const z = Math.sqrt(n) * (W - 0.5) / Math.sqrt(0.5);
+        return 0.5 * (1 + math.erf(z / Math.sqrt(2)));
+    }
+}
+
+function performAndersonDarlingTest(data) {
+    if (!data.length) return null;
+
+    const n = data.length;
+    const sortedData = [...data].sort((a, b) => a - b);
+    const params = getCurrentParams();
+
+    const params2 = getCurrentParams();
+
+    let A2 = 0;
+    let mean = params.mu || params2.mu || 0;
+    let sigma = Math.sqrt(params.sigma || params2.sigma || 1);
+
+    for (let i = 0; i < n; i++) {
+        const z = (sortedData[i] - mean) / sigma;
+        const cdf = 0.5 * (1 + math.erf(z / Math.sqrt(2)));
+        const Fi = (i + 0.5) / n;
+
+        const lnTerm1 = Math.log(cdf);
+        const lnTerm2 = Math.log(1 - cdf);
+
+        if (cdf > 0 && cdf < 1) {
+            A2 += (2 * (i + 1) - 1) * (lnTerm1 + lnTerm2);
+        }
+    }
+
+    A2 = -A2 / n - n;
+    const pValue = A2 < 2 ? 0.99 : A2 < 3 ? 0.9 : A2 < 4 ? 0.7 : 0.01;
+
+    return { statistic: A2, pValue: pValue, normality: A2 < 2 ? 'normal' : A2 > 3 ? 'non-normal' : 'borderline' };
+}
+
+function performJarqueBeraTest(data) {
+    if (!data.length || data.length < 4) return null;
+
+    const n = data.length;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+
+    // Calculate skewness
+    let skewness = 0, kurtosis = 0;
+    for (let i = 0; i < n; i++) {
+        const diff = data[i] - mean;
+        skewness += Math.pow(diff, 3);
+        kurtosis += Math.pow(diff, 4);
+    }
+
+    const sigma2 = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / n;
+    const sigma = Math.sqrt(sigma2);
+
+    skewness /= (n * Math.pow(sigma, 3));
+    kurtosis /= (n * Math.pow(sigma, 4));
+
+    // JB statistic
+    const JB = (n / 6) * (Math.pow(skewness, 2) + Math.pow(kurtosis - 3, 2) / 4);
+
+    // Approximate p-value using chi-square approximation
+    const pValue = 1 - math.erfc(JB / Math.sqrt(2));
+
+    return {
+        statistic: JB,
+        pValue: pValue,
+        skewness: skewness,
+        kurtosis: kurtosis,
+        normality: JB < 6 ? 'normal' : JB > 10 ? 'non-normal' : 'borderline'
+    };
 }
 
 function performKSTest(data) {
