@@ -784,6 +784,189 @@
     </div>
 
     <script>
+// Error handling and performance utilities
+const ErrorHandler = {
+    log: (error, context = '') => {
+        console.error(`[StatDistribution] ${context}:`, error);
+    },
+    
+    showUserError: (message, element = null) => {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `
+            <div style="background: #fee; border: 1px solid #fcc; padding: 10px; border-radius: 4px; margin: 10px 0; color: #c33;">
+                <strong>⚠️ Error:</strong> ${message}
+            </div>
+        `;
+        
+        const container = element || document.getElementById('dataAnalysisResults') || document.body;
+        container.appendChild(errorDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 5000);
+    },
+    
+    clearErrors: () => {
+        document.querySelectorAll('.error-message').forEach(el => el.remove());
+    }
+};
+
+const LoadingManager = {
+    show: (element, message = 'Loading...') => {
+        const loader = document.createElement('div');
+        loader.className = 'loading-overlay';
+        loader.innerHTML = `
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        background: rgba(255,255,255,0.9); padding: 20px; border-radius: 8px; 
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+                <div style="width: 24px; height: 24px; border: 3px solid #3498db; border-top: 3px solid transparent; 
+                           border-radius: 50%; margin: 0 auto 10px; animation: spin 1s linear infinite;"></div>
+                <div>${message}</div>
+            </div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+        `;
+        loader.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background: rgba(255,255,255,0.7);';
+        
+        if (element) {
+            element.style.position = 'relative';
+            element.appendChild(loader);
+        }
+        
+        return loader;
+    },
+    
+    hide: (loader) => {
+        if (loader && loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+        }
+    }
+};
+
+// Enhanced chart management
+const ChartManager = {
+    charts: new Map(),
+    
+    create: (canvasId, config) => {
+        try {
+            // Destroy existing chart if it exists
+            ChartManager.destroy(canvasId);
+            
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                throw new Error(`Canvas element with id '${canvasId}' not found`);
+            }
+            
+            const chart = new Chart(canvas, config);
+            ChartManager.charts.set(canvasId, chart);
+            return chart;
+        } catch (error) {
+            ErrorHandler.log(error, `Creating chart ${canvasId}`);
+            ErrorHandler.showUserError(`Failed to create chart: ${error.message}`);
+            return null;
+        }
+    },
+    
+    destroy: (canvasId) => {
+        const chart = ChartManager.charts.get(canvasId);
+        if (chart && typeof chart.destroy === 'function') {
+            try {
+                chart.destroy();
+            } catch (error) {
+                ErrorHandler.log(error, `Destroying chart ${canvasId}`);
+            }
+        }
+        ChartManager.charts.delete(canvasId);
+    },
+    
+    destroyAll: () => {
+        ChartManager.charts.forEach((chart, id) => {
+            ChartManager.destroy(id);
+        });
+    }
+};
+
+// Mobile detection and responsive utilities
+const ResponsiveUtils = {
+    isMobile: () => window.innerWidth <= 768,
+    isTablet: () => window.innerWidth <= 1024 && window.innerWidth > 768,
+    
+    optimizeForMobile: () => {
+        if (ResponsiveUtils.isMobile()) {
+            // Reduce chart height on mobile
+            document.querySelectorAll('canvas').forEach(canvas => {
+                canvas.style.height = '250px';
+            });
+            
+            // Simplify UI for mobile
+            const chartControls = document.querySelector('.chart-controls');
+            if (chartControls) {
+                chartControls.style.flexDirection = 'column';
+                chartControls.style.gap = '10px';
+            }
+        }
+    }
+};
+
+// Data export utilities
+const DataExporter = {
+    exportCSV: (data, filename = 'statistical_data.csv') => {
+        try {
+            let csvContent = '';
+            
+            if (Array.isArray(data[0])) {
+                // 2D array
+                csvContent = data.map(row => row.join(',')).join('\n');
+            } else {
+                // 1D array
+                csvContent = 'Value\n' + data.join('\n');
+            }
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            ErrorHandler.log(error, 'Exporting CSV');
+            ErrorHandler.showUserError('Failed to export data as CSV');
+        }
+    },
+    
+    exportChartImage: (canvasId, filename) => {
+        try {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                throw new Error(`Canvas ${canvasId} not found`);
+            }
+            
+            const link = document.createElement('a');
+            link.download = filename || `${canvasId}-${new Date().toISOString().slice(0,10)}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            ErrorHandler.log(error, 'Exporting chart image');
+            ErrorHandler.showUserError('Failed to export chart image');
+        }
+    }
+};
+
 // Distribution definitions with parameters and explanations
 window.distributions = {
             normal: {
