@@ -785,7 +785,7 @@
 
     <script>
 // Distribution definitions with parameters and explanations
-        const distributions = {
+window.distributions = {
             normal: {
                 name: "Normal Distribution",
                 params: [
@@ -2621,59 +2621,59 @@ function displayDataAnalysisResults(count, mean, stdDev, skewness, median) {
 
         <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">🧪 Normality Tests</h5>
 
-        <div class="stat-card">
-            <div class="value">${swtest && typeof swtest.statistic === 'number' && isFinite(swtest.statistic) ? swtest.statistic.toFixed(3) : '--'}</div>
-            <div class="label">SW W-stat</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${swtest && swtest.pValue !== null && swtest.pValue !== undefined && isFinite(swtest.pValue) ? swtest.pValue.toFixed(3) : '--'}</div>
-            <div class="label">SW p-value</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${swtest && swtest.normality ? swtest.normality : '--'}</div>
-            <div class="label">SW Result</div>
-        </div>
+                    <div class="stat-card">
+                        <div class="value">${swtest && typeof swtest.statistic === 'number' && isFinite(swtest.statistic) ? swtest.statistic.toFixed(3) : '--'}</div>
+                        <div class="label">SW W-stat</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${swtest && swtest.pValue !== null && swtest.pValue !== undefined && isFinite(swtest.pValue) ? swtest.pValue.toFixed(3) : '--'}</div>
+                        <div class="label">SW p-value</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${swtest && swtest.normality ? swtest.normality : '--'}</div>
+                        <div class="label">SW Result</div>
+                    </div>
 
-        <div class="stat-card">
-            <div class="value">${adtest && typeof adtest.statistic === 'number' && isFinite(adtest.statistic) ? adtest.statistic.toFixed(3) : '--'}</div>
-            <div class="label">AD A²-stat</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${adtest && adtest.pValue !== null && adtest.pValue !== undefined && isFinite(adtest.pValue) ? adtest.pValue.toFixed(3) : '--'}</div>
-            <div class="label">AD p-value</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${adtest && adtest.normality ? adtest.normality : '--'}</div>
-            <div class="label">AD Result</div>
-        </div>
+                    <div class="stat-card">
+                        <div class="value">${adtest && typeof adtest.statistic === 'number' && isFinite(adtest.statistic) ? adtest.statistic.toFixed(3) : '--'}</div>
+                        <div class="label">AD A²-stat</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${adtest && adtest.pValue !== null && adtest.pValue !== undefined && isFinite(adtest.pValue) ? adtest.pValue.toFixed(3) : '--'}</div>
+                        <div class="label">AD p-value</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${adtest && adtest.normality ? adtest.normality : '--'}</div>
+                        <div class="label">AD Result</div>
+                    </div>
 
-        <div class="stat-card">
-            <div class="value">${jbtest && typeof jbtest.statistic === 'number' && isFinite(jbtest.statistic) ? jbtest.statistic.toFixed(3) : '--'}</div>
-            <div class="label">JB χ²-stat</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${jbtest && jbtest.pValue !== null && jbtest.pValue !== undefined && isFinite(jbtest.pValue) ? jbtest.pValue.toFixed(3) : '--'}</div>
-            <div class="label">JB p-value</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${jbtest && jbtest.normality ? jbtest.normality : '--'}</div>
-            <div class="label">JB Result</div>
-        </div>
+                    <div class="stat-card">
+                        <div class="value">${jbtest && typeof jbtest.statistic === 'number' && isFinite(jbtest.statistic) ? jbtest.statistic.toFixed(3) : '--'}</div>
+                        <div class="label">JB χ²-stat</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${jbtest && jbtest.pValue !== null && jbtest.pValue !== undefined && isFinite(jbtest.pValue) ? jbtest.pValue.toFixed(3) : '--'}</div>
+                        <div class="label">JB p-value</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${jbtest && jbtest.normality ? jbtest.normality : '--'}</div>
+                        <div class="label">JB Result</div>
+                    </div>
 
-        <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">📊 Goodness-of-Fit Tests</h5>
+                    <h5 style="margin-top: 20px; margin-bottom: 10px; grid-column: 1 / -1;">📊 Goodness-of-Fit Tests</h5>
 
-        <div class="stat-card">
-            <div class="value">${kstest && typeof kstest.statistic === 'number' && isFinite(kstest.statistic) ? kstest.statistic.toFixed(3) : '--'}</div>
-            <div class="label">KS Statistic</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) ? kstest.pValue.toFixed(3) : '--'}</div>
-            <div class="label">KS P-Value</div>
-        </div>
-        <div class="stat-card">
-            <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) && kstest.pValue > 0.05 ? 'Pass' : 'Fail'}</div>
-            <div class="label">KS α=0.05</div>
-        </div>
+                    <div class="stat-card">
+                        <div class="value">${kstest && typeof kstest.statistic === 'number' && isFinite(kstest.statistic) ? kstest.statistic.toFixed(3) : '--'}</div>
+                        <div class="label">KS Statistic</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) ? kstest.pValue.toFixed(3) : '--'}</div>
+                        <div class="label">KS P-Value</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">${kstest && kstest.pValue !== null && kstest.pValue !== undefined && isFinite(kstest.pValue) && kstest.pValue > 0.05 ? 'Pass' : 'Fail'}</div>
+                        <div class="label">KS α=0.05</div>
+                    </div>
     `;
 
     displayFittingResults();
