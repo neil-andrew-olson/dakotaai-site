@@ -343,10 +343,41 @@
                         <div id="paramsContainer">
                             <div class="loading">🔄 Loading distribution parameters...</div>
                         </div>
+                        
+                        <!-- Theoretical Statistics -->
+                        <div style="margin-top: 20px;">
+                            <h4>📊 Theoretical Statistics</h4>
+                            <div class="stats-grid" id="statsContainer">
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Mean (μ)</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Variance (σ²)</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Skewness</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Kurtosis</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Median</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">--</div>
+                                    <div class="label">Mode</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="stats-panel">
-                        <h3>📈 Data Analysis Results</h3>
+                        <h3>📈 Sample Data Analysis</h3>
                         <div class="stats-grid" id="dataAnalysisResults">
                             <div class="stat-card">
                                 <div class="value">--</div>
@@ -366,12 +397,116 @@
                             </div>
                             <div class="stat-card">
                                 <div class="value">--</div>
-                                <div class="label">KS Statistic</div>
+                                <div class="label">Kurtosis</div>
                             </div>
                             <div class="stat-card">
                                 <div class="value">--</div>
-                                <div class="label">KS P-Value</div>
+                                <div class="label">Median</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Statistics Panels -->
+                <div class="content-grid">
+                    <div class="stats-panel">
+                        <h3>📏 Percentiles & Quartiles</h3>
+                        <div class="stats-grid" id="percentilesResults">
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P10</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P25 (Q1)</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P50 (Q2)</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P75 (Q3)</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P90</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P95</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">P99</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">IQR</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-panel">
+                        <h3>🔍 Outlier Detection</h3>
+                        <div class="stats-grid" id="outlierResults">
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Z-Score Outliers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">IQR Outliers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Modified Z Outliers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Lower Fence</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">Upper Fence</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="value">--</div>
+                                <div class="label">MAD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hypothesis Testing Panel -->
+                <div class="stats-panel">
+                    <h3>🧪 Hypothesis Testing Suite</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <button onclick="performOneSampleTTest()" style="padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">📊 One-Sample t-Test</button>
+                        <button onclick="performCorrelationAnalysis()" style="padding: 8px 12px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">🔗 Correlation Analysis</button>
+                        <button onclick="performConfidenceIntervals()" style="padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">📏 Confidence Intervals</button>
+                        <button onclick="performBootstrapAnalysis()" style="padding: 8px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer;">🔄 Bootstrap Analysis</button>
+                    </div>
+                    <div class="stats-grid" id="hypothesisResults">
+                        <div style="grid-column: 1 / -1; text-align: center; color: #6c757d; font-style: italic;">
+                            Select a hypothesis test to see results
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Transformation Panel -->
+                <div class="stats-panel">
+                    <h3>🔄 Data Transformations</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <button onclick="applyLogTransform()" style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📈 Log Transform</button>
+                        <button onclick="applySqrtTransform()" style="padding: 6px 10px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">√ Sqrt Transform</button>
+                        <button onclick="applyZScoreTransform()" style="padding: 6px 10px; background: #06b6d4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📊 Z-Score</button>
+                        <button onclick="applyMinMaxTransform()" style="padding: 6px 10px; background: #84cc16; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">📏 Min-Max</button>
+                        <button onclick="resetTransformation()" style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">🔄 Reset</button>
+                    </div>
+                    <div id="transformationResults" style="background: #f8f9fa; padding: 10px; border-radius: 4px; min-height: 60px;">
+                        <div style="text-align: center; color: #6c757d; font-style: italic;">
+                            Upload data and apply transformations to see results
                         </div>
                     </div>
                 </div>
@@ -2767,10 +2902,553 @@ function analyzeData(data) {
     const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.length;
     const stdDev = Math.sqrt(variance);
     const skewness = calculateSkewness(data, mean, stdDev);
+    const kurtosis = calculateKurtosis(data, mean, stdDev);
     const median = calculateMedian(data);
 
     displayDataAnalysisResults(data.length, mean, stdDev, skewness, median);
+    displayPercentileResults(data);
+    displayOutlierResults(data);
     renderDataChart(data);
+}
+
+// Advanced Statistical Analysis Functions
+function calculateKurtosis(data, mean, stdDev) {
+    const n = data.length;
+    const kurtosis = data.reduce((sum, val) => sum + Math.pow((val - mean) / stdDev, 4), 0) / n;
+    return kurtosis - 3; // Excess kurtosis
+}
+
+function calculatePercentiles(data, percentiles) {
+    const sorted = [...data].sort((a, b) => a - b);
+    const results = {};
+    
+    percentiles.forEach(p => {
+        const index = (p / 100) * (sorted.length - 1);
+        if (index === Math.floor(index)) {
+            results[p] = sorted[index];
+        } else {
+            const lower = sorted[Math.floor(index)];
+            const upper = sorted[Math.ceil(index)];
+            results[p] = lower + (upper - lower) * (index - Math.floor(index));
+        }
+    });
+    
+    return results;
+}
+
+function displayPercentileResults(data) {
+    const percentiles = calculatePercentiles(data, [10, 25, 50, 75, 90, 95, 99]);
+    const iqr = percentiles[75] - percentiles[25];
+    
+    document.getElementById('percentilesResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${percentiles[10].toFixed(3)}</div>
+            <div class="label">P10</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[25].toFixed(3)}</div>
+            <div class="label">P25 (Q1)</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[50].toFixed(3)}</div>
+            <div class="label">P50 (Q2)</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[75].toFixed(3)}</div>
+            <div class="label">P75 (Q3)</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[90].toFixed(3)}</div>
+            <div class="label">P90</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[95].toFixed(3)}</div>
+            <div class="label">P95</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${percentiles[99].toFixed(3)}</div>
+            <div class="label">P99</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${iqr.toFixed(3)}</div>
+            <div class="label">IQR</div>
+        </div>
+    `;
+}
+
+function detectOutliers(data) {
+    const sorted = [...data].sort((a, b) => a - b);
+    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+    const iqr = q3 - q1;
+    const lowerFence = q1 - 1.5 * iqr;
+    const upperFence = q3 + 1.5 * iqr;
+    
+    const mean = data.reduce((a, b) => a + b, 0) / data.length;
+    const stdDev = Math.sqrt(data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.length);
+    
+    // Calculate MAD (Median Absolute Deviation)
+    const median = sorted[Math.floor(sorted.length * 0.5)];
+    const mad = Math.sqrt(data.reduce((a, b) => a + Math.pow(b - median, 2), 0) / data.length);
+    
+    // Z-score outliers (|z| > 3)
+    const zOutliers = data.filter(x => Math.abs((x - mean) / stdDev) > 3);
+    
+    // IQR outliers
+    const iqrOutliers = data.filter(x => x < lowerFence || x > upperFence);
+    
+    // Modified Z-score outliers (|modified z| > 3.5)
+    const modifiedZOutliers = data.filter(x => Math.abs(0.6745 * (x - median) / mad) > 3.5);
+    
+    return {
+        zScore: zOutliers.length,
+        iqr: iqrOutliers.length,
+        modifiedZ: modifiedZOutliers.length,
+        lowerFence: lowerFence,
+        upperFence: upperFence,
+        mad: mad
+    };
+}
+
+function displayOutlierResults(data) {
+    const outliers = detectOutliers(data);
+    
+    document.getElementById('outlierResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${outliers.zScore}</div>
+            <div class="label">Z-Score Outliers</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${outliers.iqr}</div>
+            <div class="label">IQR Outliers</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${outliers.modifiedZ}</div>
+            <div class="label">Modified Z Outliers</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${outliers.lowerFence.toFixed(3)}</div>
+            <div class="label">Lower Fence</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${outliers.upperFence.toFixed(3)}</div>
+            <div class="label">Upper Fence</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${outliers.mad.toFixed(3)}</div>
+            <div class="label">MAD</div>
+        </div>
+    `;
+}
+
+// Hypothesis Testing Functions
+function performOneSampleTTest() {
+    if (!currentData || currentData.length < 2) {
+        alert('Need at least 2 data points for t-test');
+        return;
+    }
+    
+    const data = currentData;
+    const n = data.length;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    const stdDev = Math.sqrt(data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1));
+    
+    // Test against theoretical mean (if available)
+    const theoreticalMean = getCurrentParams().mu || 0;
+    const standardError = stdDev / Math.sqrt(n);
+    const tStatistic = (mean - theoreticalMean) / standardError;
+    const degreesOfFreedom = n - 1;
+    
+    // Approximate p-value calculation
+    const pValue = 2 * (1 - approximateTCDF(Math.abs(tStatistic), degreesOfFreedom));
+    
+    document.getElementById('hypothesisResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${tStatistic.toFixed(4)}</div>
+            <div class="label">t-statistic</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${degreesOfFreedom}</div>
+            <div class="label">df</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${pValue.toFixed(4)}</div>
+            <div class="label">p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${pValue < 0.05 ? 'Reject H₀' : 'Fail to Reject H₀'}</div>
+            <div class="label">Result (α=0.05)</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${mean.toFixed(4)}</div>
+            <div class="label">Sample Mean</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${theoreticalMean.toFixed(4)}</div>
+            <div class="label">H₀ Mean</div>
+        </div>
+    `;
+}
+
+function performCorrelationAnalysis() {
+    if (!currentData || currentData.length < 3) {
+        alert('Need at least 3 data points for correlation analysis');
+        return;
+    }
+    
+    // Create lag-1 correlation (autocorrelation)
+    const data = currentData;
+    const n = data.length;
+    const x = data.slice(0, n-1);
+    const y = data.slice(1);
+    
+    const pearson = calculateCorrelation(x, y);
+    const spearman = calculateSpearmanCorrelation(x, y);
+    
+    document.getElementById('hypothesisResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${pearson.r.toFixed(4)}</div>
+            <div class="label">Pearson r</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${pearson.pValue.toFixed(4)}</div>
+            <div class="label">Pearson p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${spearman.rho.toFixed(4)}</div>
+            <div class="label">Spearman ρ</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${spearman.pValue.toFixed(4)}</div>
+            <div class="label">Spearman p-value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${Math.abs(pearson.r) > 0.7 ? 'Strong' : Math.abs(pearson.r) > 0.3 ? 'Moderate' : 'Weak'}</div>
+            <div class="label">Strength</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${n-1}</div>
+            <div class="label">Pairs</div>
+        </div>
+    `;
+}
+
+function calculateCorrelation(x, y) {
+    const n = x.length;
+    const meanX = x.reduce((a, b) => a + b, 0) / n;
+    const meanY = y.reduce((a, b) => a + b, 0) / n;
+    
+    let numerator = 0, denominatorX = 0, denominatorY = 0;
+    
+    for (let i = 0; i < n; i++) {
+        const dx = x[i] - meanX;
+        const dy = y[i] - meanY;
+        numerator += dx * dy;
+        denominatorX += dx * dx;
+        denominatorY += dy * dy;
+    }
+    
+    const r = numerator / Math.sqrt(denominatorX * denominatorY);
+    const t = r * Math.sqrt((n - 2) / (1 - r * r));
+    const pValue = 2 * (1 - approximateTCDF(Math.abs(t), n - 2));
+    
+    return { r, pValue };
+}
+
+function calculateSpearmanCorrelation(x, y) {
+    const n = x.length;
+    const rankX = getRanks(x);
+    const rankY = getRanks(y);
+    
+    const correlation = calculateCorrelation(rankX, rankY);
+    return { rho: correlation.r, pValue: correlation.pValue };
+}
+
+function getRanks(arr) {
+    const indexed = arr.map((val, i) => ({ val, i }));
+    indexed.sort((a, b) => a.val - b.val);
+    
+    const ranks = new Array(arr.length);
+    for (let i = 0; i < indexed.length; i++) {
+        ranks[indexed[i].i] = i + 1;
+    }
+    return ranks;
+}
+
+function performConfidenceIntervals() {
+    if (!currentData || currentData.length < 2) {
+        alert('Need at least 2 data points for confidence intervals');
+        return;
+    }
+    
+    const data = currentData;
+    const n = data.length;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    const stdDev = Math.sqrt(data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1));
+    const standardError = stdDev / Math.sqrt(n);
+    
+    // t-critical values (approximations)
+    const t90 = approximateTInverse(0.95, n - 1);
+    const t95 = approximateTInverse(0.975, n - 1);
+    const t99 = approximateTInverse(0.995, n - 1);
+    
+    const ci90 = [mean - t90 * standardError, mean + t90 * standardError];
+    const ci95 = [mean - t95 * standardError, mean + t95 * standardError];
+    const ci99 = [mean - t99 * standardError, mean + t99 * standardError];
+    
+    document.getElementById('hypothesisResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${ci90[0].toFixed(3)} - ${ci90[1].toFixed(3)}</div>
+            <div class="label">90% CI</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${ci95[0].toFixed(3)} - ${ci95[1].toFixed(3)}</div>
+            <div class="label">95% CI</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${ci99[0].toFixed(3)} - ${ci99[1].toFixed(3)}</div>
+            <div class="label">99% CI</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${mean.toFixed(4)}</div>
+            <div class="label">Sample Mean</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${standardError.toFixed(4)}</div>
+            <div class="label">Std Error</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${n}</div>
+            <div class="label">Sample Size</div>
+        </div>
+    `;
+}
+
+function performBootstrapAnalysis() {
+    if (!currentData || currentData.length < 10) {
+        alert('Need at least 10 data points for bootstrap analysis');
+        return;
+    }
+    
+    const data = currentData;
+    const nBootstrap = 1000;
+    const bootstrapMeans = [];
+    const bootstrapStds = [];
+    
+    for (let i = 0; i < nBootstrap; i++) {
+        const bootstrapSample = [];
+        for (let j = 0; j < data.length; j++) {
+            const randomIndex = Math.floor(Math.random() * data.length);
+            bootstrapSample.push(data[randomIndex]);
+        }
+        
+        const bootstrapMean = bootstrapSample.reduce((a, b) => a + b, 0) / bootstrapSample.length;
+        const bootstrapStd = Math.sqrt(bootstrapSample.reduce((a, b) => a + Math.pow(b - bootstrapMean, 2), 0) / (bootstrapSample.length - 1));
+        
+        bootstrapMeans.push(bootstrapMean);
+        bootstrapStds.push(bootstrapStd);
+    }
+    
+    bootstrapMeans.sort((a, b) => a - b);
+    bootstrapStds.sort((a, b) => a - b);
+    
+    const meanCI = [
+        bootstrapMeans[Math.floor(0.025 * nBootstrap)],
+        bootstrapMeans[Math.floor(0.975 * nBootstrap)]
+    ];
+    
+    const stdCI = [
+        bootstrapStds[Math.floor(0.025 * nBootstrap)],
+        bootstrapStds[Math.floor(0.975 * nBootstrap)]
+    ];
+    
+    document.getElementById('hypothesisResults').innerHTML = `
+        <div class="stat-card">
+            <div class="value">${meanCI[0].toFixed(3)} - ${meanCI[1].toFixed(3)}</div>
+            <div class="label">Bootstrap Mean CI</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${stdCI[0].toFixed(3)} - ${stdCI[1].toFixed(3)}</div>
+            <div class="label">Bootstrap Std CI</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${nBootstrap}</div>
+            <div class="label">Bootstrap Samples</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${data.length}</div>
+            <div class="label">Original n</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${(bootstrapMeans.reduce((a, b) => a + b, 0) / nBootstrap).toFixed(4)}</div>
+            <div class="label">Bootstrap Mean</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${Math.sqrt(bootstrapMeans.reduce((a, b) => a + Math.pow(b - bootstrapMeans.reduce((c, d) => c + d, 0) / nBootstrap, 2), 0) / nBootstrap).toFixed(4)}</div>
+            <div class="label">Bootstrap SE</div>
+        </div>
+    `;
+}
+
+// Data Transformation Functions
+let originalData = [];
+
+function applyLogTransform() {
+    if (!currentData || currentData.length === 0) {
+        alert('No data available for transformation');
+        return;
+    }
+    
+    if (originalData.length === 0) {
+        originalData = [...currentData];
+    }
+    
+    const positiveData = currentData.filter(x => x > 0);
+    if (positiveData.length !== currentData.length) {
+        alert('Log transformation requires all positive values. Filtering negative/zero values.');
+    }
+    
+    currentData = positiveData.map(x => Math.log(x));
+    analyzeData(currentData);
+    
+    document.getElementById('transformationResults').innerHTML = `
+        <h5>📈 Log Transformation Applied</h5>
+        <p><strong>Original data points:</strong> ${originalData.length}</p>
+        <p><strong>Transformed data points:</strong> ${currentData.length}</p>
+        <p><strong>Transformation:</strong> y = ln(x)</p>
+        <p><strong>Note:</strong> Reduces right skewness, makes multiplicative effects additive</p>
+    `;
+}
+
+function applySqrtTransform() {
+    if (!currentData || currentData.length === 0) {
+        alert('No data available for transformation');
+        return;
+    }
+    
+    if (originalData.length === 0) {
+        originalData = [...currentData];
+    }
+    
+    const nonNegativeData = currentData.filter(x => x >= 0);
+    if (nonNegativeData.length !== currentData.length) {
+        alert('Square root transformation requires non-negative values. Filtering negative values.');
+    }
+    
+    currentData = nonNegativeData.map(x => Math.sqrt(x));
+    analyzeData(currentData);
+    
+    document.getElementById('transformationResults').innerHTML = `
+        <h5>√ Square Root Transformation Applied</h5>
+        <p><strong>Original data points:</strong> ${originalData.length}</p>
+        <p><strong>Transformed data points:</strong> ${currentData.length}</p>
+        <p><strong>Transformation:</strong> y = √x</p>
+        <p><strong>Note:</strong> Stabilizes variance, reduces moderate right skewness</p>
+    `;
+}
+
+function applyZScoreTransform() {
+    if (!currentData || currentData.length === 0) {
+        alert('No data available for transformation');
+        return;
+    }
+    
+    if (originalData.length === 0) {
+        originalData = [...currentData];
+    }
+    
+    const mean = currentData.reduce((a, b) => a + b, 0) / currentData.length;
+    const stdDev = Math.sqrt(currentData.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / currentData.length);
+    
+    currentData = currentData.map(x => (x - mean) / stdDev);
+    analyzeData(currentData);
+    
+    document.getElementById('transformationResults').innerHTML = `
+        <h5>📊 Z-Score Standardization Applied</h5>
+        <p><strong>Data points:</strong> ${currentData.length}</p>
+        <p><strong>Transformation:</strong> z = (x - μ) / σ</p>
+        <p><strong>New mean:</strong> ~0, <strong>New std dev:</strong> ~1</p>
+        <p><strong>Note:</strong> Centers and scales data, preserves distribution shape</p>
+    `;
+}
+
+function applyMinMaxTransform() {
+    if (!currentData || currentData.length === 0) {
+        alert('No data available for transformation');
+        return;
+    }
+    
+    if (originalData.length === 0) {
+        originalData = [...currentData];
+    }
+    
+    const min = Math.min(...currentData);
+    const max = Math.max(...currentData);
+    const range = max - min;
+    
+    if (range === 0) {
+        alert('Cannot apply min-max normalization: all values are identical');
+        return;
+    }
+    
+    currentData = currentData.map(x => (x - min) / range);
+    analyzeData(currentData);
+    
+    document.getElementById('transformationResults').innerHTML = `
+        <h5>📏 Min-Max Normalization Applied</h5>
+        <p><strong>Data points:</strong> ${currentData.length}</p>
+        <p><strong>Transformation:</strong> y = (x - min) / (max - min)</p>
+        <p><strong>New range:</strong> [0, 1]</p>
+        <p><strong>Note:</strong> Scales all values to [0,1] interval, preserves relationships</p>
+    `;
+}
+
+function resetTransformation() {
+    if (originalData.length === 0) {
+        alert('No transformations to reset');
+        return;
+    }
+    
+    currentData = [...originalData];
+    originalData = [];
+    analyzeData(currentData);
+    
+    document.getElementById('transformationResults').innerHTML = `
+        <h5>🔄 Data Reset to Original</h5>
+        <p><strong>Data points:</strong> ${currentData.length}</p>
+        <p><strong>Status:</strong> All transformations removed</p>
+        <p>Data has been restored to its original form.</p>
+    `;
+}
+
+// Utility Functions for Statistical Tests
+function approximateTCDF(t, df) {
+    // Approximation for t-distribution CDF
+    if (df > 30) {
+        // Use normal approximation
+        return 0.5 * (1 + math.erf(t / Math.sqrt(2)));
+    }
+    
+    // Simple approximation for small df
+    const a = 4 * df;
+    const b = df - 0.5;
+    const x = t / Math.sqrt(df);
+    return 0.5 + 0.5 * Math.sign(t) * Math.pow(1 - 1/(1 + a*x*x/(b*b)), b/2);
+}
+
+function approximateTInverse(p, df) {
+    // Approximation for t-distribution inverse CDF (quantile function)
+    if (df > 30) {
+        // Use normal approximation
+        return Math.sqrt(2) * math.erfinv(2 * p - 1);
+    }
+    
+    // Simple approximation for t-critical values
+    if (p === 0.975) return df < 5 ? 2.78 : df < 10 ? 2.26 : df < 20 ? 2.09 : 2.0;
+    if (p === 0.95) return df < 5 ? 2.13 : df < 10 ? 1.81 : df < 20 ? 1.73 : 1.65;
+    if (p === 0.995) return df < 5 ? 4.03 : df < 10 ? 3.17 : df < 20 ? 2.86 : 2.58;
+    
+    return 2.0; // Default approximation
 }
 
 function calculateSkewness(data, mean, stdDev) {
@@ -3141,8 +3819,8 @@ function renderMainChart() {
     // Apply style theme
     applyChartStyle(chartOptions);
 
-    // Create new chart
-    window.mainChart = new Chart(canvas, {
+    // Create new chart using ChartManager
+    ChartManager.create('mainChart', {
         type: chartType,
         data: chartData,
         options: chartOptions
