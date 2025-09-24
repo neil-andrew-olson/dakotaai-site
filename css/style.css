@@ -104,44 +104,13 @@ body {
     padding: 0 var(--space-6);
 }
 
-/* Enhanced Header with Premium Glassmorphism - Completely Stationary */
+/* Simple Header - Basic Styling */
 header {
-    background: rgba(30, 58, 138, 0.95);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    background: #1e40af;
     position: sticky;
     top: 0;
     z-index: 1000;
-    min-height: 85px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.3s ease;
-    position: relative;
-    transform: none !important;
-}
-
-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-header:hover {
-    background: rgba(30, 58, 138, 0.98);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-    transform: none !important;
-}
-
-header:hover::before {
-    opacity: 1;
+    min-height: 60px;
 }
 
 /* Enhanced Navigation - Completely Stationary */
@@ -188,50 +157,26 @@ header:hover::before {
     letter-spacing: -0.02em;
 }
 
-/* Modern Navigation Menu */
+/* Simple Navigation Menu */
 nav ul {
     display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: var(--space-8);
-    flex-shrink: 0;
-    flex-wrap: nowrap;
+    gap: 2rem;
     align-items: center;
 }
 
 nav a {
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.9);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
     font-weight: 500;
-    font-size: 0.95rem;
-    letter-spacing: 0.01em;
-    position: relative;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--border-radius-sm);
-}
-
-nav a::before {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: var(--accent-gradient);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(-50%);
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
 }
 
 nav a:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-nav a:hover::before {
-    width: 100%;
+    color: #e5e7eb;
 }
 
 /* Mobile menu toggle */
@@ -590,13 +535,6 @@ h4, h5, h6 {
     margin-bottom: 0.5rem;
     padding-left: 1.5rem;
     position: relative;
-}
-
-.service-card li:before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: #10b981;
 }
 
 .contact-content {
