@@ -2914,7 +2914,7 @@ function renderMainChart() {
     const titleElement = document.getElementById('chartTitle');
 
     // Destroy existing chart
-    if (window.mainChart) {
+    if (window.mainChart && typeof window.mainChart.destroy === 'function') {
         window.mainChart.destroy();
     }
 
