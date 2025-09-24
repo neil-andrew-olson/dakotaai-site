@@ -162,13 +162,13 @@ body {
         .header h1 {
             font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: 800;
-            background: var(--gradient-accent);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin: 0;
             letter-spacing: -0.05em;
-            text-shadow: var(--glow-accent);
+            text-shadow: 0 0 20px rgba(var(--primary), 0.3);
             animation: glow 2s ease-in-out infinite alternate;
         }
 
@@ -405,7 +405,7 @@ body {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
             font-size: 0.95rem;
         }
 
@@ -895,9 +895,9 @@ body {
                 </div>
 
                 <!-- Main Chart Display -->
-                <div id="mainChartContainer" class="chart-container" style="background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 25px; margin-bottom: 30px; min-height: 500px;">
-                    <h4 id="chartTitle" style="margin: 0 0 20px 0; font-size: 1.5rem; font-weight: 700; text-align: center;">📈 Probability Density Function (PDF)</h4>
-                    <canvas id="mainChart" style="max-height: 600px;"></canvas>
+                <div id="mainChartContainer" class="chart-container">
+                    <h4 id="chartTitle" style="margin: 0 0 20px 0; font-size: 1.5rem; font-weight: 700; text-align: center; color: var(--text-primary);">📈 Probability Density Function (PDF)</h4>
+                    <canvas id="mainChart"></canvas>
                 </div>
 
                 <!-- Secondary Charts Row -->
@@ -2374,6 +2374,11 @@ function showTab(tabName) {
 
     document.getElementById(tabName).classList.add('active');
     event.target.classList.add('active');
+
+    // Render main chart when switching to visualizations
+    if (tabName === 'visualizations' && currentDistribution) {
+        renderMainChart();
+    }
 }
 
 function loadDistribution() {
@@ -3661,13 +3666,11 @@ function calculateDataStats(data) {
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     initTheme();
-    document.getElementById('distributionSelect').value = 'normal';
-    // Ensure distribution loads properly on startup
-    setTimeout(() => {
-        loadDistribution();
-        changeDataMethod();
-        renderMainChart(); // Add this
-    }, 100);
+    // Set initial distribution and load it properly
+    const select = document.getElementById('distributionSelect');
+    select.value = 'normal';
+    loadDistribution();
+    changeDataMethod();
 });
     </script>
 </body>
