@@ -180,7 +180,7 @@
 
                         <div class="rule-control">
                             <label for="min-spread">Minimum Spread Threshold (%)</label>
-                            <input type="number" id="min-spread" step="0.1" value="1.0" min="0.1" max="10.0">
+                            <input type="number" id="min-spread" step="0.1" value="0.1" min="0.1" max="10.0">
                         </div>
 
                         <div class="rule-control">
@@ -463,7 +463,7 @@
             const primaryPrices = data[primaryExchange];
             const secondaryPrices = data[secondaryExchange];
 
-            let capital = 10000; // Starting capital
+            let capital = 25000; // Starting capital
             let trades = [];
             let pnl = 0;
             let cumulativePnl = [0];
@@ -545,7 +545,7 @@
                 avgProfit: trades.length > 0 ? (pnl / trades.length).toFixed(2) : '0',
                 maxDrawdown: maxDrawdown.toFixed(2),
                 finalCapital: capital.toFixed(2),
-                returnPercentage: (((capital - 10000) / 10000) * 100).toFixed(2),
+                returnPercentage: (((capital - 25000) / 25000) * 100).toFixed(2),
                 trades: trades,
                 cumulativePnl: cumulativePnl
             };
