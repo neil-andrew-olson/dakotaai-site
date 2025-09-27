@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI Demos - Cryptocurrency Arbitrage Analyzer</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .code-block { background-color: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 14px; margin: 20px 0; }
+        .highlight { background-color: #ffe4b5; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="logo"><a href="../index.html"><img src="../DakotaAI_logo.png" alt="Dakota AI"></a></div>
+                <ul>
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../services.html">Services</a></li>
+                    <li><a href="index.html">Demos</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                    <li><a href="../blog.html">Blog</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+                <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem;">
+                    <h1>📈 Cryptocurrency Arbitrage Analyzer Demo</h1>
+                <p>This advanced interactive demo showcases <strong>Real-time Financial Analytics</strong> and <strong>Algorithmic Trading Strategies</strong> by identifying arbitrage opportunities across cryptocurrency exchanges using live market data and professional analysis tools.</p>
+
+                <h2>What This Demo Shows</h2>
+                <ul>
+                    <li><strong>Real-time Price Monitoring:</strong> Live cryptocurrency prices across multiple exchanges (Binance, Kraken, Coinbase, Bitfinex, Gemini)</li>
+                    <li><strong>Arbitrage Detection:</strong> Advanced algorithms to identify price discrepancies and profit opportunities in real-time</li>
+                    <li><strong>Multi-Asset Support:</strong> Analysis for Bitcoin, Ethereum, Binance Coin, Solana, and Cardano</li>
+                    <li><strong>Interactive Controls:</strong> User-configurable thresholds for arbitrage detection and trading strategies</li>
+                    <li><strong>Historical Analysis:</strong> Long-term price trend visualization and market analysis</li>
+                </ul>
+
+                <h2>Key Features</h2>
+                <ul>
+                    <li><strong>Live Data Feed:</strong> Real-time price updates from CoinGecko API with exchange-specific variations</li>
+                    <li><strong>Opportunity Alerts:</strong> Visual alerts when profitable arbitrage opportunities are detected</li>
+                    <li><strong>Professional UI:</strong> Interactive dashboard with metrics, charts, and real-time updates</li>
+                    <li><strong>Error Handling:</strong> Robust fallback systems for API failures and network issues</li>
+                    <li><strong>Configurable Parameters:</strong> Adjustable buy/sell thresholds and exchange selection</li>
+                </ul>
+
+                <h2>📊 Live Arbitrage Dashboard</h2>
+                <p>Professional-grade cryptocurrency arbitrage analysis platform:</p>
+
+                <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: #f8fafc; border-radius: 12px;">
+                    <p><strong>💹 Real-Time Arbitrage Detection System</strong></p>
+                    <p>Our AI-powered system continuously monitors price differences across exchanges to identify profitable trading opportunities.</p>
+                    <div style="display: flex; gap: 2rem; margin: 1rem 0;">
+                        <div style="flex: 1;">
+                            <strong style="color: #ff6b35;">BTC Arbitrage:</strong><br>
+                            <small style="color: #10b981;">Monitoring 5+ Exchanges</small>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="color: #667eea;">Detection Rate:</strong><br>
+                            <small style="color: #374151;">Real-time scanning</small>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="color: #ff6b6b;">API Status:</strong><br>
+                            <small style="color: #6b7280;">CoinGecko Live Feed</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h2>Technology Stack</h2>
+                <ul>
+                    <li><strong>Streamlit:</strong> Interactive web application framework</li>
+                    <li><strong>CoinGecko API:</strong> Professional cryptocurrency market data</li>
+                    <li><strong>Pandas & NumPy:</strong> Advanced data processing and analysis</li>
+                    <li><strong>Matplotlib:</strong> Professional data visualization</li>
+                    <li><strong>Requests:</strong> Robust HTTP client with error handling</li>
+                </ul>
+
+                <h2>How to Run This Demo</h2>
+                <p><strong>Requirements:</strong> Python 3.8+, pip package manager</p>
+
+                <h3>Installation:</h3>
+                <div class="code-block">
+pip install streamlit requests pandas numpy matplotlib
+                </div>
+
+                <h3>Launch the Application:</h3>
+                <div class="code-block">
+cd demos<br>
+streamlit run arbitrage.py
+                </div>
+
+                <p><strong>Note:</strong> The application will open in your default web browser at <code>http://localhost:8501</code></p>
+
+                <h3>Online Deployment:</h3>
+                <p>For cloud deployment (optional):</p>
+                <div class="code-block">
+streamlit run arbitrage.py --server.port 8501 --server.address 0.0.0.0
+                </div>
+
+                <h2>Expected Features When Running</h2>
+                <ul>
+                    <li><strong>Real-time Price Table:</strong> Live prices from selected exchanges with visual highlighting</li>
+                    <li><strong>Arbitrage Alerts:</strong> Animated alerts when opportunities exceed threshold</li>
+                    <li><strong>Interactive Controls:</strong> Sliders for buy/sell thresholds (0.1% to 5.0%)</li>
+                    <li><strong>Historical Charts:</strong> Price history visualization for selected time periods</li>
+                    <li><strong>Exchange Selection:</strong> Multi-select dropdown for choosing exchanges to monitor</li>
+                    <li><strong>Auto-refresh:</strong> Optional 30-second automatic price updates</li>
+                    <li><strong>Error Handling:</strong> Graceful fallbacks when API calls fail</li>
+                </ul>
+
+                <h2>Financial Applications</h2>
+                <p>This demo illustrates Dakota AI's capabilities for:</p>
+                <ul>
+                    <li><strong>Algorithmic Trading:</strong> Automated arbitrage detection and execution signals</li>
+                    <li><strong>Risk Management:</strong> Real-time market monitoring and opportunity assessment</li>
+                    <li><strong>Market Analysis:</strong> Multi-exchange price analysis and spread calculation</li>
+                    <li><strong>Trading Strategies:</strong> Threshold-based automated trading rule development</li>
+                    <li><strong>Portfolio Optimization:</strong> Cross-exchange position management</li>
+                    <li><strong>Financial Technology:</strong> Modern fintech application development</li>
+                </ul>
+
+                <p>Perfect for hedge funds, trading firms, fintech companies, and cryptocurrency platforms! 🚀💰</p>
+
+                <h2>Business Value</h2>
+                <div style="display: flex; gap: 2rem; margin: 2rem 0;">
+                    <div style="flex: 1; padding: 1rem; background: #e8f4fd; border-radius: 8px;">
+                        <h4>⚡ Speed Advantage</h4>
+                        <p>Real-time arbitrage detection gives traders a competitive edge in fast-moving markets</p>
+                    </div>
+                    <div style="flex: 1; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
+                        <h4>📊 Data-Driven</h4>
+                        <p>Analytics-based approach ensures profitable opportunities are identified systematically</p>
+                    </div>
+                    <div style="flex: 1; padding: 1rem; background: #ecfdf5; border-radius: 8px;">
+                        <h4>🔧 Customizable</h4>
+                        <p>Configurable thresholds and exchange selection adapt to different trading strategies</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Dakota AI</h4>
+                <p>Leveraging AI for data-driven insights.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
