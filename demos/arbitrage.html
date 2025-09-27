@@ -3,11 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dakota AI Demos - Cryptocurrency Arbitrage Analyzer</title>
+    <title>Dakota AI Demos - Arbitrage Strategy Backtester</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .code-block { background-color: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 14px; margin: 20px 0; }
-        .highlight { background-color: #ffe4b5; }
+        .main-header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea 25%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .demo-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            margin: 2rem 0;
+        }
+        .strategy-builder {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .rule-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin: 0.5rem;
+        }
+        .backtest-results {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        .comparison-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        .positive { color: #10b981; font-weight: bold; }
+        .negative { color: #ef4444; font-weight: bold; }
+        .neutral { color: #6b7280; }
+        .profit-chart { height: 400px; margin: 2rem 0; }
+        .educational-content {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            margin: 2rem 0;
+        }
+        canvas { max-width: 100%; height: auto; }
+        .rule-builder {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .rule-control {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .rule-control label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .rule-control input, .rule-control select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -29,119 +125,180 @@
 
     <main>
         <section>
-                <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem;">
-                    <h1>📈 Cryptocurrency Arbitrage Analyzer Demo</h1>
-                <p>This advanced interactive demo showcases <strong>Real-time Financial Analytics</strong> and <strong>Algorithmic Trading Strategies</strong> by identifying arbitrage opportunities across cryptocurrency exchanges using live market data and professional analysis tools.</p>
+            <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem 1rem;">
+                <h1 class="main-header">📊 Arbitrage Strategy Backtester</h1>
+                <p style="text-align: center; font-size: 1.2rem; color: #6b7280; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    Test and optimize arbitrage trading strategies using historical cryptocurrency data. Learn how to identify profitable price discrepancies across exchanges.
+                </p>
 
-                <h2>What This Demo Shows</h2>
-                <ul>
-                    <li><strong>Real-time Price Monitoring:</strong> Live cryptocurrency prices across multiple exchanges (Binance, Kraken, Coinbase, Bitfinex, Gemini)</li>
-                    <li><strong>Arbitrage Detection:</strong> Advanced algorithms to identify price discrepancies and profit opportunities in real-time</li>
-                    <li><strong>Multi-Asset Support:</strong> Analysis for Bitcoin, Ethereum, Binance Coin, Solana, and Cardano</li>
-                    <li><strong>Interactive Controls:</strong> User-configurable thresholds for arbitrage detection and trading strategies</li>
-                    <li><strong>Historical Analysis:</strong> Long-term price trend visualization and market analysis</li>
-                </ul>
-
-                <h2>Key Features</h2>
-                <ul>
-                    <li><strong>Live Data Feed:</strong> Real-time price updates from CoinGecko API with exchange-specific variations</li>
-                    <li><strong>Opportunity Alerts:</strong> Visual alerts when profitable arbitrage opportunities are detected</li>
-                    <li><strong>Professional UI:</strong> Interactive dashboard with metrics, charts, and real-time updates</li>
-                    <li><strong>Error Handling:</strong> Robust fallback systems for API failures and network issues</li>
-                    <li><strong>Configurable Parameters:</strong> Adjustable buy/sell thresholds and exchange selection</li>
-                </ul>
-
-                <h2>📊 Live Arbitrage Dashboard</h2>
-                <p>Professional-grade cryptocurrency arbitrage analysis platform:</p>
-
-                <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: #f8fafc; border-radius: 12px;">
-                    <p><strong>💹 Real-Time Arbitrage Detection System</strong></p>
-                    <p>Our AI-powered system continuously monitors price differences across exchanges to identify profitable trading opportunities.</p>
-                    <div style="display: flex; gap: 2rem; margin: 1rem 0;">
-                        <div style="flex: 1;">
-                            <strong style="color: #ff6b35;">BTC Arbitrage:</strong><br>
-                            <small style="color: #10b981;">Monitoring 5+ Exchanges</small>
+                <div class="demo-container">
+                    <h2>🎯 What You'll Learn</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                        <div>
+                            <h3>🔍 Arbitrage Detection</h3>
+                            <p>Learn to identify price discrepancies between cryptocurrency exchanges and calculate potential profits.</p>
                         </div>
-                        <div style="flex: 1;">
-                            <strong style="color: #667eea;">Detection Rate:</strong><br>
-                            <small style="color: #374151;">Real-time scanning</small>
+                        <div>
+                            <h3>📈 Strategy Optimization</h3>
+                            <p>Test different arbitrage rules and thresholds to maximize returns while minimizing risks.</p>
                         </div>
-                        <div style="flex: 1;">
-                            <strong style="color: #ff6b6b;">API Status:</strong><br>
-                            <small style="color: #6b7280;">CoinGecko Live Feed</small>
+                        <div>
+                            <h3>📊 Risk Management</h3>
+                            <p>Understand transaction fees, slippage, and market volatility's impact on arbitrage strategies.</p>
+                        </div>
+                        <div>
+                            <h3>⚡ Real-Time Application</h3>
+                            <p>Apply statistical arbitrage principles used by hedge funds and professional traders.</p>
                         </div>
                     </div>
                 </div>
 
-                <h2>Technology Stack</h2>
-                <ul>
-                    <li><strong>Streamlit:</strong> Interactive web application framework</li>
-                    <li><strong>CoinGecko API:</strong> Professional cryptocurrency market data</li>
-                    <li><strong>Pandas & NumPy:</strong> Advanced data processing and analysis</li>
-                    <li><strong>Matplotlib:</strong> Professional data visualization</li>
-                    <li><strong>Requests:</strong> Robust HTTP client with error handling</li>
-                </ul>
+                <div class="strategy-builder">
+                    <h2>🛠️ Build Your Arbitrage Strategy</h2>
+                    <p style="color: #6b7280; margin-bottom: 1rem;">Configure your arbitrage detection rules and backtest them against historical data.</p>
 
-                <h2>How to Run This Demo</h2>
-                <p><strong>Requirements:</strong> Python 3.8+, pip package manager</p>
+                    <div class="rule-builder">
+                        <div class="rule-control">
+                            <label for="primary-exchange">Primary Exchange</label>
+                            <select id="primary-exchange">
+                                <option value="binance">Binance</option>
+                                <option value="coinbase">Coinbase</option>
+                                <option value="kraken">Kraken</option>
+                                <option value="gemini">Gemini</option>
+                            </select>
+                        </div>
 
-                <h3>Installation:</h3>
-                <div class="code-block">
-pip install streamlit requests pandas numpy matplotlib
+                        <div class="rule-control">
+                            <label for="secondary-exchange">Secondary Exchange</label>
+                            <select id="secondary-exchange">
+                                <option value="coinbase">Coinbase</option>
+                                <option value="binance">Binance</option>
+                                <option value="kraken">Kraken</option>
+                                <option value="gemini">Gemini</option>
+                            </select>
+                        </div>
+
+                        <div class="rule-control">
+                            <label for="min-spread">Minimum Spread Threshold (%)</label>
+                            <input type="number" id="min-spread" step="0.1" value="1.0" min="0.1" max="10.0">
+                        </div>
+
+                        <div class="rule-control">
+                            <label for="max-spread">Maximum Spread Threshold (%)</label>
+                            <input type="number" id="max-spread" step="0.1" value="5.0" min="0.1" max="20.0">
+                        </div>
+
+                        <div class="rule-control">
+                            <label for="min-volume">Minimum Daily Volume ($M)</label>
+                            <input type="number" id="min-volume" step="1" value="10" min="1" max="1000">
+                        </div>
+
+                        <div class="rule-control">
+                            <label for="holding-period">Holding Period (hours)</label>
+                            <input type="number" id="holding-period" step="1" value="24" min="1" max="168">
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button onclick="runBacktest()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">🚀 Run Backtest</button>
+                    </div>
                 </div>
 
-                <h3>Launch the Application:</h3>
-                <div class="code-block">
-cd demos<br>
-streamlit run arbitrage.py
+                <div class="backtest-results" id="results-container" style="display: none;">
+                    <h2>📈 Backtest Results</h2>
+
+                    <div id="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                        <!-- Metrics will be populated by JavaScript -->
+                    </div>
+
+                    <div class="profit-chart">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+
+                    <h3>📋 Trade History</h3>
+                    <div id="trade-history" style="max-height: 300px; overflow-y: auto; margin: 1rem 0;">
+                        <table class="comparison-table" id="trade-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>Spread (%)</th>
+                                    <th>Profit ($)</th>
+                                    <th>Cumulative P&L ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trade-table-body">
+                                <!-- Trade history will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <p><strong>Note:</strong> The application will open in your default web browser at <code>http://localhost:8501</code></p>
+                <div class="educational-content">
+                    <h2>🎓 Understanding Arbitrage Trading</h2>
 
-                <h3>Online Deployment:</h3>
-                <p>For cloud deployment (optional):</p>
-                <div class="code-block">
-streamlit run arbitrage.py --server.port 8501 --server.address 0.0.0.0
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-top: 1rem;">
+                        <div>
+                            <h3>🔄 How Arbitrage Works</h3>
+                            <p>Arbitrage exploits price differences for the same asset across different markets. When Bitcoin costs $50,000 on Exchange A but $50,500 on Exchange B, you can buy on A and sell on B for a risk-free profit (minus fees).</p>
+
+                            <h4 style="margin-top: 1rem;">Key Concepts:</h4>
+                            <ul>
+                                <li><strong>Spread:</strong> The percentage difference between prices</li>
+                                <li><strong>Execution Lag:</strong> Time between buy and sell orders</li>
+                                <li><strong>Transaction Fees:</strong> Exchange and network fees</li>
+                                <li><strong>Liquidity:</strong> Available trading volume</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3>⚠️ Risks and Challenges</h3>
+                            <p>While arbitrage appears "risk-free," several factors can impact profitability:</p>
+
+                            <h4 style="margin-top: 1rem;">Common Challenges:</h4>
+                            <ul>
+                                <li><strong>Slippage:</strong> Price changes during trade execution</li>
+                                <li><strong>Exchange Fees:</strong> Withdrawals, deposits, and trading fees</li>
+                                <li><strong>Transfer Times:</strong> Cryptocurrency network delays</li>
+                                <li><strong>Exchange Risks:</strong> Hacks, suspensions, or delistings</li>
+                                <li><strong>Market Volatility:</strong> Rapid price movements during arbitrage</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                        <h3>💡 Pro Tips for Arbitrage Trading</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <strong>1. Monitor Multiple Exchanges</strong>
+                                <p>Track prices across 3+ exchanges for better opportunities</p>
+                            </div>
+                            <div>
+                                <strong>2. Account for Fees</strong>
+                                <p>Calculate all trading, withdrawal, and network fees</p>
+                            </div>
+                            <div>
+                                <strong>3. Use Alerts</strong>
+                                <p>Set price difference alerts for automated monitoring</p>
+                            </div>
+                            <div>
+                                <strong>4. Start Small</strong>
+                                <p>Test strategies with small amounts before scaling up</p>
+                            </div>
+                            <div>
+                                <strong>5. Consider Time Zones</strong>
+                                <p>Exchange behaviors vary by region and time of day</p>
+                            </div>
+                            <div>
+                                <strong>6. Monitor Liquidity</strong>
+                                <p>Ensure sufficient trading volume for your position size</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <h2>Expected Features When Running</h2>
-                <ul>
-                    <li><strong>Real-time Price Table:</strong> Live prices from selected exchanges with visual highlighting</li>
-                    <li><strong>Arbitrage Alerts:</strong> Animated alerts when opportunities exceed threshold</li>
-                    <li><strong>Interactive Controls:</strong> Sliders for buy/sell thresholds (0.1% to 5.0%)</li>
-                    <li><strong>Historical Charts:</strong> Price history visualization for selected time periods</li>
-                    <li><strong>Exchange Selection:</strong> Multi-select dropdown for choosing exchanges to monitor</li>
-                    <li><strong>Auto-refresh:</strong> Optional 30-second automatic price updates</li>
-                    <li><strong>Error Handling:</strong> Graceful fallbacks when API calls fail</li>
-                </ul>
-
-                <h2>Financial Applications</h2>
-                <p>This demo illustrates Dakota AI's capabilities for:</p>
-                <ul>
-                    <li><strong>Algorithmic Trading:</strong> Automated arbitrage detection and execution signals</li>
-                    <li><strong>Risk Management:</strong> Real-time market monitoring and opportunity assessment</li>
-                    <li><strong>Market Analysis:</strong> Multi-exchange price analysis and spread calculation</li>
-                    <li><strong>Trading Strategies:</strong> Threshold-based automated trading rule development</li>
-                    <li><strong>Portfolio Optimization:</strong> Cross-exchange position management</li>
-                    <li><strong>Financial Technology:</strong> Modern fintech application development</li>
-                </ul>
-
-                <p>Perfect for hedge funds, trading firms, fintech companies, and cryptocurrency platforms! 🚀💰</p>
-
-                <h2>Business Value</h2>
-                <div style="display: flex; gap: 2rem; margin: 2rem 0;">
-                    <div style="flex: 1; padding: 1rem; background: #e8f4fd; border-radius: 8px;">
-                        <h4>⚡ Speed Advantage</h4>
-                        <p>Real-time arbitrage detection gives traders a competitive edge in fast-moving markets</p>
-                    </div>
-                    <div style="flex: 1; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
-                        <h4>📊 Data-Driven</h4>
-                        <p>Analytics-based approach ensures profitable opportunities are identified systematically</p>
-                    </div>
-                    <div style="flex: 1; padding: 1rem; background: #ecfdf5; border-radius: 8px;">
-                        <h4>🔧 Customizable</h4>
-                        <p>Configurable thresholds and exchange selection adapt to different trading strategies</p>
-                    </div>
+                <div style="text-align: center; margin-top: 3rem;">
+                    <a href="index.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">← Back to All Demos</a>
                 </div>
             </div>
         </section>
@@ -151,9 +308,363 @@ streamlit run arbitrage.py --server.port 8501 --server.address 0.0.0.0
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Dakota AI</h4>
-                <p>Leveraging AI for data-driven insights.</p>
+                <p>Empowering traders with AI-driven financial analytics.</p>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Historical cryptocurrency price data (simplified for demo)
+        const historicalData = {
+            bitcoin: {
+                binance: [
+                    { date: '2024-01-01', price: 42200, volume: 125000000 },
+                    { date: '2024-02-01', price: 43100, volume: 118000000 },
+                    { date: '2024-03-01', price: 58000, volume: 142000000 },
+                    { date: '2024-04-01', price: 63000, volume: 138000000 },
+                    { date: '2024-05-01', price: 67000, volume: 145000000 },
+                    { date: '2024-06-01', price: 62000, volume: 135000000 },
+                    { date: '2024-07-01', price: 65000, volume: 128000000 },
+                    { date: '2024-08-01', price: 59000, volume: 132000000 },
+                    { date: '2024-09-01', price: 56000, volume: 118000000 },
+                    { date: '2024-10-01', price: 67000, volume: 152000000 },
+                    { date: '2024-11-01', price: 90000, volume: 165000000 },
+                    { date: '2024-12-01', price: 95000, volume: 158000000 }
+                ],
+                coinbase: [
+                    { date: '2024-01-01', price: 42150, volume: 115000000 },
+                    { date: '2024-02-01', price: 43200, volume: 112000000 },
+                    { date: '2024-03-01', price: 57850, volume: 138000000 },
+                    { date: '2024-04-01', price: 63200, volume: 141000000 },
+                    { date: '2024-05-01', price: 66800, volume: 142000000 },
+                    { date: '2024-06-01', price: 62100, volume: 137000000 },
+                    { date: '2024-07-01', price: 64800, volume: 129000000 },
+                    { date: '2024-08-01', price: 59200, volume: 134000000 },
+                    { date: '2024-09-01', price: 55800, volume: 116000000 },
+                    { date: '2024-10-01', price: 67200, volume: 155000000 },
+                    { date: '2024-11-01', price: 89800, volume: 162000000 },
+                    { date: '2024-12-01', price: 94800, volume: 159000000 }
+                ],
+                kraken: [
+                    { date: '2024-01-01', price: 42300, volume: 98000000 },
+                    { date: '2024-02-01', price: 42900, volume: 95000000 },
+                    { date: '2024-03-01', price: 58200, volume: 112000000 },
+                    { date: '2024-04-01', price: 62800, volume: 108000000 },
+                    { date: '2024-05-01', price: 67200, volume: 115000000 },
+                    { date: '2024-06-01', price: 61800, volume: 105000000 },
+                    { date: '2024-07-01', price: 65200, volume: 102000000 },
+                    { date: '2024-08-01', price: 58800, volume: 108000000 },
+                    { date: '2024-09-01', price: 56200, volume: 98000000 },
+                    { date: '2024-10-01', price: 66800, volume: 125000000 },
+                    { date: '2024-11-01', price: 90500, volume: 135000000 },
+                    { date: '2024-12-01', price: 95200, volume: 128000000 }
+                ],
+                gemini: [
+                    { date: '2024-01-01', price: 42000, volume: 85000000 },
+                    { date: '2024-02-01', price: 43300, volume: 88000000 },
+                    { date: '2024-03-01', price: 57900, volume: 95000000 },
+                    { date: '2024-04-01', price: 62900, volume: 92000000 },
+                    { date: '2024-05-01', price: 66900, volume: 98000000 },
+                    { date: '2024-06-01', price: 62200, volume: 99000000 },
+                    { date: '2024-07-01', price: 64700, volume: 96000000 },
+                    { date: '2024-08-01', price: 59100, volume: 92000000 },
+                    { date: '2024-09-01', price: 55900, volume: 88000000 },
+                    { date: '2024-10-01', price: 67100, volume: 110000000 },
+                    { date: '2024-11-01', price: 90100, volume: 115000000 },
+                    { date: '2024-12-01', price: 94900, volume: 112000000 }
+                ]
+            },
+            ethereum: {
+                binance: [
+                    { date: '2024-01-01', price: 2200, volume: 45000000 },
+                    { date: '2024-02-01', price: 2300, volume: 48000000 },
+                    { date: '2024-03-01', price: 3400, volume: 62000000 },
+                    { date: '2024-04-01', price: 3100, volume: 55000000 },
+                    { date: '2024-05-01', price: 3700, volume: 58000000 },
+                    { date: '2024-06-01', price: 3400, volume: 52000000 },
+                    { date: '2024-07-01', price: 3200, volume: 48000000 },
+                    { date: '2024-08-01', price: 2500, volume: 42000000 },
+                    { date: '2024-09-01', price: 2300, volume: 38000000 },
+                    { date: '2024-10-01', price: 2600, volume: 49000000 },
+                    { date: '2024-11-01', price: 3200, volume: 68000000 },
+                    { date: '2024-12-01', price: 3500, volume: 72000000 }
+                ],
+                coinbase: [
+                    { date: '2024-01-01', price: 2195, volume: 42000000 },
+                    { date: '2024-02-01', price: 2310, volume: 46000000 },
+                    { date: '2024-03-01', price: 3380, volume: 60000000 },
+                    { date: '2024-04-01', price: 3120, volume: 53000000 },
+                    { date: '2024-05-01', price: 3680, volume: 56000000 },
+                    { date: '2024-06-01', price: 3420, volume: 50000000 },
+                    { date: '2024-07-01', price: 3180, volume: 46000000 },
+                    { date: '2024-08-01', price: 2520, volume: 40000000 },
+                    { date: '2024-09-01', price: 2280, volume: 36000000 },
+                    { date: '2024-10-01', price: 2620, volume: 47000000 },
+                    { date: '2024-11-01', price: 3180, volume: 65000000 },
+                    { date: '2024-12-01', price: 3480, volume: 69000000 }
+                ],
+                kraken: [
+                    { date: '2024-01-01', price: 2210, volume: 35000000 },
+                    { date: '2024-02-01', price: 2280, volume: 38000000 },
+                    { date: '2024-03-01', price: 3420, volume: 51000000 },
+                    { date: '2024-04-01', price: 3080, volume: 42000000 },
+                    { date: '2024-05-01', price: 3720, volume: 45000000 },
+                    { date: '2024-06-01', price: 3380, volume: 40000000 },
+                    { date: '2024-07-01', price: 3220, volume: 38000000 },
+                    { date: '2024-08-01', price: 2480, volume: 33000000 },
+                    { date: '2024-09-01', price: 2320, volume: 30000000 },
+                    { date: '2024-10-01', price: 2580, volume: 38000000 },
+                    { date: '2024-11-01', price: 3240, volume: 57000000 },
+                    { date: '2024-12-01', price: 3520, volume: 61000000 }
+                ],
+                gemini: [
+                    { date: '2024-01-01', price: 2180, volume: 32000000 },
+                    { date: '2024-02-01', price: 2320, volume: 35000000 },
+                    { date: '2024-03-01', price: 3390, volume: 48000000 },
+                    { date: '2024-04-01', price: 3090, volume: 39000000 },
+                    { date: '2024-05-01', price: 3690, volume: 42000000 },
+                    { date: '2024-06-01', price: 3410, volume: 38000000 },
+                    { date: '2024-07-01', price: 3190, volume: 36000000 },
+                    { date: '2024-08-01', price: 2510, volume: 31000000 },
+                    { date: '2024-09-01', price: 2290, volume: 28000000 },
+                    { date: '2024-10-01', price: 2610, volume: 35000000 },
+                    { date: '2024-11-01', price: 3210, volume: 52000000 },
+                    { date: '2024-12-01', price: 3490, volume: 55000000 }
+                ]
+            }
+        };
+
+        let profitChart = null;
+
+        // Constants for trading costs
+        const TRADING_FEE = 0.001; // 0.1% per trade
+        const WITHDRAWAL_FEE_BTC = 0.0005; // 0.05% withdrawal fee
+        const WITHDRAWAL_FEE_ETH = 0.005; // 0.5% withdrawal fee
+
+        function runBacktest() {
+            // Get strategy parameters
+            const primaryExchange = document.getElementById('primary-exchange').value;
+            const secondaryExchange = document.getElementById('secondary-exchange').value;
+            const minSpread = parseFloat(document.getElementById('min-spread').value);
+            const maxSpread = parseFloat(document.getElementById('max-spread').value);
+            const minVolume = parseFloat(document.getElementById('min-volume').value) * 1000000; // Convert to actual number
+            const holdingPeriod = parseInt(document.getElementById('holding-period').value);
+
+            // Run backtest for both cryptocurrencies
+            const btcResults = backtestStrategy('bitcoin', primaryExchange, secondaryExchange, minSpread, maxSpread, minVolume, holdingPeriod);
+            const ethResults = backtestStrategy('ethereum', primaryExchange, secondaryExchange, minSpread, maxSpread, minVolume, holdingPeriod);
+
+            // Display results
+            displayResults(btcResults, ethResults);
+        }
+
+        function backtestStrategy(crypto, primaryExchange, secondaryExchange, minSpread, maxSpread, minVolume, holdingPeriod) {
+            const data = historicalData[crypto];
+            const primaryPrices = data[primaryExchange];
+            const secondaryPrices = data[secondaryExchange];
+
+            let capital = 10000; // Starting capital
+            let trades = [];
+            let pnl = 0;
+            let cumulativePnl = [0];
+            let winningTrades = 0;
+            let losingTrades = 0;
+            let maxDrawdown = 0;
+            let peakCapital = capital;
+
+            for (let i = 1; i < primaryPrices.length; i++) { // Start from second data point
+                const primaryPrice = primaryPrices[i].price;
+                const secondaryPrice = secondaryPrices[i].price;
+                const date = primaryPrices[i].date;
+                const avgVolume = (primaryPrices[i].volume + secondaryPrices[i].volume) / 2;
+
+                // Check volume requirement
+                if (avgVolume < minVolume) continue;
+
+                // Calculate spread
+                const spread = Math.abs((secondaryPrice - primaryPrice) / primaryPrice) * 100;
+
+                // Check if spread is within our thresholds
+                if (spread >= minSpread && spread <= maxSpread) {
+                    // Determine which exchange to buy from and sell to
+                    const buyPrice = Math.min(primaryPrice, secondaryPrice);
+                    const sellPrice = Math.max(primaryPrice, secondaryPrice);
+                    const buyExchange = primaryPrice < secondaryPrice ? primaryExchange : secondaryExchange;
+                    const sellExchange = primaryPrice < secondaryPrice ? secondaryExchange : primaryExchange;
+
+                    // Calculate fees
+                    const tradingFees = (buyPrice * TRADING_FEE) + (sellPrice * TRADING_FEE);
+                    const withdrawalFee = crypto === 'bitcoin' ? sellPrice * WITHDRAWAL_FEE_BTC : sellPrice * WITHDRAWAL_FEE_ETH;
+                    const totalFees = tradingFees + withdrawalFee;
+
+                    // Calculate profit
+                    const grossProfit = sellPrice - buyPrice;
+                    const netProfit = grossProfit - totalFees;
+
+                    // Only execute if profitable
+                    if (netProfit > 0) {
+                        capital += netProfit;
+                        pnl += netProfit;
+                        cumulativePnl.push(pnl);
+
+                        if (netProfit > 0) {
+                            winningTrades++;
+                        } else {
+                            losingTrades++;
+                        }
+
+                        trades.push({
+                            date: date,
+                            action: 'Arbitrage',
+                            spread: spread.toFixed(2),
+                            profit: netProfit.toFixed(2),
+                            cumulative: pnl.toFixed(2),
+                            buyExchange: buyExchange,
+                            sellExchange: sellExchange,
+                            buyPrice: buyPrice.toFixed(2),
+                            sellPrice: sellPrice.toFixed(2)
+                        });
+
+                        // Update drawdown
+                        if (capital > peakCapital) {
+                            peakCapital = capital;
+                        }
+                        const drawdown = ((peakCapital - capital) / peakCapital) * 100;
+                        maxDrawdown = Math.max(maxDrawdown, drawdown);
+                    }
+                }
+            }
+
+            return {
+                crypto: crypto,
+                totalTrades: trades.length,
+                winningTrades: winningTrades,
+                losingTrades: losingTrades,
+                totalPnL: pnl.toFixed(2),
+                winRate: trades.length > 0 ? ((winningTrades / trades.length) * 100).toFixed(1) : '0',
+                avgProfit: trades.length > 0 ? (pnl / trades.length).toFixed(2) : '0',
+                maxDrawdown: maxDrawdown.toFixed(2),
+                finalCapital: capital.toFixed(2),
+                returnPercentage: (((capital - 10000) / 10000) * 100).toFixed(2),
+                trades: trades,
+                cumulativePnl: cumulativePnl
+            };
+        }
+
+        function displayResults(btcResults, ethResults) {
+            const resultsContainer = document.getElementById('results-container');
+            const metricsGrid = document.getElementById('metrics-grid');
+            const tradeTableBody = document.getElementById('trade-table-body');
+
+            // Show results container
+            resultsContainer.style.display = 'block';
+
+            // Create metrics cards
+            metricsGrid.innerHTML = `
+                <div class="metric-card">
+                    <h3 style="margin: 0 0 0.5rem 0;">Bitcoin Results</h3>
+                    <div style="font-size: 1.5rem; margin: 0.5rem 0;"><strong>${btcResults.totalPnL}</strong> P&L</div>
+                    <div>${btcResults.winRate}% Win Rate</div>
+                    <div>${btcResults.totalTrades} Total Trades</div>
+                    <div class="${parseFloat(btcResults.returnPercentage) > 0 ? 'positive' : 'negative'}">${btcResults.returnPercentage}% Return</div>
+                </div>
+                <div class="metric-card">
+                    <h3 style="margin: 0 0 0.5rem 0;">Ethereum Results</h3>
+                    <div style="font-size: 1.5rem; margin: 0.5rem 0;"><strong>${ethResults.totalPnL}</strong> P&L</div>
+                    <div>${ethResults.winRate}% Win Rate</div>
+                    <div>${ethResults.totalTrades} Total Trades</div>
+                    <div class="${parseFloat(ethResults.returnPercentage) > 0 ? 'positive' : 'negative'}">${ethResults.returnPercentage}% Return</div>
+                </div>
+                <div class="metric-card">
+                    <h3 style="margin: 0 0 0.5rem 0;">Combined Portfolio</h3>
+                    <div style="font-size: 1.5rem; margin: 0.5rem 0;"><strong>${(parseFloat(btcResults.totalPnL) + parseFloat(ethResults.totalPnL)).toFixed(2)}</strong> Total P&L</div>
+                    <div>${((parseFloat(btcResults.totalTrades) + parseFloat(ethResults.totalTrades)) / 2).toFixed(0)} Avg Trades</div>
+                    <div class="positive">${(((parseFloat(btcResults.returnPercentage) + parseFloat(ethResults.returnPercentage)) / 2)).toFixed(2)}% Avg Return</div>
+                </div>
+            `;
+
+            // Update trade table with all trades (BTC and ETH combined)
+            const allTrades = [...btcResults.trades, ...ethResults.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            tradeTableBody.innerHTML = '';
+            allTrades.slice(-20).forEach(trade => { // Show last 20 trades
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${trade.date}</td>
+                    <td>${trade.action}</td>
+                    <td>${trade.spread}%</td>
+                    <td class="${parseFloat(trade.profit) > 0 ? 'positive' : 'negative'}">$${trade.profit}</td>
+                    <td class="${parseFloat(trade.cumulative) > 0 ? 'positive' : 'negative'}">$${trade.cumulative}</td>
+                `;
+                tradeTableBody.appendChild(row);
+            });
+
+            // Create or update profit chart
+            const ctx = document.getElementById('profitChart').getContext('2d');
+
+            if (profitChart) {
+                profitChart.destroy();
+            }
+
+            const combinedPnL = [];
+            const maxLength = Math.max(btcResults.cumulativePnl.length, ethResults.cumulativePnl.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                const btcVal = i < btcResults.cumulativePnl.length ? btcResults.cumulativePnl[i] : 0;
+                const ethVal = i < ethResults.cumulativePnl.length ? ethResults.cumulativePnl[i] : 0;
+                combinedPnL.push(btcVal + ethVal);
+            }
+
+            profitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: combinedPnL.length}, (_, i) => `Period ${i + 1}`),
+                    datasets: [{
+                        label: 'Combined Portfolio P&L ($)',
+                        data: combinedPnL,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Arbitrage Strategy P&L Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize with default backtest on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can add initialization code here if needed
+        });
+    </script>
 </body>
 </html>
