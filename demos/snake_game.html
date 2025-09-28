@@ -935,11 +935,13 @@
                     }
                 }
 
-                // Update player snake
-                this.updatePlayerSnake();
-
-                // Update AI snake
+                // Update AI snake (always moves)
                 this.updateAISnake();
+
+                // Update player snake (only if direction is set)
+                if (this.playerDirection.x !== 0 || this.playerDirection.y !== 0) {
+                    this.updatePlayerSnake();
+                }
 
                 // Check collisions
                 this.checkCollisions();
