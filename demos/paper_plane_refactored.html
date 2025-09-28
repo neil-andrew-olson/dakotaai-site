@@ -40,6 +40,22 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
+        /* Debug panel for development */
+        .debug-info {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            display: block;
+            max-width: 300px;
+        }
+
         .zone-indicator {
             position: absolute;
             top: 20px;
@@ -518,7 +534,8 @@
                 </p>
 
                 <div class="simulator-container">
-                    <div class="loading" id="loading">Loading Paper Plane Adventure...</div>
+                    <div class="loading" id="loading">Loading Toy Plane Adventure...</div>
+                    <div class="debug-info" id="debug-info"></div>
                     <div class="zone-indicator" id="zone-indicator">🌌 Night Sky Zone</div>
                     <canvas id="simulator-canvas"></canvas>
                 </div>
@@ -1749,6 +1766,24 @@
                 }
             }
 
+            updateDebugInfo() {
+                const debugInfo = document.getElementById('debug-info');
+                if (debugInfo && this.scene && this.plane) {
+                    debugInfo.innerHTML = `
+                        <div><strong>Debug Info:</strong></div>
+                        <div>Zone: ${this.currentZone}</div>
+                        <div>Plane Pos: (${this.plane.position.x.toFixed(1)}, ${this.plane.position.y.toFixed(1)}, ${this.plane.position.z.toFixed(1)})</div>
+                        <div>Camera Pos: (${this.camera.position.x.toFixed(1)}, ${this.camera.position.y.toFixed(1)}, ${this.camera.position.z.toFixed(1)})</div>
+                        <div>Speed: ${this.speed.toFixed(2)}</div>
+                        <div>Velocity: (${this.velocity.x.toFixed(2)}, ${this.velocity.y.toFixed(2)}, ${this.velocity.z.toFixed(2)})</div>
+                        <div>Collectibles: ${this.collectibles.length}</div>
+                        <div>Visible Stars: ${this.stars.filter(s => s.visible).length}</div>
+                        <div>Scene Objects: ${this.scene.children.length}</div>
+                        <div>World Objects: ${this.world ? this.world.children.length : 0}</div>
+                    `;
+                }
+            }
+
             animate(currentTime = 0) {
                 requestAnimationFrame((time) => this.animate(time));
 
@@ -1786,6 +1821,9 @@
                 if (Math.random() < 0.01) {
                     this.playAmbientSound();
                 }
+
+                // Update debug info
+                this.updateDebugInfo();
 
                 // Update performance
                 this.updatePerformance();
