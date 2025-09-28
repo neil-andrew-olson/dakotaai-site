@@ -709,12 +709,15 @@
             setupEventListeners() {
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => {
+                    console.log('Key pressed:', e.code, 'Game running:', this.gameRunning);
+
                     switch(e.code) {
                         case 'ArrowUp':
                         case 'KeyW':
                             e.preventDefault();
                             if (this.gameRunning && this.playerDirection.y === 0) {
                                 this.playerDirection = {x: 0, y: -1};
+                                console.log('Moving up');
                             }
                             break;
                         case 'ArrowDown':
@@ -722,6 +725,7 @@
                             e.preventDefault();
                             if (this.gameRunning && this.playerDirection.y === 0) {
                                 this.playerDirection = {x: 0, y: 1};
+                                console.log('Moving down');
                             }
                             break;
                         case 'ArrowLeft':
@@ -729,6 +733,7 @@
                             e.preventDefault();
                             if (this.gameRunning && this.playerDirection.x === 0) {
                                 this.playerDirection = {x: -1, y: 0};
+                                console.log('Moving left');
                             }
                             break;
                         case 'ArrowRight':
@@ -736,21 +741,28 @@
                             e.preventDefault();
                             if (this.gameRunning && this.playerDirection.x === 0) {
                                 this.playerDirection = {x: 1, y: 0};
+                                console.log('Moving right');
                             }
                             break;
                         case 'Space':
                             e.preventDefault();
+                            console.log('Space pressed - Game running:', this.gameRunning);
                             if (!this.gameRunning) {
+                                console.log('Starting game...');
                                 this.startGame();
                             } else {
+                                console.log('Toggling pause...');
                                 this.togglePause();
                             }
                             break;
                         case 'KeyR':
                             e.preventDefault();
+                            console.log('R pressed - Game running:', this.gameRunning);
                             if (this.gameRunning) {
+                                console.log('Toggling pause...');
                                 this.togglePause();
                             } else {
+                                console.log('Resetting game...');
                                 this.resetGame();
                             }
                             break;
