@@ -11,13 +11,25 @@
         .main-header {
             font-size: 2.5rem;
             font-weight: bold;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #a29bfe, #fd79a8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-align: center;
             margin-bottom: 1rem;
             font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .zone-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-family: 'Comic Sans MS', cursive;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .simulator-container {
@@ -194,12 +206,13 @@
     <main>
         <section>
             <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
-                <h1 class="main-header drawn-text">✈️ Paper Plane Adventures! ✈️</h1>
+                <h1 class="main-header drawn-text">✈️ Paper Plane World Adventures! ✈️</h1>
                 <p style="text-align: center; font-size: 1.3rem; color: #636e72; margin-bottom: 2rem; font-family: 'Comic Sans MS', cursive;">
-                    Fly your paper plane through a magical kid's room! Collect stars, explore drawings, and have fun! 🌟
+                    Explore four magical worlds! Fly your paper plane through starry skies, sunny meadows, towering cities, and countryside farms! 🌟🌻🏙️🌾
                 </p>
 
                 <div class="simulator-container">
+                    <div class="zone-indicator" id="zone-indicator">🌌 Night Sky Zone</div>
                     <canvas id="simulator-canvas"></canvas>
                 </div>
 
@@ -286,22 +299,36 @@
     </footer>
 
     <script>
-        // Paper Plane Simulator
-        let scene, camera, renderer, controls;
-        let plane, room;
+        // Paper Plane World Simulator - Massive 3D World with Themed Zones
+        let scene, camera, renderer;
+        let plane, world;
         let stars = [];
-        let wallDrawings = [];
-        let score = { stars: 0, drawings: 0, tricks: 0 };
+        let flowers = [];
+        let coins = [];
+        let carrots = [];
+        let collectibles = [];
+        let currentZone = 'night';
+        let zones = {
+            night: { name: '🌌 Night Sky Zone', stars: 15, collected: 0 },
+            meadow: { name: '🌻 Sunny Meadow Zone', stars: 12, collected: 0 },
+            city: { name: '🏙️ Cityscape Zone', stars: 10, collected: 0 },
+            farmland: { name: '🌾 Countryside Zone', stars: 8, collected: 0 }
+        };
+
+        let score = { stars: 0, flowers: 0, coins: 0, carrots: 0, tricks: 0 };
         let flightTime = 0;
         let lastTime = 0;
         let autoPilot = false;
         let windDirection = { x: 0, y: 0, z: 0 };
+        let cameraOffset = { x: 0, y: 5, z: 10 };
+        let cameraTarget = new THREE.Vector3();
 
         // Flight physics
         let velocity = { x: 0, y: 0, z: 0 };
         let rotation = { x: 0, y: 0, z: 0 };
         let speed = 0;
         let keys = {};
+        let worldSize = 200; // Huge 200x200x200 world
 
         init();
         animate();
@@ -309,39 +336,30 @@
         function init() {
             // Scene setup
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xe8f4f8); // Light blue sky color
+            scene.background = new THREE.Color(0x000428); // Start with night sky
 
-            // Camera
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, 8);
+            // Camera - 3rd person following camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 20, 50);
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('simulator-canvas'), antialias: true });
             renderer.setSize(800, 600);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.fog = new THREE.Fog(0x000428, 100, 800); // Atmospheric fog
 
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
+            // Dynamic lighting based on zone
+            setupLighting();
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 10, 5);
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
-
-            // Room setup
-            createRoom();
+            // Create massive world with themed zones
+            createMassiveWorld();
 
             // Paper plane
             createPaperPlane();
 
-            // Stars and drawings
-            createStars();
-            createWallDrawings();
-
-            // Controls
-            setupControls();
+            // Create collectibles for all zones
+            createAllCollectibles();
 
             // Event listeners
             window.addEventListener('keydown', onKeyDown);
