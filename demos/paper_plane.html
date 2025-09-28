@@ -336,35 +336,324 @@
         function init() {
             // Scene setup
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000428); // Start with night sky
 
             // Camera - 3rd person following camera
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 20, 50);
+            camera.position.set(0, 5, 15);
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('simulator-canvas'), antialias: true });
             renderer.setSize(800, 600);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.fog = new THREE.Fog(0x000428, 100, 800); // Atmospheric fog
 
-            // Dynamic lighting based on zone
-            setupLighting();
+            // Start in night sky zone
+            changeZone('night');
 
-            // Create massive world with themed zones
+            // Create the massive world environment
             createMassiveWorld();
 
             // Paper plane
             createPaperPlane();
 
-            // Create collectibles for all zones
-            createAllCollectibles();
+            // Create collectibles for current zone
+            createZoneCollectibles();
 
             // Event listeners
             window.addEventListener('keydown', onKeyDown);
             window.addEventListener('keyup', onKeyUp);
             window.addEventListener('resize', onWindowResize);
+        }
+
+        function changeZone(zoneName) {
+            currentZone = zoneName;
+            const zoneData = zones[zoneName];
+
+            // Update UI
+            document.getElementById('zone-indicator').textContent = zoneData.name;
+
+            // Update scene background and lighting
+            updateZoneAtmosphere(zoneName);
+
+            // Update fog
+            updateFog(zoneName);
+
+            score = { stars: 0, flowers: 0, coins: 0, carrots: 0, tricks: 0 };
+            updateUI();
+        }
+
+        function updateZoneAtmosphere(zoneName) {
+            switch(zoneName) {
+                case 'night':
+                    scene.background = new THREE.Color(0x000428);
+                    break;
+                case 'meadow':
+                    scene.background = new THREE.Color(0x87CEEB);
+                    break;
+                case 'city':
+                    scene.background = new THREE.Color(0x4169E1);
+                    break;
+                case 'farmland':
+                    scene.background = new THREE.Color(0x98FB98);
+                    break;
+            }
+        }
+
+        function updateFog(zoneName) {
+            switch(zoneName) {
+                case 'night':
+                    renderer.fog = new THREE.Fog(0x000428, 50, 400);
+                    break;
+                case 'meadow':
+                    renderer.fog = new THREE.Fog(0x87CEEB, 100, 600);
+                    break;
+                case 'city':
+                    renderer.fog = new THREE.Fog(0x4169E1, 30, 300);
+                    break;
+                case 'farmland':
+                    renderer.fog = new THREE.Fog(0x98FB98, 150, 800);
+                    break;
+            }
+        }
+
+        function createMassiveWorld() {
+            world = new THREE.Group();
+
+            // Create basic terrain/ground for each zone
+            createZoneTerrain();
+
+            // Add ambient environmental objects
+            createZoneEnvironment();
+
+            scene.add(world);
+        }
+
+        function createZoneTerrain() {
+            // Large ground plane for the zone
+            const terrainGeometry = new THREE.PlaneGeometry(worldSize * 2, worldSize * 2);
+            const terrainMaterial = new THREE.MeshLambertMaterial({
+                color: getTerrainColor(currentZone),
+                transparent: true,
+                opacity: 0.8
+            });
+            const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+            terrain.rotation.x = -Math.PI / 2;
+            terrain.receiveShadow = true;
+            world.add(terrain);
+
+            // Add some rolling hills/features
+            if (currentZone === 'meadow') {
+                createRollingHills();
+            } else if (currentZone === 'farmland') {
+                createFarmTerrain();
+            }
+        }
+
+        function getTerrainColor(zone) {
+            switch(zone) {
+                case 'night': return 0x2c3e50;
+                case 'meadow': return 0x90EE90;
+                case 'city': return 0x696969;
+                case 'farmland': return 0x8B4513;
+                default: return 0x808080;
+            }
+        }
+
+        function createRollingHills() {
+            for (let i = 0; i < 8; i++) {
+                const hillGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 8, 6);
+                const hillMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+                hill.position.set(
+                    (Math.random() - 0.5) * worldSize * 0.8,
+                    -5,
+                    (Math.random() - 0.5) * worldSize * 0.8
+                );
+                hill.scale.y = 0.3;
+                world.add(hill);
+            }
+        }
+
+        function createFarmTerrain() {
+            // Create farm fields
+            for (let i = 0; i < 4; i++) {
+                const fieldGeometry = new THREE.PlaneGeometry(40, 40);
+                const fieldMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+                field.rotation.x = -Math.PI / 2;
+                field.position.set(
+                    (i % 2 - 0.5) * 60,
+                    -0.1,
+                    (Math.floor(i / 2) - 0.5) * 60
+                );
+                world.add(field);
+            }
+        }
+
+        function createZoneEnvironment() {
+            const envCount = getEnvObjectCount(currentZone);
+
+            for (let i = 0; i < envCount; i++) {
+                const obj = createEnvironmentalObject(currentZone);
+                if (obj) {
+                    obj.position.set(
+                        (Math.random() - 0.5) * worldSize * 0.6,
+                        getEnvObjectY(currentZone),
+                        (Math.random() - 0.5) * worldSize * 0.6
+                    );
+                    world.add(obj);
+                }
+            }
+        }
+
+        function getEnvObjectCount(zone) {
+            switch(zone) {
+                case 'night': return 20; // Stars in sky
+                case 'meadow': return 15; // Flowers, trees
+                case 'city': return 12; // Buildings
+                case 'farmland': return 8; // Farm animals, barns
+                default: return 10;
+            }
+        }
+
+        function getEnvObjectY(zone) {
+            switch(zone) {
+                case 'night': return Math.random() * 50 + 20; // Stars up high
+                default: return Math.random() * 5 - 1; // Ground level
+            }
+        }
+
+        function createEnvironmentalObject(zone) {
+            switch(zone) {
+                case 'night':
+                    return createNightSkyObject();
+                case 'meadow':
+                    return createMeadowObject();
+                case 'city':
+                    return createCityObject();
+                case 'farmland':
+                    return createFarmObject();
+                default:
+                    return createBasicTree();
+            }
+        }
+
+        function createNightSkyObject() {
+            const types = ['star', 'moon', 'planet'];
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            let geometry, material, mesh;
+
+            switch(type) {
+                case 'star':
+                    geometry = new THREE.OctahedronGeometry(0.5, 0);
+                    material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    break;
+                case 'moon':
+                    geometry = new THREE.CircleGeometry(3, 16);
+                    material = new THREE.MeshBasicMaterial({ color: 0xffff99 });
+                    break;
+                case 'planet':
+                    geometry = new THREE.SphereGeometry(2, 8, 6);
+                    material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                    break;
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            return mesh;
+        }
+
+        function createMeadowObject() {
+            const types = ['flower', 'tree', 'butterfly'];
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            let geometry, material, mesh;
+
+            switch(type) {
+                case 'flower':
+                    geometry = new THREE.ConeGeometry(0.5, 2, 6);
+                    material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                    break;
+                case 'tree':
+                    geometry = new THREE.CylinderGeometry(0.5, 1, 8, 6);
+                    material = new THREE.MeshLambertMaterial({ color: 0x654321 });
+                    break;
+                case 'butterfly':
+                    geometry = new THREE.PlaneGeometry(1, 1);
+                    material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff, side: THREE.DoubleSide });
+                    break;
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            return mesh;
+        }
+
+        function createCityObject() {
+            const buildingGeometry = new THREE.BoxGeometry(4, 10 + Math.random() * 20, 4);
+            const buildingMaterial = new THREE.MeshLambertMaterial({
+                color: Math.random() > 0.5 ? 0x888888 : 0x666666
+            });
+            const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+
+            // Add windows
+            for (let w = 0; w < Math.floor(buildingGeometry.parameters.height / 3); w++) {
+                if (Math.random() > 0.3) {
+                    const windowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
+                    const windowMaterial = new THREE.MeshBasicMaterial({ color: 0xffff99 });
+                    const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                    window.position.set(
+                        (Math.random() - 0.5) * 2.5,
+                        -buildingGeometry.parameters.height/2 + w * 3 + 1.5,
+                        buildingGeometry.parameters.depth/2 + 0.01
+                    );
+                    building.add(window);
+                }
+            }
+
+            return building;
+        }
+
+        function createFarmObject() {
+            const types = ['barn', 'tractor', 'animal'];
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            let geometry, material, mesh;
+
+            switch(type) {
+                case 'barn':
+                    geometry = new THREE.BoxGeometry(8, 6, 12);
+                    material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+                    break;
+                case 'tractor':
+                    geometry = new THREE.BoxGeometry(2, 1.5, 4);
+                    material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                    break;
+                case 'animal':
+                    geometry = new THREE.CylinderGeometry(0.5, 0.8, 2, 6);
+                    material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+                    break;
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            return mesh;
+        }
+
+        function createBasicTree() {
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.5, 4, 6),
+                new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+            );
+            const leaves = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 8, 6),
+                new THREE.MeshLambertMaterial({ color: 0x228B22 })
+            );
+            leaves.position.y = 3;
+
+            const tree = new THREE.Group();
+            tree.add(trunk);
+            tree.add(leaves);
+
+            return tree;
         }
 
         function createRoom() {
@@ -624,33 +913,30 @@
         }
 
         function checkCollisions() {
-            // Check star collisions
-            stars.forEach((star, index) => {
-                if (!star.userData.collected) {
-                    const distance = plane.position.distanceTo(star.position);
-                    if (distance < 0.8) {
-                        star.userData.collected = true;
-                        star.visible = false;
-                        score.stars++;
-                        updateUI();
+            // Check collectible collisions
+            collectibles.forEach((item, index) => {
+                if (!item.userData.collected) {
+                    const distance = plane.position.distanceTo(item.position);
+                    if (distance < 2.0) { // Larger collision radius for huge world
+                        item.userData.collected = true;
+                        item.visible = false;
 
-                        // Celebrate!
-                        if (score.stars === stars.length) {
-                            showCelebration();
+                        // Update score based on item type
+                        switch(item.userData.type) {
+                            case 'star': score.stars++; break;
+                            case 'flower': score.flowers++; break;
+                            case 'coin': score.coins++; break;
+                            case 'carrot': score.carrots++; break;
                         }
-                    }
-                }
-            });
 
-            // Check drawing collisions (fly through them)
-            wallDrawings.forEach((drawing, index) => {
-                if (!drawing.userData.collected) {
-                    const distance = plane.position.distanceTo(drawing.position);
-                    if (distance < 1.2) {
-                        drawing.userData.collected = true;
-                        drawing.scale.setScalar(0.1);
-                        score.drawings++;
                         updateUI();
+
+                        // Check for zone completion
+                        const zoneData = zones[currentZone];
+                        if (score.stars >= zoneData.stars) {
+                            // Zone completed! Could add zone transition here
+                            showZoneCelebration();
+                        }
                     }
                 }
             });
@@ -736,6 +1022,158 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
+        function createZoneCollectibles() {
+            // Clear existing collectibles
+            collectibles = [];
+            stars.forEach(star => scene.remove(star));
+            flowers.forEach(flower => scene.remove(flower));
+            coins.forEach(coin => scene.remove(coin));
+            carrots.forEach(carrot => scene.remove(carrot));
+
+            stars = [];
+            flowers = [];
+            coins = [];
+            carrots = [];
+
+            // Create zone-specific collectibles
+            const collectibleCount = zones[currentZone].stars;
+            for (let i = 0; i < collectibleCount; i++) {
+                createCollectibleItem(currentZone, i);
+            }
+        }
+
+        function createCollectibleItem(zoneType, index) {
+            let geometry, material, mesh, type;
+
+            switch(zoneType) {
+                case 'night':
+                    geometry = new THREE.OctahedronGeometry(0.5, 0);
+                    material = new THREE.MeshLambertMaterial({ color: 0xffd700, emissive: 0x444400 });
+                    type = 'star';
+                    break;
+                case 'meadow':
+                    geometry = new THREE.ConeGeometry(0.3, 1, 6);
+                    material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                    type = 'flower';
+                    break;
+                case 'city':
+                    geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 8);
+                    material = new THREE.MeshLambertMaterial({ color: 0xffd700 });
+                    type = 'coin';
+                    break;
+                case 'farmland':
+                    geometry = new THREE.CylinderGeometry(0.1, 0.2, 0.8, 6);
+                    material = new THREE.MeshLambertMaterial({ color: 0xff6b35 });
+                    type = 'carrot';
+                    break;
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(
+                (Math.random() - 0.5) * worldSize * 0.8,
+                Math.random() * 20 + 5,
+                (Math.random() - 0.5) * worldSize * 0.8
+            );
+            mesh.userData = { collected: false, type: type, index: index };
+            collectibles.push(mesh);
+
+            // Add to appropriate array
+            switch(type) {
+                case 'star': stars.push(mesh); break;
+                case 'flower': flowers.push(mesh); break;
+                case 'coin': coins.push(mesh); break;
+                case 'carrot': carrots.push(mesh); break;
+            }
+
+            scene.add(mesh);
+        }
+
+        function updateCamera() {
+            if (!autoPilot && plane) {
+                // Smooth 3rd person camera follow
+                const idealOffset = new THREE.Vector3(
+                    cameraOffset.x,
+                    cameraOffset.y,
+                    cameraOffset.z
+                );
+
+                // Rotate offset based on plane direction
+                idealOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), plane.rotation.y);
+
+                const idealPosition = new THREE.Vector3().copy(plane.position).add(idealOffset);
+
+                // Smooth camera movement
+                camera.position.lerp(idealPosition, 0.05);
+
+                // Look at plane with slight offset
+                cameraTarget.copy(plane.position);
+                cameraTarget.y += 1;
+                camera.lookAt(cameraTarget);
+            }
+        }
+
+        function updateFlightPhysics(deltaTime) {
+            const acceleration = 0.02; // Higher acceleration for huge world
+
+            // Forward/backward
+            if (keys.KeyW || keys.ArrowUp) {
+                speed += acceleration;
+            }
+            if (keys.KeyS || keys.ArrowDown) {
+                speed -= acceleration * 0.5;
+            }
+
+            // Steering (left/right)
+            if (keys.KeyA || keys.ArrowLeft) {
+                rotation.y += 0.03; // More responsive steering
+            }
+            if (keys.KeyD || keys.ArrowRight) {
+                rotation.y -= 0.03;
+                rotation.z = -0.1; // Slight bank
+            } else if (!keys.KeyA && !keys.ArrowLeft) {
+                rotation.z *= 0.95; // Level out
+            }
+
+            speed = Math.max(0, Math.min(speed * 0.99, 2.0)); // Higher max speed, momentum
+
+            // Apply physics
+            velocity.x = Math.sin(rotation.y) * speed;
+            velocity.z = Math.cos(rotation.y) * speed;
+            velocity.y -= 0.01; // Gravity
+
+            // Add wind
+            velocity.x += windDirection.x;
+            velocity.y += windDirection.y;
+            velocity.z += windDirection.z;
+
+            // Update position (no boundaries in huge world)
+            plane.position.x += velocity.x;
+            plane.position.y += velocity.y;
+            plane.position.z += velocity.z;
+
+            // Update rotation
+            plane.rotation.x = rotation.x * 0.1; // Slight pitch from speed
+            plane.rotation.y = rotation.y;
+            plane.rotation.z = rotation.z;
+
+            // Ground collision (don't fall through)
+            if (plane.position.y < 2) {
+                plane.position.y = 2;
+                velocity.y = Math.max(0, velocity.y);
+                if (speed > 0.1) velocity.y = speed * 0.2; // Bounce effect
+            }
+
+            // World wrap-around (seamless huge world)
+            const halfSize = worldSize / 2;
+            if (plane.position.x > halfSize) plane.position.x = -halfSize;
+            if (plane.position.x < -halfSize) plane.position.x = halfSize;
+            if (plane.position.z > halfSize) plane.position.z = -halfSize;
+            if (plane.position.z < -halfSize) plane.position.z = halfSize;
+
+            // Check collisions
+            checkCollisions();
+        }
+
         function animate(currentTime = 0) {
             requestAnimationFrame(animate);
 
@@ -744,17 +1182,18 @@
 
             flightTime += deltaTime;
 
-            if (!autoPilot) {
-                controls.update();
-            }
-
             updateFlightPhysics(deltaTime);
+            updateCamera();
 
-            // Animate stars
-            stars.forEach(star => {
-                if (!star.userData.collected) {
-                    star.rotation.y += 0.02;
-                    star.position.y += Math.sin(currentTime * 0.001 + star.position.x) * 0.002;
+            // Animate collectibles
+            collectibles.forEach((item, index) => {
+                if (!item.userData.collected) {
+                    item.rotation.y += 0.02;
+                    if (item.userData.type === 'star') {
+                        item.position.y += Math.sin(currentTime * 0.002 + item.position.x * 0.01) * 0.005;
+                    } else if (item.userData.type === 'flower') {
+                        item.rotation.x += 0.01;
+                    }
                 }
             });
 
