@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI Demos - Paper Plane Simulator</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #a29bfe, #fd79a8);
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #e17055;
+            --info-color: #74b9ff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        .main-header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .zone-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-family: 'Comic Sans MS', cursive;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .simulator-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1400px;
+        }
+
+        .simulator-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23ffffff" opacity="0.1"/><circle cx="80" cy="40" r="1.5" fill="%23ffffff" opacity="0.15"/><circle cx="60" cy="80" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="10" cy="70" r="1.5" fill="%23ffffff" opacity="0.12"/></svg>');
+            pointer-events: none;
+        }
+
+        #simulator-canvas {
+            width: 100%;
+            height: 600px;
+            border: 4px solid #2d3436;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #74b9ff, #a29bfe);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            cursor: grab;
+        }
+
+        #simulator-canvas:active {
+            cursor: grabbing;
+        }
+
+        .game-ui {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff7675;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #636e72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #ff7675, #fd79a8);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 118, 117, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .control-btn:hover::before {
+            left: 100%;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 118, 117, 0.4);
+        }
+
+        .control-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            color: white;
+            margin: 2rem 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .instructions-section {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions-section h4 {
+            margin: 0 0 0.5rem 0;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .instructions-section ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+
+        .instructions-section li {
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff9ff3, #54a0ff);
+            color: white;
+            padding: 3rem;
+            border-radius: 25px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 2000;
+            animation: celebrationPulse 1s ease infinite alternate;
+            display: none;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+
+        @keyframes celebrationPulse {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .celebration::before {
+            content: '🎉';
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: bounce 0.6s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .zone-card {
+            background: rgba(255,255,255,0.9);
+            padding: 1rem;
+            border-radius: 15px;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .zone-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .zone-card.active {
+            border-color: #ff7675;
+            background: rgba(255, 118, 117, 0.1);
+        }
+
+        .zone-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .zone-description {
+            font-size: 0.9rem;
+            color: #636e72;
+        }
+
+        .zone-progress {
+            font-size: 0.8rem;
+            color: #74b9ff;
+            margin-top: 0.5rem;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .main-header {
+                font-size: 2rem;
+            }
+
+            .game-ui {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .control-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .instructions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .simulator-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            .celebration {
+                font-size: 1.2rem;
+                padding: 2rem;
+            }
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: white;
+            text-align: center;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0,0,0,0.9);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0,0,0,0.9) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Audio visualizer */
+        .audio-controls {
+            background: rgba(255,255,255,0.9);
+            padding: 1rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(0,0,0,0.1);
+            outline: none;
+            margin: 0.5rem 0;
+        }
+
+        .sound-btn {
+            background: linear-gradient(45deg, #74b9ff, #a29bfe);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            margin: 0.2rem;
+            font-size: 0.9rem;
+        }
+
+        .sound-btn.active {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+        }
+
+        /* Particle effect container */
+        #particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: particleFloat 2s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            to {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Trail effect */
+        .trail {
+            position: absolute;
+            width: 8px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffffff, transparent);
+            border-radius: 2px;
+            animation: trailFade 1s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            to {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="logo"><a href="../index.html"><img src="../DakotaAI_logo.png" alt="Dakota AI"></a></div>
+                <ul>
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../services.html">Services</a></li>
+                    <li><a href="index.html">Demos</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                    <li><a href="../blog.html">Blog</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem 1rem;">
+                <h1 class="main-header">✈️ Paper Plane World Adventures! ✈️</h1>
+                <p style="text-align: center; font-size: 1.3rem; color: #636e72; margin-bottom: 2rem; font-family: 'Comic Sans MS', cursive;">
+                    Explore four magical worlds! Fly your paper plane through starry skies, sunny meadows, towering cities, and countryside farms! 🌟🌻🏙️🌾
+                </p>
+
+                <div class="simulator-container">
+                    <div class="loading" id="loading">Loading Paper Plane Adventure...</div>
+                    <div class="zone-indicator" id="zone-indicator">🌌 Night Sky Zone</div>
+                    <canvas id="simulator-canvas"></canvas>
+                </div>
+
+                <div class="game-ui">
+                    <div class="stats-panel">
+                        <h3 style="margin-top: 0; color: #2d3436; font-family: 'Comic Sans MS', cursive; text-align: center;">📊 Flight Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stars-count">0</div>
+                                <div class="stat-label">Stars Collected</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="drawings-found">0</div>
+                                <div class="stat-label">Drawings Found</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="flight-time">0</div>
+                                <div class="stat-label">Flight Time</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="tricks-done">0</div>
+                                <div class="stat-label">Tricks</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h4 style="color: #2d3436; margin-bottom: 1rem;">🌍 Zone Progress</h4>
+                            <div id="zone-progress" style="display: grid; gap: 0.5rem;">
+                                <!-- Zone cards will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-panel">
+                        <h3 style="margin-top: 0; color: #2d3436; font-family: 'Comic Sans MS', cursive;">🎮 Flight Controls</h3>
+                        <div class="control-buttons">
+                            <button class="control-btn tooltip" onclick="game.resetPlane()" id="reset-btn">
+                                🔄 Reset Plane
+                                <span class="tooltiptext">Return to starting position and reset collectibles</span>
+                            </button>
+                            <button class="control-btn tooltip" onclick="game.toggleAutoPilot()" id="autopilot-btn">
+                                🤖 Auto Pilot
+                                <span class="tooltiptext">Let the AI fly your plane automatically</span>
+                            </button>
+                            <button class="control-btn tooltip" onclick="game.addWind()" id="wind-btn">
+                                💨 Add Wind
+                                <span class="tooltiptext">Create random wind currents for 5 seconds</span>
+                            </button>
+                            <button class="control-btn tooltip" onclick="game.changeTheme()" id="theme-btn">
+                                🎨 Change Colors
+                                <span class="tooltiptext">Randomly change the world's color theme</span>
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; color: #636e72; background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 10px;">
+                            <strong>🕹️ Manual Controls:</strong>
+                            <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                                <div><kbd>WASD</kbd> or <kbd>Arrow Keys</kbd> to fly around</div>
+                                <div><kbd>Space</kbd> to flap wings and gain altitude</div>
+                                <div><kbd>E</kbd> to perform a spin trick</div>
+                                <div>Mouse to look around • Scroll to zoom</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="color: #2d3436; margin-bottom: 1rem;">🎵 Audio Controls</h4>
+                            <div class="audio-controls">
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                    <button class="sound-btn" onclick="game.toggleSound('engine')" id="engine-sound">🔊 Engine</button>
+                                    <button class="sound-btn" onclick="game.toggleSound('ambient')" id="ambient-sound">🌍 Ambient</button>
+                                    <button class="sound-btn" onclick="game.toggleSound('effects')" id="effects-sound">✨ Effects</button>
+                                    <button class="sound-btn" onclick="game.toggleSound('master')" id="master-sound">🎵 Master</button>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.9rem; color: #636e72;">Volume:</label>
+                                    <input type="range" class="volume-slider" min="0" max="100" value="50" onchange="game.setVolume(this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="color: #2d3436; margin-bottom: 1rem;">📈 Performance</h4>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="performance-bar" style="width: 100%"></div>
+                            </div>
+                            <div id="fps-counter" style="font-size: 0.8rem; color: #636e72; text-align: center; margin-top: 0.5rem;">FPS: 60</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h3>🎯 Welcome to Paper Plane Adventures!</h3>
+                    <div class="instructions-grid">
+                        <div class="instructions-section">
+                            <h4>🎯 Your Mission:</h4>
+                            <ul>
+                                <li>Fly your paper plane around the world</li>
+                                <li>Collect all the floating stars 🌟</li>
+                                <li>Fly through the drawings on the walls 🎨</li>
+                                <li>Try fancy tricks like loops and spins! 🌀</li>
+                            </ul>
+                        </div>
+                        <div class="instructions-section">
+                            <h4>📚 Learn Physics:</h4>
+                            <ul>
+                                <li><strong>Lift:</strong> Speed makes you go up!</li>
+                                <li><strong>Gravity:</strong> You slowly fall down</li>
+                                <li><strong>Drag:</strong> Air slows you down</li>
+                                <li><strong>Flap:</strong> Press SPACE to get a boost!</li>
+                            </ul>
+                        </div>
+                        <div class="instructions-section">
+                            <h4>🏆 Tips & Tricks:</h4>
+                            <ul>
+                                <li>Gain speed by diving downward</li>
+                                <li>Use walls to bounce and change direction</li>
+                                <li>Look for hidden drawings on walls</li>
+                                <li>Try to collect all stars in under 2 minutes!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="celebration" id="celebration-message">
+                    🎉 AMAZING! You collected all the stars! 🎉
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Dakota AI</h4>
+                <p>Learning physics through play! Made with ❤️ for curious kids and kids-at-heart.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Paper Plane World Simulator - Refactored with Modern Architecture
+        class PaperPlaneGame {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.plane = null;
+                this.world = null;
+                this.stars = [];
+                this.flowers = [];
+                this.coins = [];
+                this.carrots = [];
+                this.collectibles = [];
+                this.wallDrawings = [];
+
+                this.currentZone = 'night';
+                this.zones = {
+                    night: {
+                        name: '🌌 Night Sky Zone',
+                        stars: 15,
+                        collected: 0,
+                        description: 'Fly through the stars!',
+                        color: 0x000428
+                    },
+                    meadow: {
+                        name: '🌻 Sunny Meadow Zone',
+                        stars: 12,
+                        collected: 0,
+                        description: 'Collect flowers in the fields!',
+                        color: 0x87CEEB
+                    },
+                    city: {
+                        name: '🏙️ Cityscape Zone',
+                        stars: 10,
+                        collected: 0,
+                        description: 'Gather coins from the buildings!',
+                        color: 0x4169E1
+                    },
+                    farmland: {
+                        name: '🌾 Countryside Zone',
+                        stars: 8,
+                        collected: 0,
+                        description: 'Harvest carrots from the farm!',
+                        color: 0x98FB98
+                    }
+                };
+
+                this.score = { stars: 0, flowers: 0, coins: 0, carrots: 0, tricks: 0 };
+                this.flightTime = 0;
+                this.lastTime = 0;
+                this.autoPilot = false;
+                this.windDirection = { x: 0, y: 0, z: 0 };
+                this.cameraOffset = { x: 0, y: 5, z: 10 };
+                this.cameraTarget = new THREE.Vector3();
+
+                // Flight physics
+                this.velocity = { x: 0, y: 0, z: 0 };
+                this.rotation = { x: 0, y: 0, z: 0 };
+                this.speed = 0;
+                this.keys = {};
+                this.worldSize = 200;
+
+                // Performance tracking
+                this.frameCount = 0;
+                this.lastFpsUpdate = 0;
+                this.fps = 60;
+
+                // Audio system
+                this.audioContext = null;
+                this.audioEnabled = { master: true, engine: true, ambient: true, effects: true };
+                this.masterVolume = 0.5;
+                this.trailPositions = [];
+                this.maxTrailLength = 20;
+
+                // Particle system
+                this.particles = [];
+                this.trailElements = [];
+
+                this.init();
+            }
+
+            async init() {
+                await this.initAudio();
+                this.setupScene();
+                this.createWorld();
+                this.createPaperPlane();
+                this.createZoneCollectibles();
+                this.setupEventListeners();
+                this.updateZoneProgress();
+                this.hideLoading();
+                this.animate();
+            }
+
+            setupScene() {
+                // Scene setup
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(this.zones[this.currentZone].color);
+
+                // Camera - 3rd person following camera
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+                this.camera.position.set(0, 5, 15);
+
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('simulator-canvas'),
+                    antialias: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                // Lighting
+                this.setupLighting();
+
+                // Fog
+                this.updateFog();
+            }
+
+            setupLighting() {
+                // Ambient light
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+                this.scene.add(ambientLight);
+
+                // Directional light (sun/moon)
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(50, 50, 25);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                this.scene.add(directionalLight);
+
+                // Point lights for atmosphere
+                const pointLight1 = new THREE.PointLight(0xff0040, 0.5, 100);
+                pointLight1.position.set(-50, 10, -50);
+                this.scene.add(pointLight1);
+
+                const pointLight2 = new THREE.PointLight(0x0040ff, 0.5, 100);
+                pointLight2.position.set(50, 10, 50);
+                this.scene.add(pointLight2);
+            }
+
+            updateFog() {
+                const zoneData = this.zones[this.currentZone];
+                this.renderer.fog = new THREE.Fog(zoneData.color, 50, 400);
+            }
+
+            createWorld() {
+                this.world = new THREE.Group();
+                this.createZoneTerrain();
+                this.createZoneEnvironment();
+                this.scene.add(this.world);
+            }
+
+            createZoneTerrain() {
+                // Large ground plane for the zone
+                const terrainGeometry = new THREE.PlaneGeometry(this.worldSize * 2, this.worldSize * 2);
+                const terrainMaterial = new THREE.MeshLambertMaterial({
+                    color: this.getTerrainColor(this.currentZone),
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+                terrain.rotation.x = -Math.PI / 2;
+                terrain.receiveShadow = true;
+                terrain.name = 'terrain';
+                this.world.add(terrain);
+
+                // Add zone-specific terrain features
+                if (this.currentZone === 'meadow') {
+                    this.createRollingHills();
+                } else if (this.currentZone === 'farmland') {
+                    this.createFarmTerrain();
+                }
+            }
+
+            getTerrainColor(zone) {
+                switch(zone) {
+                    case 'night': return 0x2c3e50;
+                    case 'meadow': return 0x90EE90;
+                    case 'city': return 0x696969;
+                    case 'farmland': return 0x8B4513;
+                    default: return 0x808080;
+                }
+            }
+
+            createRollingHills() {
+                for (let i = 0; i < 8; i++) {
+                    const hillGeometry = new THREE.SphereGeometry(15 + Math.random() * 10, 8, 6);
+                    const hillMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                    const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+                    hill.position.set(
+                        (Math.random() - 0.5) * this.worldSize * 0.8,
+                        -5,
+                        (Math.random() - 0.5) * this.worldSize * 0.8
+                    );
+                    hill.scale.y = 0.3;
+                    hill.castShadow = true;
+                    this.world.add(hill);
+                }
+            }
+
+            createFarmTerrain() {
+                // Create farm fields
+                for (let i = 0; i < 4; i++) {
+                    const fieldGeometry = new THREE.PlaneGeometry(40, 40);
+                    const fieldMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                    const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+                    field.rotation.x = -Math.PI / 2;
+                    field.position.set(
+                        (i % 2 - 0.5) * 60,
+                        -0.1,
+                        (Math.floor(i / 2) - 0.5) * 60
+                    );
+                    this.world.add(field);
+                }
+            }
+
+            createZoneEnvironment() {
+                const envCount = this.getEnvObjectCount(this.currentZone);
+
+                for (let i = 0; i < envCount; i++) {
+                    const obj = this.createEnvironmentalObject(this.currentZone);
+                    if (obj) {
+                        obj.position.set(
+                            (Math.random() - 0.5) * this.worldSize * 0.6,
+                            this.getEnvObjectY(this.currentZone),
+                            (Math.random() - 0.5) * this.worldSize * 0.6
+                        );
+                        this.world.add(obj);
+                    }
+                }
+            }
+
+            getEnvObjectCount(zone) {
+                switch(zone) {
+                    case 'night': return 20; // Stars in sky
+                    case 'meadow': return 15; // Flowers, trees
+                    case 'city': return 12; // Buildings
+                    case 'farmland': return 8; // Farm animals, barns
+                    default: return 10;
+                }
+            }
+
+            getEnvObjectY(zone) {
+                switch(zone) {
+                    case 'night': return Math.random() * 50 + 20; // Stars up high
+                    default: return Math.random() * 5 - 1; // Ground level
+                }
+            }
+
+            createEnvironmentalObject(zone) {
+                switch(zone) {
+                    case 'night':
+                        return this.createNightSkyObject();
+                    case 'meadow':
+                        return this.createMeadowObject();
+                    case 'city':
+                        return this.createCityObject();
+                    case 'farmland':
+                        return this.createFarmObject();
+                    default:
+                        return this.createBasicTree();
+                }
+            }
+
+            createNightSkyObject() {
+                const types = ['star', 'moon', 'planet'];
+                const type = types[Math.floor(Math.random() * types.length)];
+
+                let geometry, material, mesh;
+
+                switch(type) {
+                    case 'star':
+                        geometry = new THREE.OctahedronGeometry(0.5, 0);
+                        material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                        break;
+                    case 'moon':
+                        geometry = new THREE.CircleGeometry(3, 16);
+                        material = new THREE.MeshBasicMaterial({ color: 0xffff99 });
+                        break;
+                    case 'planet':
+                        geometry = new THREE.SphereGeometry(2, 8, 6);
+                        material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                        break;
+                }
+
+                mesh = new THREE.Mesh(geometry, material);
+                return mesh;
+            }
+
+            createMeadowObject() {
+                const types = ['flower', 'tree', 'butterfly'];
+                const type = types[Math.floor(Math.random() * types.length)];
+
+                let geometry, material, mesh;
+
+                switch(type) {
+                    case 'flower':
+                        geometry = new THREE.ConeGeometry(0.5, 2, 6);
+                        material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                        break;
+                    case 'tree':
+                        geometry = new THREE.CylinderGeometry(0.5, 1, 8, 6);
+                        material = new THREE.MeshLambertMaterial({ color: 0x654321 });
+                        break;
+                    case 'butterfly':
+                        geometry = new THREE.PlaneGeometry(1, 1);
+                        material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff, side: THREE.DoubleSide });
+                        break;
+                }
+
+                mesh = new THREE.Mesh(geometry, material);
+                return mesh;
+            }
+
+            createCityObject() {
+                const buildingGeometry = new THREE.BoxGeometry(4, 10 + Math.random() * 20, 4);
+                const buildingMaterial = new THREE.MeshLambertMaterial({
+                    color: Math.random() > 0.5 ? 0x888888 : 0x666666
+                });
+                const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                building.castShadow = true;
+
+                // Add windows
+                for (let w = 0; w < Math.floor(buildingGeometry.parameters.height / 3); w++) {
+                    if (Math.random() > 0.3) {
+                        const windowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
+                        const windowMaterial = new THREE.MeshBasicMaterial({ color: 0xffff99 });
+                        const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                        window.position.set(
+                            (Math.random() - 0.5) * 2.5,
+                            -buildingGeometry.parameters.height/2 + w * 3 + 1.5,
+                            buildingGeometry.parameters.depth/2 + 0.01
+                        );
+                        building.add(window);
+                    }
+                }
+
+                return building;
+            }
+
+            createFarmObject() {
+                const types = ['barn', 'tractor', 'animal'];
+                const type = types[Math.floor(Math.random() * types.length)];
+
+                let geometry, material, mesh;
+
+                switch(type) {
+                    case 'barn':
+                        geometry = new THREE.BoxGeometry(8, 6, 12);
+                        material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+                        break;
+                    case 'tractor':
+                        geometry = new THREE.BoxGeometry(2, 1.5, 4);
+                        material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                        break;
+                    case 'animal':
+                        geometry = new THREE.CylinderGeometry(0.5, 0.8, 2, 6);
+                        material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+                        break;
+                }
+
+                mesh = new THREE.Mesh(geometry, material);
+                return mesh;
+            }
+
+            createBasicTree() {
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.5, 4, 6),
+                    new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+                );
+                const leaves = new THREE.Mesh(
+                    new THREE.SphereGeometry(2, 8, 6),
+                    new THREE.MeshLambertMaterial({ color: 0x228B22 })
+                );
+                leaves.position.y = 3;
+
+                const tree = new THREE.Group();
+                tree.add(trunk);
+                tree.add(leaves);
+
+                return tree;
+            }
+
+            createPaperPlane() {
+                this.plane = new THREE.Group();
+
+                // Paper plane body (more detailed)
+                const bodyGeometry = new THREE.ConeGeometry(0.3, 1.2, 6);
+                const bodyMaterial = new THREE.MeshLambertMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.95
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.rotation.z = Math.PI / 2;
+                body.castShadow = true;
+                this.plane.add(body);
+
+                // Wings with more detail
+                const wingGeometry = new THREE.PlaneGeometry(2, 0.2);
+                const wingMaterial = new THREE.MeshLambertMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.9,
+                    side: THREE.DoubleSide
+                });
+
+                const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                leftWing.position.set(-0.3, 0, 0);
+                leftWing.rotation.y = Math.PI / 6;
+                this.plane.add(leftWing);
+
+                const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                rightWing.position.set(0.3, 0, 0);
+                rightWing.rotation.y = -Math.PI / 6;
+                this.plane.add(rightWing);
+
+                // Tail
+                const tailGeometry = new THREE.PlaneGeometry(0.8, 0.3);
+                const tail = new THREE.Mesh(tailGeometry, wingMaterial);
+                tail.position.set(0, 0, -0.5);
+                this.plane.add(tail);
+
+                // Add some detail lines
+                const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+                const noseLine = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.05), lineMaterial);
+                noseLine.position.set(0.3, 0, 0);
+                this.plane.add(noseLine);
+
+                this.plane.position.set(0, 2, 0);
+                this.scene.add(this.plane);
+            }
+
+            createZoneCollectibles() {
+                // Clear existing collectibles
+                this.clearCollectibles();
+
+                // Create zone-specific collectibles
+                const collectibleCount = this.zones[this.currentZone].stars;
+                for (let i = 0; i < collectibleCount; i++) {
+                    this.createCollectibleItem(this.currentZone, i);
+                }
+            }
+
+            clearCollectibles() {
+                // Remove existing collectibles from scene
+                this.collectibles.forEach(item => {
+                    this.scene.remove(item);
+                });
+
+                this.collectibles = [];
+                this.stars = [];
+                this.flowers = [];
+                this.coins = [];
+                this.carrots = [];
+            }
+
+            createCollectibleItem(zoneType, index) {
+                let geometry, material, mesh, type;
+
+                switch(zoneType) {
+                    case 'night':
+                        geometry = new THREE.OctahedronGeometry(0.5, 0);
+                        material = new THREE.MeshLambertMaterial({
+                            color: 0xffd700,
+                            emissive: 0x444400,
+                            transparent: true,
+                            opacity: 0.8
+                        });
+                        type = 'star';
+                        break;
+                    case 'meadow':
+                        geometry = new THREE.ConeGeometry(0.3, 1, 6);
+                        material = new THREE.MeshLambertMaterial({
+                            color: Math.random() * 0xffffff,
+                            transparent: true,
+                            opacity: 0.9
+                        });
+                        type = 'flower';
+                        break;
+                    case 'city':
+                        geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 8);
+                        material = new THREE.MeshLambertMaterial({
+                            color: 0xffd700,
+                            emissive: 0x444400
+                        });
+                        type = 'coin';
+                        break;
+                    case 'farmland':
+                        geometry = new THREE.CylinderGeometry(0.1, 0.2, 0.8, 6);
+                        material = new THREE.MeshLambertMaterial({
+                            color: 0xff6b35,
+                            transparent: true,
+                            opacity: 0.9
+                        });
+                        type = 'carrot';
+                        break;
+                }
+
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(
+                    (Math.random() - 0.5) * this.worldSize * 0.8,
+                    Math.random() * 20 + 5,
+                    (Math.random() - 0.5) * this.worldSize * 0.8
+                );
+                mesh.userData = { collected: false, type: type, index: index };
+                mesh.castShadow = true;
+
+                this.collectibles.push(mesh);
+
+                // Add to appropriate array
+                switch(type) {
+                    case 'star': this.stars.push(mesh); break;
+                    case 'flower': this.flowers.push(mesh); break;
+                    case 'coin': this.coins.push(mesh); break;
+                    case 'carrot': this.carrots.push(mesh); break;
+                }
+
+                this.scene.add(mesh);
+            }
+
+            setupEventListeners() {
+                window.addEventListener('keydown', (event) => this.onKeyDown(event));
+                window.addEventListener('keyup', (event) => this.onKeyUp(event));
+                window.addEventListener('resize', () => this.onWindowResize());
+
+                // Mouse controls for camera
+                let isMouseDown = false;
+                let mouseX = 0;
+                let mouseY = 0;
+
+                document.getElementById('simulator-canvas').addEventListener('mousedown', (event) => {
+                    isMouseDown = true;
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                });
+
+                document.addEventListener('mousemove', (event) => {
+                    if (isMouseDown) {
+                        const deltaX = event.clientX - mouseX;
+                        const deltaY = event.clientY - mouseY;
+
+                        this.rotation.y += deltaX * 0.01;
+                        this.rotation.x += deltaY * 0.01;
+
+                        mouseX = event.clientX;
+                        mouseY = event.clientY;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isMouseDown = false;
+                });
+            }
+
+            onKeyDown(event) {
+                this.keys[event.code] = true;
+
+                if (event.code === 'Space') {
+                    event.preventDefault();
+                    // Flap wings for boost
+                    this.velocity.y += 0.5;
+                    this.score.tricks++;
+                    this.updateUI();
+                }
+
+                if (event.code === 'KeyE') {
+                    // Spin trick
+                    this.rotation.z += Math.PI / 4;
+                    this.score.tricks++;
+                    this.updateUI();
+                }
+            }
+
+            onKeyUp(event) {
+                this.keys[event.code] = false;
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            updateFlightPhysics(deltaTime) {
+                const acceleration = 0.02;
+
+                // Forward/backward
+                if (this.keys.KeyW || this.keys.ArrowUp) {
+                    this.speed += acceleration;
+                }
+                if (this.keys.KeyS || this.keys.ArrowDown) {
+                    this.speed -= acceleration * 0.5;
+                }
+
+                // Steering (left/right)
+                if (this.keys.KeyA || this.keys.ArrowLeft) {
+                    this.rotation.y += 0.03;
+                }
+                if (this.keys.KeyD || this.keys.ArrowRight) {
+                    this.rotation.y -= 0.03;
+                    this.rotation.z = -0.1; // Slight bank
+                } else if (!this.keys.KeyA && !this.keys.KeyD && !this.keys.ArrowLeft && !this.keys.ArrowRight) {
+                    this.rotation.z *= 0.95; // Level out
+                }
+
+                this.speed = Math.max(0, Math.min(this.speed * 0.99, 2.0));
+
+                // Apply physics
+                this.velocity.x = Math.sin(this.rotation.y) * this.speed;
+                this.velocity.z = Math.cos(this.rotation.y) * this.speed;
+                this.velocity.y -= 0.01; // Gravity
+
+                // Add wind
+                this.velocity.x += this.windDirection.x;
+                this.velocity.y += this.windDirection.y;
+                this.velocity.z += this.windDirection.z;
+
+                // Update position
+                this.plane.position.x += this.velocity.x;
+                this.plane.position.y += this.velocity.y;
+                this.plane.position.z += this.velocity.z;
+
+                // Update rotation
+                this.plane.rotation.x = this.rotation.x * 0.1;
+                this.plane.rotation.y = this.rotation.y;
+                this.plane.rotation.z = this.rotation.z;
+
+                // Ground collision
+                if (this.plane.position.y < 2) {
+                    this.plane.position.y = 2;
+                    this.velocity.y = Math.max(0, this.velocity.y);
+                    if (this.speed > 0.1) this.velocity.y = this.speed * 0.2;
+                }
+
+                // World wrap-around
+                const halfSize = this.worldSize / 2;
+                if (this.plane.position.x > halfSize) this.plane.position.x = -halfSize;
+                if (this.plane.position.x < -halfSize) this.plane.position.x = halfSize;
+                if (this.plane.position.z > halfSize) this.plane.position.z = -halfSize;
+                if (this.plane.position.z < -halfSize) this.plane.position.z = halfSize;
+
+                // Check collisions
+                this.checkCollisions();
+            }
+
+            checkCollisions() {
+                // Check collectible collisions
+                this.collectibles.forEach((item, index) => {
+                    if (!item.userData.collected) {
+                        const distance = this.plane.position.distanceTo(item.position);
+                        if (distance < 2.0) {
+                            item.userData.collected = true;
+                            item.visible = false;
+
+                            // Play collection sound
+                            this.playCollectSound();
+
+                            // Create particle effects
+                            this.createCollectionParticles(
+                                item.position.x,
+                                item.position.y,
+                                item.position.z
+                            );
+
+                            // Update score based on item type
+                            switch(item.userData.type) {
+                                case 'star': this.score.stars++; break;
+                                case 'flower': this.score.flowers++; break;
+                                case 'coin': this.score.coins++; break;
+                                case 'carrot': this.score.carrots++; break;
+                            }
+
+                            this.updateUI();
+
+                            // Check for zone completion
+                            const zoneData = this.zones[this.currentZone];
+                            if (this.score.stars >= zoneData.stars) {
+                                this.showZoneCelebration();
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateCamera() {
+                if (!this.autoPilot && this.plane) {
+                    // Smooth 3rd person camera follow
+                    const idealOffset = new THREE.Vector3(
+                        this.cameraOffset.x,
+                        this.cameraOffset.y,
+                        this.cameraOffset.z
+                    );
+
+                    // Rotate offset based on plane direction
+                    idealOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.plane.rotation.y);
+
+                    const idealPosition = new THREE.Vector3().copy(this.plane.position).add(idealOffset);
+
+                    // Smooth camera movement
+                    this.camera.position.lerp(idealPosition, 0.05);
+
+                    // Look at plane with slight offset
+                    this.cameraTarget.copy(this.plane.position);
+                    this.cameraTarget.y += 1;
+                    this.camera.lookAt(this.cameraTarget);
+                }
+            }
+
+            updateUI() {
+                document.getElementById('stars-count').textContent = this.score.stars;
+                document.getElementById('drawings-found').textContent = this.score.drawings;
+                document.getElementById('tricks-done').textContent = this.score.tricks;
+                document.getElementById('flight-time').textContent = Math.floor(this.flightTime);
+            }
+
+            updateZoneProgress() {
+                const container = document.getElementById('zone-progress');
+                container.innerHTML = '';
+
+                Object.keys(this.zones).forEach(zoneKey => {
+                    const zone = this.zones[zoneKey];
+                    const progress = (zone.collected / zone.stars) * 100;
+
+                    const zoneCard = document.createElement('div');
+                    zoneCard.className = `zone-card ${zoneKey === this.currentZone ? 'active' : ''}`;
+                    zoneCard.onclick = () => this.changeZone(zoneKey);
+
+                    zoneCard.innerHTML = `
+                        <div class="zone-title">${zone.name}</div>
+                        <div class="zone-description">${zone.description}</div>
+                        <div class="zone-progress">${zone.collected}/${zone.stars} collected</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    `;
+
+                    container.appendChild(zoneCard);
+                });
+            }
+
+            changeZone(zoneName) {
+                if (zoneName === this.currentZone) return;
+
+                this.currentZone = zoneName;
+                const zoneData = this.zones[zoneName];
+
+                // Update UI
+                document.getElementById('zone-indicator').textContent = zoneData.name;
+
+                // Update scene
+                this.scene.background = new THREE.Color(zoneData.color);
+                this.updateFog();
+
+                // Recreate world for new zone
+                this.scene.remove(this.world);
+                this.createWorld();
+                this.createZoneCollectibles();
+
+                // Reset plane position
+                this.plane.position.set(0, 2, 0);
+                this.velocity = { x: 0, y: 0, z: 0 };
+                this.rotation = { x: 0, y: 0, z: 0 };
+                this.speed = 0;
+
+                // Reset score for new zone
+                this.score = { stars: 0, flowers: 0, coins: 0, carrots: 0, tricks: 0 };
+                this.flightTime = 0;
+                this.updateUI();
+                this.updateZoneProgress();
+            }
+
+            showZoneCelebration() {
+                const celebration = document.getElementById('celebration-message');
+                celebration.textContent = `🎉 Zone Complete! 🎉\nReady for the next adventure?`;
+                celebration.style.display = 'block';
+
+                setTimeout(() => {
+                    celebration.style.display = 'none';
+                    // Auto-advance to next zone
+                    const zones = Object.keys(this.zones);
+                    const currentIndex = zones.indexOf(this.currentZone);
+                    const nextIndex = (currentIndex + 1) % zones.length;
+                    if (nextIndex !== currentIndex) {
+                        this.changeZone(zones[nextIndex]);
+                    }
+                }, 3000);
+            }
+
+            resetPlane() {
+                this.plane.position.set(0, 2, 0);
+                this.velocity = { x: 0, y: 0, z: 0 };
+                this.rotation = { x: 0, y: 0, z: 0 };
+                this.speed = 0;
+
+                // Reset collectibles
+                this.collectibles.forEach(item => {
+                    item.visible = true;
+                    item.userData.collected = false;
+                });
+
+                this.score = { stars: 0, flowers: 0, coins: 0, carrots: 0, tricks: 0 };
+                this.flightTime = 0;
+                this.updateUI();
+            }
+
+            toggleAutoPilot() {
+                this.autoPilot = !this.autoPilot;
+                const btn = document.getElementById('autopilot-btn');
+
+                if (this.autoPilot) {
+                    btn.textContent = '🛑 Stop Auto Pilot';
+                    btn.style.background = 'linear-gradient(45deg, #e17055, #d63031)';
+
+                    // Simple auto-pilot: fly in circles collecting items
+                    this.autoPilotInterval = setInterval(() => {
+                        if (this.autoPilot) {
+                            this.rotation.y += 0.02;
+                            this.speed = 0.1;
+                        }
+                    }, 50);
+                } else {
+                    btn.textContent = '🤖 Auto Pilot';
+                    btn.style.background = 'linear-gradient(45deg, #ff7675, #fd79a8)';
+                    if (this.autoPilotInterval) {
+                        clearInterval(this.autoPilotInterval);
+                    }
+                }
+            }
+
+            addWind() {
+                this.windDirection = {
+                    x: (Math.random() - 0.5) * 0.1,
+                    y: (Math.random() - 0.5) * 0.05,
+                    z: (Math.random() - 0.5) * 0.1
+                };
+
+                setTimeout(() => {
+                    this.windDirection = { x: 0, y: 0, z: 0 };
+                }, 5000);
+            }
+
+            changeTheme() {
+                const colors = [
+                    0xe8f4f8, 0xf5f6fa, 0xffecd2, 0xe1f5fe, 0xf3e5f5,
+                    0xffeaa7, 0xfab1a0, 0xfdf2f8, 0xd4edda, 0xd1ecf1
+                ];
+                const newColor = colors[Math.floor(Math.random() * colors.length)];
+                this.scene.background = new THREE.Color(newColor);
+            }
+
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            }
+
+            updatePerformance() {
+                this.frameCount++;
+
+                const now = performance.now();
+                if (now - this.lastFpsUpdate > 1000) {
+                    this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate));
+                    this.frameCount = 0;
+                    this.lastFpsUpdate = now;
+
+                    // Update UI
+                    document.getElementById('fps-counter').textContent = `FPS: ${this.fps}`;
+
+                    // Update performance bar
+                    const performanceBar = document.getElementById('performance-bar');
+                    const performancePercent = Math.min(100, (this.fps / 60) * 100);
+                    performanceBar.style.width = `${performancePercent}%`;
+
+                    if (this.fps < 30) {
+                        performanceBar.style.background = 'linear-gradient(90deg, #e17055, #d63031)';
+                    } else if (this.fps < 50) {
+                        performanceBar.style.background = 'linear-gradient(90deg, #fdcb6e, #e17055)';
+                    } else {
+                        performanceBar.style.background = 'linear-gradient(90deg, #00b894, #00cec9)';
+                    }
+                }
+            }
+
+            // Audio System Methods
+            async initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    await this.audioContext.resume();
+                } catch (error) {
+                    console.log('Audio not supported:', error);
+                }
+            }
+
+            createEngineSound() {
+                if (!this.audioContext || !this.audioEnabled.engine) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(100 + (this.speed * 200), this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(Math.min(this.speed * 0.1, 0.05) * this.masterVolume, this.audioContext.currentTime);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.1);
+
+                // Update frequency based on speed
+                oscillator.frequency.exponentialRampToValueAtTime(
+                    100 + (this.speed * 200),
+                    this.audioContext.currentTime + 0.1
+                );
+            }
+
+            playCollectSound() {
+                if (!this.audioContext || !this.audioEnabled.effects) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.2);
+
+                gainNode.gain.setValueAtTime(0.1 * this.masterVolume, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.2);
+            }
+
+            playAmbientSound() {
+                if (!this.audioContext || !this.audioEnabled.ambient) return;
+
+                // Different ambient sounds per zone
+                const baseFreq = this.getAmbientBaseFrequency();
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(baseFreq, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.02 * this.masterVolume, this.audioContext.currentTime);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 2);
+            }
+
+            getAmbientBaseFrequency() {
+                switch(this.currentZone) {
+                    case 'night': return 60; // Deep, calm
+                    case 'meadow': return 120; // Light, cheerful
+                    case 'city': return 80; // Mid-range, busy
+                    case 'farmland': return 90; // Warm, earthy
+                    default: return 80;
+                }
+            }
+
+            toggleSound(type) {
+                if (type === 'master') {
+                    this.audioEnabled.master = !this.audioEnabled.master;
+                    // Toggle all other audio
+                    Object.keys(this.audioEnabled).forEach(key => {
+                        if (key !== 'master') this.audioEnabled[key] = this.audioEnabled.master;
+                    });
+                } else {
+                    this.audioEnabled[type] = !this.audioEnabled[type];
+                }
+
+                // Update button states
+                this.updateSoundButtonStates();
+            }
+
+            updateSoundButtonStates() {
+                Object.keys(this.audioEnabled).forEach(type => {
+                    const btn = document.getElementById(`${type}-sound`);
+                    if (btn) {
+                        btn.classList.toggle('active', this.audioEnabled[type]);
+                    }
+                });
+            }
+
+            setVolume(value) {
+                this.masterVolume = value / 100;
+            }
+
+            // Particle System Methods
+            createTrail() {
+                if (this.speed < 0.05) return;
+
+                // Store trail positions
+                this.trailPositions.unshift({
+                    x: this.plane.position.x,
+                    y: this.plane.position.y,
+                    z: this.plane.position.z,
+                    time: Date.now()
+                });
+
+                // Limit trail length
+                if (this.trailPositions.length > this.maxTrailLength) {
+                    this.trailPositions = this.trailPositions.slice(0, this.maxTrailLength);
+                }
+
+                // Create visual trail elements
+                this.updateTrailElements();
+            }
+
+            updateTrailElements() {
+                const container = document.getElementById('simulator-canvas');
+                const rect = container.getBoundingClientRect();
+
+                // Clear old trail elements
+                this.trailElements.forEach(element => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                });
+                this.trailElements = [];
+
+                // Create new trail elements
+                this.trailPositions.forEach((pos, index) => {
+                    if (index === 0) return; // Skip current position
+
+                    // Simple distance-based culling for performance
+                    const distance = Math.sqrt(
+                        Math.pow(this.trailPositions[0].x - pos.x, 2) +
+                        Math.pow(this.trailPositions[0].z - pos.z, 2)
+                    );
+
+                    if (distance > 50) return;
+
+                    const trailElement = document.createElement('div');
+                    trailElement.className = 'trail';
+
+                    // Calculate screen position (simplified)
+                    const screenX = (pos.x * rect.width / 100) + rect.width / 2;
+                    const screenY = (pos.y * rect.height / 100) + rect.height / 2;
+
+                    trailElement.style.left = screenX + 'px';
+                    trailElement.style.top = screenY + 'px';
+                    trailElement.style.transform = `scale(${1 - (index / this.maxTrailLength)})`;
+
+                    container.parentNode.appendChild(trailElement);
+                    this.trailElements.push(trailElement);
+                });
+            }
+
+            createCollectionParticles(x, y, z) {
+                const container = document.getElementById('simulator-canvas').parentNode;
+                const particleCount = 8;
+
+                for (let i = 0; i < particleCount; i++) {
+                    setTimeout(() => {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+
+                        // Random direction
+                        const angle = (i / particleCount) * Math.PI * 2;
+                        const distance = 20 + Math.random() * 30;
+
+                        particle.style.left = (x + Math.cos(angle) * distance) + 'px';
+                        particle.style.top = (y + Math.sin(angle) * distance) + 'px';
+                        particle.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+
+                        container.appendChild(particle);
+
+                        // Remove particle after animation
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 2000);
+                    }, i * 50);
+                }
+            }
+
+            animate(currentTime = 0) {
+                requestAnimationFrame((time) => this.animate(time));
+
+                const deltaTime = (currentTime - this.lastTime) / 1000;
+                this.lastTime = currentTime;
+
+                this.flightTime += deltaTime;
+
+                this.updateFlightPhysics(deltaTime);
+                this.updateCamera();
+
+                // Create engine sound based on speed
+                if (this.speed > 0.01 && Math.random() < 0.3) {
+                    this.createEngineSound();
+                }
+
+                // Create trail effect
+                if (Math.random() < 0.5) {
+                    this.createTrail();
+                }
+
+                // Animate collectibles
+                this.collectibles.forEach((item, index) => {
+                    if (!item.userData.collected) {
+                        item.rotation.y += 0.02;
+                        if (item.userData.type === 'star') {
+                            item.position.y += Math.sin(currentTime * 0.002 + item.position.x * 0.01) * 0.005;
+                        } else if (item.userData.type === 'flower') {
+                            item.rotation.x += 0.01;
+                        }
+                    }
+                });
+
+                // Ambient sound
+                if (Math.random() < 0.01) {
+                    this.playAmbientSound();
+                }
+
+                // Update performance
+                this.updatePerformance();
+
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // Initialize game when page loads
+        let game;
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new PaperPlaneGame();
+        });
+    </script>
+</body>
+</html>
