@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="../css/global.css">
     <link rel="icon" href="../DA.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="demo-container">
@@ -30,6 +32,21 @@
                         <option value="5years">Last 5 Years</option>
                         <option value="10years">Last 10 Years</option>
                         <option value="all">Since 2000</option>
+                    </select>
+                    <select id="bedroomFilter" onchange="updateVisualization()">
+                        <option value="all">All Bedrooms</option>
+                        <option value="1">1 Bedroom</option>
+                        <option value="2">2 Bedrooms</option>
+                        <option value="3">3 Bedrooms</option>
+                        <option value="4">4 Bedrooms</option>
+                        <option value="5">5+ Bedrooms</option>
+                    </select>
+                    <select id="priceFilter" onchange="updateVisualization()">
+                        <option value="all">All Price Ranges</option>
+                        <option value="entry">Entry ($150K-)</option>
+                        <option value="mid">Mid ($150K-300K)</option>
+                        <option value="premium">Premium ($300K-500K)</option>
+                        <option value="luxury">Luxury ($500K+)</option>
                     </select>
                 </div>
                 <div class="metric-toggle">
@@ -83,6 +100,27 @@
                     </div>
                 </div>
 
+                <div class="map-section">
+                    <div class="chart-container">
+                        <h3><i class="fas fa-map"></i> Housing Growth Hotspots</h3>
+                        <div id="growthMap" style="width: 100%; height: 400px;"></div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div class="legend-color low-growth"></div>
+                                <span>Low Growth (2-3%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color medium-growth"></div>
+                                <span>Medium Growth (3-4%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color high-growth"></div>
+                                <span>High Growth (4-5%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="insights-section">
                     <h3><i class="fas fa-lightbulb"></i> Market Insights</h3>
                     <div class="insights-grid">
@@ -130,16 +168,16 @@
         function generateDemoData() {
             const baseYear = 2014;
 
-            // Fargo-Moorhead neighborhood data
+            // Fargo-Moorhead neighborhood data with realistic growth (2-5% annual), coords, and property types
             const neighborhoods = [
-                {name: "University (NDSU)", baseValue: 145000, growth: 1.8, color: '#4CAF50'},
-                {name: "Downtown Fargo", baseValue: 165000, growth: 1.6, color: '#2196F3'},
-                {name: "Village West", baseValue: 180000, growth: 1.7, color: '#9C27B0'},
-                {name: "Prairiewood", baseValue: 175000, growth: 1.9, color: '#FF9800'},
-                {name: "Deer Creek", baseValue: 220000, growth: 2.1, color: '#795548'},
-                {name: "Jefferson", baseValue: 185000, growth: 1.5, color: '#607D8B'},
-                {name: "Northport", baseValue: 170000, growth: 1.4, color: '#E91E63'},
-                {name: "Osgood", baseValue: 200000, growth: 1.8, color: '#009688'}
+                {name: "University (NDSU)", baseValue: 145000, growth: 1.035, color: '#4CAF50', lat: 46.9031, lng: -96.8017, bedrooms: [1,2,3], priceRange: 'mid'},
+                {name: "Downtown Fargo", baseValue: 165000, growth: 1.025, color: '#2196F3', lat: 46.8772, lng: -96.7898, bedrooms: [1,2,3,4], priceRange: 'mid'},
+                {name: "Village West", baseValue: 180000, growth: 1.032, color: '#9C27B0', lat: 46.8622, lng: -96.8353, bedrooms: [2,3,4], priceRange: 'premium'},
+                {name: "Prairiewood", baseValue: 175000, growth: 1.045, color: '#FF9800', lat: 46.8533, lng: -96.8656, bedrooms: [2,3,4,5], priceRange: 'premium'},
+                {name: "Deer Creek", baseValue: 220000, growth: 1.048, color: '#795548', lat: 46.8400, lng: -96.8831, bedrooms: [3,4,5], priceRange: 'luxury'},
+                {name: "Jefferson", baseValue: 185000, growth: 1.028, color: '#607D8B', lat: 46.8956, lng: -96.7764, bedrooms: [2,3,4], priceRange: 'mid'},
+                {name: "Northport", baseValue: 170000, growth: 1.022, color: '#E91E63', lat: 46.9133, lng: -96.7789, bedrooms: [1,2,3], priceRange: 'entry'},
+                {name: "Osgood", baseValue: 200000, growth: 1.038, color: '#009688', lat: 46.8689, lng: -96.7881, bedrooms: [2,3,4], priceRange: 'premium'}
             ];
 
             const years = Array.from({length: 11}, (_, i) => baseYear + i);
@@ -201,12 +239,63 @@
         function createCharts() {
             createPriceTrendChart();
             createComparisonChart();
+            createHeatMap();
+        }
+
+        function createHeatMap() {
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+
+            // Clean up existing map
+            if (window.heatMap) {
+                window.heatMap.remove();
+            }
+
+            // Create map centered on Fargo-Moorhead
+            window.heatMap = L.map('growthMap').setView([46.8772, -96.7898], 11);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(window.heatMap);
+
+            // Add markers for each neighborhood
+            neighborhoods.forEach(neighborhood => {
+                const prices = currentData.priceData[neighborhood.name];
+                const growthRate = ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100;
+
+                // Determine color based on growth rate
+                let color;
+                if (growthRate < 35) color = '#4CAF50'; // Low growth - green
+                else if (growthRate < 45) color = '#FF9800'; // Medium growth - orange
+                else color = '#F44336'; // High growth - red
+
+                // Circle marker with size based on current price
+                const radius = Math.min(Math.max(prices[prices.length - 1] / 3000, 8), 20);
+
+                const marker = L.circleMarker([neighborhood.lat, neighborhood.lng], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.7,
+                    weight: 2,
+                    radius: radius
+                }).addTo(window.heatMap);
+
+                // Popup with neighborhood details
+                marker.bindPopup(`
+                    <strong>${neighborhood.name}</strong><br>
+                    Current Value: ${formatCurrency(prices[prices.length - 1])}<br>
+                    10-Year Growth: ${growthRate.toFixed(1)}%<br>
+                    Bedrooms: ${neighborhood.bedrooms.join(', ')}<br>
+                    Price Range: ${neighborhood.priceRange.charAt(0).toUpperCase() + neighborhood.priceRange.slice(1)}
+                `);
+            });
         }
 
         function createPriceTrendChart() {
             const ctx = document.getElementById('priceTrendChart').getContext('2d');
 
-            const datasets = currentData.neighborhoods.map(neighborhood => ({
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+            const datasets = neighborhoods.map(neighborhood => ({
                 label: neighborhood.name,
                 data: currentData.priceData[neighborhood.name],
                 borderColor: neighborhood.color,
@@ -274,24 +363,25 @@
         function createComparisonChart() {
             const ctx = document.getElementById('comparisonChart').getContext('2d');
 
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
             const showGrowthIndex = document.getElementById('showGrowthIndex').checked;
 
             let chartData;
             if (showGrowthIndex) {
                 // Growth index (normalized to 100)
-                chartData = currentData.neighborhoods.map(neighborhood => {
+                chartData = neighborhoods.map(neighborhood => {
                     const prices = currentData.priceData[neighborhood.name];
                     const basePrice = prices[0];
                     return prices.map(price => (price / basePrice) * 100);
                 });
             } else {
                 // Actual prices
-                chartData = currentData.neighborhoods.map(neighborhood =>
+                chartData = neighborhoods.map(neighborhood =>
                     currentData.priceData[neighborhood.name]
                 );
             }
 
-            const datasets = currentData.neighborhoods.map((neighborhood, index) => ({
+            const datasets = neighborhoods.map((neighborhood, index) => ({
                 label: neighborhood.name,
                 data: chartData[index],
                 borderColor: neighborhood.color,
@@ -346,8 +436,56 @@
         }
 
         function updateVisualization() {
-            // Recreate charts with current filters - for now just refresh
+            // Apply filters to data
+            const filteredData = applyFilters();
+
+            // Update currentData with filtered data
+            currentData.filteredNeighborhoods = filteredData;
+
+            // Recreate charts and map with filtered data
+            updateMetrics();
             createCharts();
+            if (window.heatMap) {
+                createHeatMap();
+            }
+        }
+
+        function applyFilters() {
+            const bedroomFilter = document.getElementById('bedroomFilter').value;
+            const priceFilter = document.getElementById('priceFilter').value;
+            const areaFilter = document.getElementById('areaFilter').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+
+            let filtered = [...currentData.neighborhoods];
+
+            // Filter by bedrooms
+            if (bedroomFilter !== 'all') {
+                const bedroomNum = parseInt(bedroomFilter);
+                filtered = filtered.filter(neighborhood =>
+                    neighborhood.bedrooms.includes(bedroomNum));
+            }
+
+            // Filter by price range
+            if (priceFilter !== 'all') {
+                filtered = filtered.filter(neighborhood =>
+                    neighborhood.priceRange === priceFilter);
+            }
+
+            // Filter by area (simplified - in real app would need area mapping)
+            if (areaFilter !== 'fargo') {
+                // For demo, just show subset based on area type
+                if (areaFilter === 'university') {
+                    filtered = filtered.filter(n => n.name.includes('University') || n.name.includes('NDSU'));
+                } else if (areaFilter === 'suburban') {
+                    filtered = filtered.filter(n =>
+                        ['Prairiewood', 'Deer Creek', 'Village West'].includes(n.name));
+                }
+                // For northdakota, we'd normally include other ND cities but we only have Fargo data
+            }
+
+            // Note: timeFilter will be handled in the charts themselves by limiting data points
+
+            return filtered;
         }
 
         function formatCurrency(amount) {
@@ -503,6 +641,46 @@
             line-height: 1.5;
         }
 
+        .map-section {
+            margin: 2rem 0;
+        }
+
+        .map-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .low-growth {
+            background-color: #4CAF50;
+        }
+
+        .medium-growth {
+            background-color: #FF9800;
+        }
+
+        .high-growth {
+            background-color: #F44336;
+        }
+
         @media (max-width: 768px) {
             .filter-row {
                 flex-direction: column;
@@ -519,6 +697,12 @@
 
             .chart-container canvas {
                 height: 300px !important;
+            }
+
+            .map-legend {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
             }
         }
     </style>
