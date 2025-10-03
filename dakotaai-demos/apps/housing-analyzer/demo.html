@@ -305,8 +305,9 @@
         function generateDemoData() {
             const baseYear = 2014;
 
-            // Fargo-Moorhead neighborhood data with realistic growth (2-5% annual), coords, and property types
-            const neighborhoods = [
+            // Expanded North Dakota housing data with regional segmentation
+            // Core Fargo Areas (existing 8 neighborhoods)
+            const coreFargoNeighborhoods = [
                 {name: "University (NDSU)", baseValue: 145000, growth: 1.035, color: '#4CAF50', lat: 46.9031, lng: -96.8017, bedrooms: [1,2,3], priceRange: 'mid'},
                 {name: "Downtown Fargo", baseValue: 165000, growth: 1.025, color: '#2196F3', lat: 46.8772, lng: -96.7898, bedrooms: [1,2,3,4], priceRange: 'mid'},
                 {name: "Village West", baseValue: 180000, growth: 1.032, color: '#9C27B0', lat: 46.8622, lng: -96.8353, bedrooms: [2,3,4], priceRange: 'premium'},
@@ -317,11 +318,59 @@
                 {name: "Osgood", baseValue: 200000, growth: 1.038, color: '#009688', lat: 46.8689, lng: -96.7881, bedrooms: [2,3,4], priceRange: 'premium'}
             ];
 
+            // North Fargo Areas (growing suburban zones)
+            const northFargoNeighborhoods = [
+                {name: "Horace", baseValue: 260000, growth: 1.052, color: '#2563EB', lat: 46.9531, lng: -96.9031, bedrooms: [3,4,5], priceRange: 'premium'},
+                {name: "Harwood", baseValue: 285000, growth: 1.048, color: '#1D4ED8', lat: 46.9764, lng: -96.8817, bedrooms: [3,4,5], priceRange: 'premium'},
+                {name: "North Fargo Meadows", baseValue: 275000, growth: 1.045, color: '#1E40AF', lat: 46.9167, lng: -96.8861, bedrooms: [3,4,5], priceRange: 'premium'},
+                {name: "Argusville", baseValue: 295000, growth: 1.043, color: '#1E3A8A', lat: 47.0489, lng: -96.9353, bedrooms: [4,5], priceRange: 'luxury'}
+            ];
+
+            // West Fargo Areas (higher growth, newer developments)
+            const westFargoNeighborhoods = [
+                {name: "The Pointe", baseValue: 320000, growth: 1.058, color: '#7C3AED', lat: 46.8667, lng: -96.8831, bedrooms: [3,4,5], priceRange: 'luxury'},
+                {name: "West Fargo-Plaza", baseValue: 310000, growth: 1.055, color: '#8B5CF6', lat: 46.8622, lng: -96.8831, bedrooms: [3,4,5], priceRange: 'luxury'},
+                {name: "Sheyenne Place", baseValue: 295000, growth: 1.053, color: '#A855F7', lat: 46.8456, lng: -96.9139, bedrooms: [3,4,5], priceRange: 'luxury'},
+                {name: "Villages at NorthRidge", baseValue: 335000, growth: 1.056, color: '#C084FC', lat: 46.8589, lng: -96.8731, bedrooms: [4,5], priceRange: 'luxury'},
+                {name: "Prairie Rose", baseValue: 280000, growth: 1.052, color: '#DDD6FE', lat: 46.8333, lng: -96.8831, bedrooms: [3,4,5], priceRange: 'premium'}
+            ];
+
+            // South Fargo Areas (more established family communities)
+            const southFargoNeighborhoods = [
+                {name: "PV Highland Park", baseValue: 265000, growth: 1.038, color: '#059669', lat: 46.8017, lng: -96.8067, bedrooms: [3,4,5], priceRange: 'premium'},
+                {name: "Stone Creek", baseValue: 255000, growth: 1.042, color: '#10B981', lat: 46.7856, lng: -96.8239, bedrooms: [3,4], priceRange: 'premium'},
+                {name: "South Fargo Estates", baseValue: 275000, growth: 1.044, color: '#34D399', lat: 46.7900, lng: -96.8000, bedrooms: [3,4,5], priceRange: 'premium'},
+                {name: "Fargo South", baseValue: 245000, growth: 1.038, color: '#6EE7B7', lat: 46.7789, lng: -96.8167, bedrooms: [2,3,4], priceRange: 'mid'}
+            ];
+
+            // Statewide ND Cities (for "All North Dakota" scope)
+            const statewideNeighborhoods = [
+                {name: "Bismarck Central", baseValue: 285000, growth: 1.032, color: '#DC2626', lat: 46.8083, lng: -100.7837, bedrooms: [2,3,4,5], priceRange: 'premium'},
+                {name: "Grand Forks Downtown", baseValue: 195000, growth: 1.028, color: '#F59E0B', lat: 47.9253, lng: -97.0329, bedrooms: [1,2,3,4], priceRange: 'mid'},
+                {name: "Minot Northern Plains", baseValue: 225000, growth: 1.035, color: '#EF4444', lat: 48.2325, lng: -101.2963, bedrooms: [2,3,4,5], priceRange: 'mid'},
+                {name: "Dickinson Energy Corridor", baseValue: 315000, growth: 1.065, color: '#F97316', lat: 46.8792, lng: -102.7894, bedrooms: [3,4,5], priceRange: 'luxury'},
+                {name: "Williston Bakken", baseValue: 355000, growth: 1.075, color: '#EA580C', lat: 48.1467, lng: -103.6180, bedrooms: [3,4,5], priceRange: 'luxury'}
+            ];
+
+            // Combine all neighborhoods (default to Fargo-focused for backward compatibility)
+            const neighborhoods = [...coreFargoNeighborhoods, ...northFargoNeighborhoods, ...westFargoNeighborhoods, ...southFargoNeighborhoods];
+            const allNorthDakotaNeighborhoods = [...neighborhoods, ...statewideNeighborhoods];
+
+            // Store all region arrays for filter logic
+            const regionArrays = {
+                'fargo': neighborhoods,
+                'northdakota': allNorthDakotaNeighborhoods,
+                'university': coreFargoNeighborhoods.filter(n => n.name.includes('University') || n.name.includes('NDSU')),
+                'suburban': [...northFargoNeighborhoods, ...westFargoNeighborhoods, ...southFargoNeighborhoods].filter(n =>
+                    ['Prairiewood', 'Deer Creek', 'Village West', 'Horace', 'Harwood', 'The Pointe', 'PV Highland Park', 'Stone Creek'].includes(n.name))
+            };
+
             const years = Array.from({length: 11}, (_, i) => baseYear + i);
 
-            // Generate price data for each neighborhood
+            // Generate price data for each neighborhood (including statewide ones)
             const priceData = {};
-            neighborhoods.forEach(neighborhood => {
+            const allNeighborhoodsArray = [...coreFargoNeighborhoods, ...northFargoNeighborhoods, ...westFargoNeighborhoods, ...southFargoNeighborhoods, ...statewideNeighborhoods];
+            allNeighborhoodsArray.forEach(neighborhood => {
                 priceData[neighborhood.name] = years.map((year, index) => {
                     const growth = Math.pow(neighborhood.growth, index);
                     // Add some market volatility
@@ -333,7 +382,8 @@
             return {
                 neighborhoods: neighborhoods,
                 years: years,
-                priceData: priceData
+                priceData: priceData,
+                regionArrays: regionArrays
             };
         }
 
@@ -401,8 +451,22 @@
                 window.heatMap.remove();
             }
 
-            // Create map centered on Fargo-Moorhead
-            window.heatMap = L.map('growthMap').setView([46.8772, -96.7898], 11);
+            // Determine map center and zoom based on area filter
+            const areaFilter = document.getElementById('areaFilter').value;
+            let mapCenter, mapZoom;
+
+            if (areaFilter === 'northdakota') {
+                // Center on North Dakota state
+                mapCenter = [47.4502, -100.4652]; // Center of North Dakota
+                mapZoom = 6; // Zoom level to show entire state
+            } else {
+                // Center on Fargo-Moorhead
+                mapCenter = [46.8772, -96.7898];
+                mapZoom = 11;
+            }
+
+            // Create map with appropriate center and zoom
+            window.heatMap = L.map('growthMap').setView(mapCenter, mapZoom);
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -607,7 +671,8 @@
             const areaFilter = document.getElementById('areaFilter').value;
             const timeFilter = document.getElementById('timeFilter').value;
 
-            let filtered = [...currentData.neighborhoods];
+            // First, determine the base set of neighborhoods based on area filter
+            let filtered = regionArrays[areaFilter] || currentData.neighborhoods;
 
             // Filter by bedrooms
             if (bedroomFilter !== 'all') {
@@ -620,18 +685,6 @@
             if (priceFilter !== 'all') {
                 filtered = filtered.filter(neighborhood =>
                     neighborhood.priceRange === priceFilter);
-            }
-
-            // Filter by area (simplified - in real app would need area mapping)
-            if (areaFilter !== 'fargo') {
-                // For demo, just show subset based on area type
-                if (areaFilter === 'university') {
-                    filtered = filtered.filter(n => n.name.includes('University') || n.name.includes('NDSU'));
-                } else if (areaFilter === 'suburban') {
-                    filtered = filtered.filter(n =>
-                        ['Prairiewood', 'Deer Creek', 'Village West'].includes(n.name));
-                }
-                // For northdakota, we'd normally include other ND cities but we only have Fargo data
             }
 
             // Note: timeFilter will be handled in the charts themselves by limiting data points
