@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="North Dakota Housing Market Analysis - Interactive real estate analytics focusing on Fargo-Moorhead">
+    <title>Dakota AI - Housing Market Analyzer</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="icon" href="../DA.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="demo-container">
+        <header class="demo-header">
+            <h1><i class="fas fa-home"></i> North Dakota Housing Market Analyzer</h1>
+            <p>Interactive real estate analytics focusing on Fargo-Moorhead market trends</p>
+        </header>
+
+        <div class="demo-content">
+            <div class="filters-section">
+                <div class="filter-row">
+                    <select id="areaFilter" onchange="updateVisualization()">
+                        <option value="fargo">Fargo-Moorhead Metro</option>
+                        <option value="northdakota">All North Dakota</option>
+                        <option value="university">University Areas (NDSU)</option>
+                        <option value="suburban">Fargo Suburban</option>
+                    </select>
+                    <select id="timeFilter" onchange="updateVisualization()">
+                        <option value="5years">Last 5 Years</option>
+                        <option value="10years">Last 10 Years</option>
+                        <option value="all">Since 2000</option>
+                    </select>
+                </div>
+                <div class="metric-toggle">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="showGrowthIndex" onchange="updateVisualization()" checked>
+                        Growth Index (relative scale)
+                    </label>
+                </div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading housing market data...</p>
+            </div>
+
+            <div id="results">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3><i class="fas fa-dollar-sign"></i> Average Home Value</h3>
+                        <p id="avgPrice" class="price-large">$285,000</p>
+                        <small id="priceChange" class="price-up">+5.2% YoY</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3><i class="fas fa-chart-line"></i> Market Growth</h3>
+                        <p id="growthRate" class="growth-large">+67%</p>
+                        <small>Last 10 years</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3><i class="fas fa-building"></i> Active Areas</h3>
+                        <p id="areaCount" class="area-large">12</p>
+                        <small>Fargo-Moorhead neighborhoods</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3><i class="fas fa-calendar"></i> Market Peak</h3>
+                        <p id="peakPrice" class="peak-large">$312,500</p>
+                        <small>Sep 2024</small>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-container">
+                        <h3>Home Price Trends</h3>
+                        <canvas id="priceTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="comparison-section">
+                    <div class="chart-container">
+                        <h3>Neighborhood Performance Comparison</h3>
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="insights-section">
+                    <h3><i class="fas fa-lightbulb"></i> Market Insights</h3>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <h4><i class="fas fa-trophy"></i> Top Performer</h4>
+                            <p id="topPerformer">University area (NDSU) shows strongest growth at 12.3% CAGR over 5 years</p>
+                        </div>
+                        <div class="insight-card">
+                            <h4><i class="fas fa-balance-scale"></i> Price Range</h4>
+                            <p id="priceRange">Current values range from $225K in entry-level neighborhoods to $450K in premium areas</p>
+                        </div>
+                        <div class="insight-card">
+                            <h4><i class="fas fa-clock"></i> Market Cycle</h4>
+                            <p id="marketCycle">Market peaked in late 2024 but remains 15% above pre-pandemic levels</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let priceChart, comparisonChart;
+        let currentData = {};
+
+        // Initialize demo
+        window.onload = function() {
+            loadHousingData();
+        };
+
+        function loadHousingData() {
+            document.getElementById('loading').style.display = 'block';
+
+            // Simulate data loading delay for demo effect
+            setTimeout(() => {
+                currentData = generateDemoData();
+                updateMetrics();
+                createCharts();
+                document.getElementById('loading').style.display = 'none';
+            }, 1000);
+        }
+
+        function generateDemoData() {
+            const baseYear = 2014;
+
+            // Fargo-Moorhead neighborhood data
+            const neighborhoods = [
+                {name: "University (NDSU)", baseValue: 145000, growth: 1.8, color: '#4CAF50'},
+                {name: "Downtown Fargo", baseValue: 165000, growth: 1.6, color: '#2196F3'},
+                {name: "Village West", baseValue: 180000, growth: 1.7, color: '#9C27B0'},
+                {name: "Prairiewood", baseValue: 175000, growth: 1.9, color: '#FF9800'},
+                {name: "Deer Creek", baseValue: 220000, growth: 2.1, color: '#795548'},
+                {name: "Jefferson", baseValue: 185000, growth: 1.5, color: '#607D8B'},
+                {name: "Northport", baseValue: 170000, growth: 1.4, color: '#E91E63'},
+                {name: "Osgood", baseValue: 200000, growth: 1.8, color: '#009688'}
+            ];
+
+            const years = Array.from({length: 11}, (_, i) => baseYear + i);
+
+            // Generate price data for each neighborhood
+            const priceData = {};
+            neighborhoods.forEach(neighborhood => {
+                priceData[neighborhood.name] = years.map((year, index) => {
+                    const growth = Math.pow(neighborhood.growth, index);
+                    // Add some market volatility
+                    const volatility = 1 + (Math.random() * 0.2 - 0.1);
+                    return Math.round(neighborhood.baseValue * growth * volatility);
+                });
+            });
+
+            return {
+                neighborhoods: neighborhoods,
+                years: years,
+                priceData: priceData
+            };
+        }
+
+        function updateMetrics() {
+            const recentPrices = [];
+            const allPrices = [];
+
+            Object.values(currentData.priceData).forEach(prices => {
+                recentPrices.push(prices[prices.length - 1]); // Most recent price
+                allPrices.push(...prices);
+            });
+
+            // Average price
+            const avg = recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length;
+            document.getElementById('avgPrice').textContent = formatCurrency(avg);
+
+            // Growth calculation
+            const currentYear = currentData.priceData[currentData.neighborhoods[0].name].length - 1;
+            const previousYear = currentYear - 1;
+            const growth = ((avg - (recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length)) / avg * 100);
+            document.getElementById('priceChange').textContent = growth > 0 ? `+${growth.toFixed(1)}% YoY` : `${growth.toFixed(1)}% YoY`;
+            document.getElementById('priceChange').className = growth > 0 ? 'price-up' : 'price-down';
+
+            // Growth rate (10-year)
+            const firstPrices = Object.values(currentData.priceData).map(prices => prices[0]);
+            const lastPrices = Object.values(currentData.priceData).map(prices => prices[prices.length - 1]);
+            const avgFirst = firstPrices.reduce((a, b) => a + b, 0) / firstPrices.length;
+            const avgLast = lastPrices.reduce((a, b) => a + b, 0) / lastPrices.length;
+            const decadeGrowth = ((avgLast - avgFirst) / avgFirst) * 100;
+            document.getElementById('growthRate').textContent = `+${Math.round(decadeGrowth)}%`;
+
+            // Area count
+            document.getElementById('areaCount').textContent = currentData.neighborhoods.length;
+
+            // Peak price
+            const peak = Math.max(...allPrices);
+            document.getElementById('peakPrice').textContent = formatCurrency(peak);
+        }
+
+        function createCharts() {
+            createPriceTrendChart();
+            createComparisonChart();
+        }
+
+        function createPriceTrendChart() {
+            const ctx = document.getElementById('priceTrendChart').getContext('2d');
+
+            const datasets = currentData.neighborhoods.map(neighborhood => ({
+                label: neighborhood.name,
+                data: currentData.priceData[neighborhood.name],
+                borderColor: neighborhood.color,
+                backgroundColor: neighborhood.color + '20',
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }));
+
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: currentData.years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Fargo-Moorhead Housing Price Trends (2006-2024)',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function createComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+
+            const showGrowthIndex = document.getElementById('showGrowthIndex').checked;
+
+            let chartData;
+            if (showGrowthIndex) {
+                // Growth index (normalized to 100)
+                chartData = currentData.neighborhoods.map(neighborhood => {
+                    const prices = currentData.priceData[neighborhood.name];
+                    const basePrice = prices[0];
+                    return prices.map(price => (price / basePrice) * 100);
+                });
+            } else {
+                // Actual prices
+                chartData = currentData.neighborhoods.map(neighborhood =>
+                    currentData.priceData[neighborhood.name]
+                );
+            }
+
+            const datasets = currentData.neighborhoods.map((neighborhood, index) => ({
+                label: neighborhood.name,
+                data: chartData[index],
+                borderColor: neighborhood.color,
+                backgroundColor: neighborhood.color + '10',
+                borderWidth: 2,
+                fill: false
+            }));
+
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+
+            comparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: currentData.years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: showGrowthIndex ?
+                                'Growth Index Comparison (Normalized to 100)' :
+                                'Price Comparison by Neighborhood',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: !showGrowthIndex,
+                            ticks: showGrowthIndex ? {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            } : {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateVisualization() {
+            // Recreate charts with current filters - for now just refresh
+            createCharts();
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+    </script>
+
+    <style>
+        .filters-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .filter-row select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .metric-toggle {
+            margin-top: 0.5rem;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .metric-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .price-large {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 0.5rem 0;
+        }
+
+        .price-up {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .price-down {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .growth-large {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #16a34a;
+            margin: 0.5rem 0;
+        }
+
+        .area-large, .peak-large {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 0.5rem 0;
+        }
+
+        .chart-section, .comparison-section {
+            margin: 2rem 0;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.25rem;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
+
+        .insights-section {
+            margin-top: 2rem;
+        }
+
+        .insights-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .insight-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .insight-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #2563eb;
+            font-size: 1rem;
+        }
+
+        .insight-card p {
+            margin: 0;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-row select {
+                width: 100%;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container canvas {
+                height: 300px !important;
+            }
+        }
+    </style>
+</body>
+</html>
