@@ -201,38 +201,52 @@
         }
 
         function updateMetrics() {
-            const recentPrices = [];
-            const allPrices = [];
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
 
-            Object.values(currentData.priceData).forEach(prices => {
-                recentPrices.push(prices[prices.length - 1]); // Most recent price
-                allPrices.push(...prices);
+            // Get recent prices for filtered neighborhoods
+            const recentPrices = neighborhoods.map(neighborhood =>
+                currentData.priceData[neighborhood.name][currentData.priceData[neighborhood.name].length - 1]
+            );
+
+            // Get all prices for peak calculation (filtered neighborhoods only)
+            const allFilteredPrices = [];
+            neighborhoods.forEach(neighborhood => {
+                allFilteredPrices.push(...currentData.priceData[neighborhood.name]);
             });
 
-            // Average price
+            // Average price (filtered)
             const avg = recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length;
             document.getElementById('avgPrice').textContent = formatCurrency(avg);
 
-            // Growth calculation
-            const currentYear = currentData.priceData[currentData.neighborhoods[0].name].length - 1;
-            const previousYear = currentYear - 1;
-            const growth = ((avg - (recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length)) / avg * 100);
-            document.getElementById('priceChange').textContent = growth > 0 ? `+${growth.toFixed(1)}% YoY` : `${growth.toFixed(1)}% YoY`;
-            document.getElementById('priceChange').className = growth > 0 ? 'price-up' : 'price-down';
+            // YoY growth calculation (filtered)
+            const yearLength = currentData.priceData[neighborhoods[0].name].length;
+            const currentYearPrices = neighborhoods.map(neighborhood =>
+                currentData.priceData[neighborhood.name][yearLength - 1]
+            );
+            const previousYearPrices = neighborhoods.map(neighborhood =>
+                currentData.priceData[neighborhood.name][yearLength - 2]
+            );
 
-            // Growth rate (10-year)
-            const firstPrices = Object.values(currentData.priceData).map(prices => prices[0]);
-            const lastPrices = Object.values(currentData.priceData).map(prices => prices[prices.length - 1]);
+            const currentYearAvg = currentYearPrices.reduce((a, b) => a + b, 0) / currentYearPrices.length;
+            const previousYearAvg = previousYearPrices.reduce((a, b) => a + b, 0) / previousYearPrices.length;
+            const yoyGrowth = previousYearAvg > 0 ? ((currentYearAvg - previousYearAvg) / previousYearAvg) * 100 : 0;
+
+            document.getElementById('priceChange').textContent = yoyGrowth > 0 ? `+${yoyGrowth.toFixed(1)}% YoY` : `${yoyGrowth.toFixed(1)}% YoY`;
+            document.getElementById('priceChange').className = yoyGrowth > 0 ? 'price-up' : 'price-down';
+
+            // Growth rate (10-year, filtered)
+            const firstPrices = neighborhoods.map(neighborhood => currentData.priceData[neighborhood.name][0]);
+            const lastPrices = neighborhoods.map(neighborhood => currentData.priceData[neighborhood.name][yearLength - 1]);
             const avgFirst = firstPrices.reduce((a, b) => a + b, 0) / firstPrices.length;
             const avgLast = lastPrices.reduce((a, b) => a + b, 0) / lastPrices.length;
-            const decadeGrowth = ((avgLast - avgFirst) / avgFirst) * 100;
+            const decadeGrowth = avgFirst > 0 ? ((avgLast - avgFirst) / avgFirst) * 100 : 0;
             document.getElementById('growthRate').textContent = `+${Math.round(decadeGrowth)}%`;
 
-            // Area count
-            document.getElementById('areaCount').textContent = currentData.neighborhoods.length;
+            // Area count (filtered)
+            document.getElementById('areaCount').textContent = neighborhoods.length;
 
-            // Peak price
-            const peak = Math.max(...allPrices);
+            // Peak price (filtered)
+            const peak = Math.max(...allFilteredPrices);
             document.getElementById('peakPrice').textContent = formatCurrency(peak);
         }
 
