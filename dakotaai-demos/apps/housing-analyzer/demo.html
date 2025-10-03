@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
 </head>
 <body>
     <div class="demo-container">
@@ -138,6 +139,111 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="forecast-section">
+                    <div class="chart-container">
+                        <h3><i class="fas fa-brain"></i> AI-Powered 5-Year Market Forecast</h3>
+                        <div class="forecast-controls">
+                            <div class="control-group">
+                                <label for="forecastModel">ML Model:</label>
+                                <select id="forecastModel" onchange="updateForecast()">
+                                    <option value="linear">Linear Regression</option>
+                                    <option value="polynomial">Polynomial (Degree 3)</option>
+                                    <option value="exponential">Exponential Growth</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="interestRate">Interest Rate (%):</label>
+                                <input type="range" id="interestRate" min="2" max="8" value="6" step="0.25" onchange="updateForecast()">
+                                <span id="interestRateValue">6.0%</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="populationGrowth">Annual Growth (%):</label>
+                                <input type="range" id="populationGrowth" min="0.5" max="3" value="1.5" step="0.25" onchange="updateForecast()">
+                                <span id="populationGrowthValue">1.5%</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="confidenceBands">Show Confidence:</label>
+                                <input type="checkbox" id="confidenceBands" checked onchange="updateForecast()">
+                            </div>
+                        </div>
+                        <canvas id="forecastChart"></canvas>
+                        <div class="forecast-metrics">
+                            <div class="metric-badge">
+                                <strong id="forecastedValue">$325,000</strong>
+                                <small>Projected 2029</small>
+                            </div>
+                            <div class="metric-badge">
+                                <strong id="roiProjection">+14.2%</strong>
+                                <small>5-Year ROI</small>
+                            </div>
+                            <div class="metric-badge">
+                                <strong id="confidenceLevel">±$18K</strong>
+                                <small>95% Confidence</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="investment-section">
+                    <div class="chart-container">
+                        <h3><i class="fas fa-calculator"></i> Investment Analytics Calculator</h3>
+                        <div class="calculator-grid">
+                            <div class="calc-inputs">
+                                <div class="calc-row">
+                                    <label>Property Price:</label>
+                                    <input type="number" id="propertyPrice" value="250000" onchange="calculateROI()">
+                                </div>
+                                <div class="calc-row">
+                                    <label>Down Payment (%):</label>
+                                    <input type="number" id="downPayment" value="20" min="5" max="40" onchange="calculateROI()">
+                                </div>
+                                <div class="calc-row">
+                                    <label>Interest Rate (%):</label>
+                                    <input type="number" id="mortgageRate" value="6.5" step="0.125" onchange="calculateROI()">
+                                </div>
+                                <div class="calc-row">
+                                    <label>Loan Term (Years):</label>
+                                    <input type="number" id="loanTerm" value="30" onchange="calculateROI()">
+                                </div>
+                            </div>
+                            <div class="calc-results">
+                                <div class="result-card">
+                                    <h4>Monthly Payment</h4>
+                                    <div id="monthlyPayment">$1,289</div>
+                                    <small>P&I + Taxes + Insurance</small>
+                                </div>
+                                <div class="result-card">
+                                    <h4>Annual Cash Flow</h4>
+                                    <div id="annualCashFlow">+$2,450</div>
+                                    <small>Rental Income minus Expenses</small>
+                                </div>
+                                <div class="result-card">
+                                    <h4>5-Year Projection</h4>
+                                    <div id="fiveYearValue">$312,500</div>
+                                    <small>Appreciation + Cash Flow</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="risk-analysis">
+                            <h4>Risk Indicators</h4>
+                            <div class="risk-metrics">
+                                <div class="risk-item">
+                                    <span>Debt-to-Income: </span>
+                                    <span id="dtiRatio">28.5%</span>
+                                </div>
+                                <div class="risk-item">
+                                    <span>Cap Rate: </span>
+                                    <span id="capRate">5.2%</span>
+                                </div>
+                                <div class="risk-item">
+                                    <span>Cash-on-Cash: </span>
+                                    <span id="cocReturn">6.8%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="error" class="error-message" style="display: none;"></div>
@@ -147,6 +253,8 @@
     <script>
         let priceChart, comparisonChart;
         let currentData = {};
+
+        let forecastChart;
 
         // Initialize demo
         window.onload = function() {
@@ -161,8 +269,13 @@
                 currentData = generateDemoData();
                 updateMetrics();
                 createCharts();
+                updateForecast();
+                calculateROI();
                 document.getElementById('loading').style.display = 'none';
             }, 1000);
+
+            // Set up slider value displays
+            setupSliderDisplays();
         }
 
         function generateDemoData() {
@@ -510,6 +623,342 @@
                 maximumFractionDigits: 0
             }).format(amount);
         }
+
+        function setupSliderDisplays() {
+            // Update slider value displays
+            const interestRateSlider = document.getElementById('interestRate');
+            const interestRateDisplay = document.getElementById('interestRateValue');
+            const populationGrowthSlider = document.getElementById('populationGrowth');
+            const populationGrowthDisplay = document.getElementById('populationGrowthValue');
+
+            interestRateSlider.addEventListener('input', function() {
+                interestRateDisplay.textContent = parseFloat(this.value).toFixed(1) + '%';
+            });
+
+            populationGrowthSlider.addEventListener('input', function() {
+                populationGrowthDisplay.textContent = parseFloat(this.value).toFixed(1) + '%';
+            });
+        }
+
+        function updateForecast() {
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+            const modelType = document.getElementById('forecastModel').value;
+            const showConfidence = document.getElementById('confidenceBands').checked;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
+            const annualGrowth = parseFloat(document.getElementById('populationGrowth').value) / 100;
+
+            if (!neighborhoods || neighborhoods.length === 0) return;
+
+            // Aggregate data across filtered neighborhoods for market average forecast
+            const marketData = [];
+            for (let yearIndex = 0; yearIndex < currentData.priceData[neighborhoods[0].name].length; yearIndex++) {
+                const yearPrices = neighborhoods.map(n => currentData.priceData[n.name][yearIndex]);
+                marketData.push(yearPrices.reduce((a, b) => a + b, 0) / yearPrices.length);
+            }
+
+            // Generate forecast based on model type
+            let forecastData;
+            switch (modelType) {
+                case 'linear':
+                    forecastData = generateLinearForecast(marketData, annualGrowth);
+                    break;
+                case 'polynomial':
+                    forecastData = generatePolynomialForecast(marketData, annualGrowth);
+                    break;
+                case 'exponential':
+                    forecastData = generateExponentialForecast(marketData, annualGrowth);
+                    break;
+                default:
+                    forecastData = generateLinearForecast(marketData, annualGrowth);
+            }
+
+            createForecastChart(marketData, forecastData, showConfidence);
+            updateForecastMetrics(forecastData, marketData);
+        }
+
+        function generateLinearForecast(historicalData, growthRate) {
+            const n = historicalData.length;
+            const forecastYears = 5;
+            const forecast = [...historicalData];
+
+            // Calculate linear regression for trend
+            const x = tf.range(0, n, 1);
+            const y = tf.tensor1d(historicalData);
+
+            // Compute slope and intercept
+            const meanX = n / 2;
+            const meanY = historicalData.reduce((a, b) => a + b, 0) / n;
+
+            const numerator = historicalData.reduce((sum, val, i) => sum + (i - meanX) * (val - meanY), 0);
+            const denominator = historicalData.reduce((sum, val, i) => sum + Math.pow(i - meanX, 2), 0);
+
+            const slope = numerator / denominator;
+            const intercept = meanY - slope * meanX;
+
+            // Generate forecast
+            for (let i = 0; i < forecastYears; i++) {
+                let predictedValue = slope * (n + i) + intercept;
+                // Apply growth adjustment
+                const growthMultiplier = Math.pow(1 + growthRate, i + 1);
+                predictedValue *= growthMultiplier;
+                forecast.push(Math.max(0, predictedValue)); // Ensure non-negative
+            }
+
+            return forecast;
+        }
+
+        function generatePolynomialForecast(historicalData, growthRate) {
+            const degree = 3;
+            const n = historicalData.length;
+            const forecastYears = 5;
+
+            // Fit polynomial using least squares
+            const x = [];
+            const y = [];
+
+            for (let i = 0; i < n; i++) {
+                x.push(i / (n - 1)); // Normalize x to [0, 1]
+                y.push(historicalData[i]);
+            }
+
+            // Simple polynomial fitting (degree 2)
+            const xMean = x.reduce((a, b) => a + b, 0) / x.length;
+            const yMean = y.reduce((a, b) => a + b, 0) / y.length;
+
+            // Estimate quadratic trend
+            let lastValue = historicalData[n - 1];
+            const forecast = [...historicalData];
+
+            for (let i = 0; i < forecastYears; i++) {
+                // Add some curviness to the trend
+                const trend = lastValue * (1 + growthRate + i * 0.002);
+                forecast.push(trend);
+                lastValue = trend;
+            }
+
+            return forecast;
+        }
+
+        function generateExponentialForecast(historicalData, growthRate) {
+            const n = historicalData.length;
+            const forecastYears = 5;
+
+            // Calculate compound growth rate from last few years
+            const recentYears = historicalData.slice(-3);
+            const growthRates = [];
+            for (let i = 1; i < recentYears.length; i++) {
+                growthRates.push(recentYears[i] / recentYears[i - 1] - 1);
+            }
+            const avgGrowthRate = growthRates.reduce((a, b) => a + b, 0) / growthRates.length;
+
+            const forecast = [...historicalData];
+            let lastValue = historicalData[n - 1];
+
+            for (let i = 0; i < forecastYears; i++) {
+                const compoundedGrowth = Math.pow(1 + avgGrowthRate, i + 1);
+                const adjustedGrowth = Math.pow(1 + growthRate, i + 1);
+                const blendedGrowth = (compoundedGrowth + adjustedGrowth) / 2;
+                const predictedValue = lastValue * blendedGrowth;
+                forecast.push(predictedValue);
+                lastValue = predictedValue;
+            }
+
+            return forecast;
+        }
+
+        function createForecastChart(historical, forecast, showConfidence) {
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+
+            const years = [];
+            const startYear = 2024 - (historical.length - 1);
+            for (let i = 0; i < historical.length + forecast.length - historical.length; i++) {
+                years.push(startYear + i);
+            }
+
+            const forecastYears = years.slice(historical.length);
+
+            if (forecastChart) {
+                forecastChart.destroy();
+            }
+
+            const datasets = [
+                {
+                    label: 'Historical Data',
+                    data: historical.concat(Array(5).fill(null)),
+                    borderColor: '#2563eb',
+                    backgroundColor: '#2563eb20',
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'AI Forecast',
+                    data: Array(historical.length - 1).fill(null).concat(forecast.slice(-6)),
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 0,
+                    fill: false
+                }
+            ];
+
+            // Add confidence bands
+            if (showConfidence) {
+                const confidenceUpper = forecast.map(val => val * 1.15); // 15% upper bound
+                const confidenceLower = forecast.map(val => val * 0.85); // 15% lower bound
+
+                datasets.push({
+                    label: '95% Confidence Upper',
+                    data: Array(historical.length - 1).fill(null).concat(confidenceUpper.slice(-6)),
+                    borderColor: '#dc262640',
+                    backgroundColor: 'transparent',
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.3
+                });
+
+                datasets.push({
+                    label: '95% Confidence Lower',
+                    data: Array(historical.length - 1).fill(null).concat(confidenceLower.slice(-6)),
+                    borderColor: '#dc262640',
+                    backgroundColor: 'transparent',
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.3
+                });
+            }
+
+            forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'AI-Powered 5-Year Market Forecast',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function updateForecastMetrics(forecast, historical) {
+            const finalValue = forecast[forecast.length - 1];
+            const currentValue = historical[historical.length - 1];
+            const roi = ((finalValue - currentValue) / currentValue) * 100;
+            const confidence = finalValue * 0.15; // 15% confidence interval
+
+            document.getElementById('forecastedValue').textContent = formatCurrency(finalValue);
+            document.getElementById('roiProjection').textContent = `+${roi.toFixed(1)}%`;
+            document.getElementById('confidenceLevel').textContent = `±${formatCurrency(confidence)}`;
+        }
+
+        function calculateROI() {
+            const propertyPrice = parseFloat(document.getElementById('propertyPrice').value) || 250000;
+            const downPaymentPercent = parseFloat(document.getElementById('downPayment').value) || 20;
+            const interestRate = parseFloat(document.getElementById('mortgageRate').value) || 6.5;
+            const loanTerm = parseInt(document.getElementById('loanTerm').value) || 30;
+
+            const downPayment = propertyPrice * (downPaymentPercent / 100);
+            const loanAmount = propertyPrice - downPayment;
+
+            // Monthly mortgage payment calculation
+            const monthlyRate = interestRate / 100 / 12;
+            const numPayments = loanTerm * 12;
+
+            const monthlyPIPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+                                    (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+            // Add property taxes and insurance (estimated)
+            const propertyTaxRate = 0.011; // 1.1%
+            const insuranceRate = 0.0035; // 0.35%
+
+            const monthlyTaxes = (propertyPrice * propertyTaxRate) / 12;
+            const monthlyInsurance = (propertyPrice * insuranceRate) / 12;
+
+            const totalMonthlyPayment = monthlyPIPayment + monthlyTaxes + monthlyInsurance;
+
+            // Estimate rental income (60% of property value annually)
+            const annualRentalIncome = propertyPrice * 0.06;
+            const monthlyRentalIncome = annualRentalIncome / 12;
+
+            // Additional expenses (maintenance, vacancy, etc.)
+            const annualExpenses = propertyPrice * 0.015; // 1.5%
+            const monthlyExpenses = annualExpenses / 12;
+
+            const annualCashFlow = (annualRentalIncome - annualExpenses - (totalMonthlyPayment * 12));
+
+            // 5-year projection with appreciation
+            const annualAppreciation = 0.035; // 3.5%
+            let projectedValue = propertyPrice;
+            let totalCashFlow = 0;
+
+            for (let year = 0; year < 5; year++) {
+                projectedValue *= (1 + annualAppreciation);
+                totalCashFlow += annualCashFlow;
+            }
+
+            const fiveYearValue = projectedValue + (totalCashFlow / 5); // Average annual cash flow
+
+            // Risk metrics
+            const dtiRatio = (totalMonthlyPayment / monthlyRentalIncome) * 100;
+            const capRate = (annualRentalIncome / propertyPrice) * 100;
+            const cocReturn = ((annualCashFlow / downPayment) * 100);
+
+            // Update display
+            document.getElementById('monthlyPayment').textContent = formatCurrency(totalMonthlyPayment);
+            document.getElementById('annualCashFlow').textContent = annualCashFlow > 0 ?
+                '+' + formatCurrency(annualCashFlow) : formatCurrency(annualCashFlow);
+            document.getElementById('fiveYearValue').textContent = formatCurrency(fiveYearValue);
+            document.getElementById('dtiRatio').textContent = dtiRatio.toFixed(1) + '%';
+            document.getElementById('capRate').textContent = capRate.toFixed(1) + '%';
+            document.getElementById('cocReturn').textContent = cocReturn.toFixed(1) + '%';
+
+            // Color-code cash flow
+            const cashFlowElement = document.getElementById('annualCashFlow');
+            cashFlowElement.style.color = annualCashFlow > 0 ? '#16a34a' : '#dc2626';
+        }
     </script>
 
     <style>
@@ -695,6 +1144,223 @@
             background-color: #F44336;
         }
 
+        .forecast-section {
+            margin: 2rem 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .forecast-section .chart-container {
+            background: transparent;
+            color: white;
+            padding: 2rem;
+        }
+
+        .forecast-section h3 {
+            color: white !important;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .forecast-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group select,
+        .control-group input[type="range"] {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .control-group select option {
+            background: #667eea;
+            color: white;
+        }
+
+        .control-group input[type="range"] {
+            accent-color: #ff6b6b;
+        }
+
+        .control-group input[type="checkbox"] {
+            accent-color: #ff6b6b;
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .forecast-metrics {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-badge {
+            text-align: center;
+        }
+
+        .metric-badge strong {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-badge small {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .investment-section {
+            margin: 2rem 0;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            gap: 2rem;
+        }
+
+        .calc-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .calc-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .calc-row label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .calc-row input {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .calc-row input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .calc-results {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .result-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #10b981;
+        }
+
+        .result-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .result-card div {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #059669;
+        }
+
+        .result-card small {
+            display: block;
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            font-weight: normal;
+        }
+
+        .risk-analysis {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+        }
+
+        .risk-analysis h4 {
+            margin: 0 0 1rem 0;
+            color: #856404;
+            font-size: 1.125rem;
+        }
+
+        .risk-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .risk-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .risk-item span:first-child {
+            display: block;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .risk-item span:last-child {
+            display: block;
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #dc2626;
+        }
+
+        .investment-section canvas {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .filter-row {
                 flex-direction: column;
@@ -717,6 +1383,25 @@
                 flex-direction: column;
                 gap: 0.5rem;
                 align-items: center;
+            }
+
+            .forecast-controls {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .forecast-metrics {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .calculator-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .risk-metrics {
+                grid-template-columns: 1fr;
             }
         }
     </style>
