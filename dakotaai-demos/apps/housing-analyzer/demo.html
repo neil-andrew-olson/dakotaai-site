@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="North Dakota Housing Market Analysis - Interactive real estate analytics focusing on Fargo-Moorhead">
+    <meta name="description" content="Fargo Metro Housing Market Analyzer - Interactive real estate analytics for Fargo-Moorhead areas with statewide North Dakota comparison">
     <title>Dakota AI - Housing Market Analyzer</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="icon" href="../DA.png">
@@ -16,8 +16,8 @@
 <body>
     <div class="demo-container">
         <header class="demo-header">
-            <h1><i class="fas fa-home"></i> North Dakota Housing Market Analyzer</h1>
-            <p>Interactive real estate analytics focusing on Fargo-Moorhead market trends</p>
+            <h1><i class="fas fa-home"></i> Fargo Metro Housing Market Analyzer</h1>
+            <p>Interactive real estate analytics for Fargo-Moorhead areas with statewide North Dakota comparison</p>
         </header>
 
         <div class="demo-content">
@@ -672,7 +672,7 @@
             const timeFilter = document.getElementById('timeFilter').value;
 
             // First, determine the base set of neighborhoods based on area filter
-            let filtered = regionArrays[areaFilter] || currentData.neighborhoods;
+            let filtered = currentData.regionArrays[areaFilter] || currentData.neighborhoods;
 
             // Filter by bedrooms
             if (bedroomFilter !== 'all') {
