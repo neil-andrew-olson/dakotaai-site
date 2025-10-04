@@ -25,7 +25,7 @@
                 <div class="filter-row">
                     <select id="areaFilter" onchange="updateVisualization()">
                         <option value="fargo">Fargo-Moorhead Metro</option>
-                        <option value="northdakota">All North Dakota</option>
+                        <option value="northdakota">Fargo + Statewide ND</option>
                         <option value="university">University Areas (NDSU)</option>
                         <option value="suburban">Fargo Suburban</option>
                     </select>
@@ -91,6 +91,14 @@
                     <div class="chart-container">
                         <h3>Home Price Trends</h3>
                         <canvas id="priceTrendChart"></canvas>
+                        <div id="seriesToggles" class="series-toggles">
+                            <div class="toggle-header">
+                                <span class="toggle-label">Toggle Neighborhoods:</span>
+                                <button onclick="selectAllSeries()" class="toggle-all-btn">Select All</button>
+                                <button onclick="deselectAllSeries()" class="toggle-all-btn">Clear All</button>
+                            </div>
+                            <div id="toggleButtons" class="toggle-buttons"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -437,6 +445,9 @@
             document.getElementById('peakPrice').textContent = formatCurrency(peak);
         }
 
+        // Initialize series visibility state
+        let seriesVisibility = {};
+
         function createCharts() {
             createPriceTrendChart();
             createComparisonChart();
@@ -517,7 +528,8 @@
                 backgroundColor: neighborhood.color + '20',
                 tension: 0.3,
                 pointRadius: 3,
-                pointHoverRadius: 6
+                pointHoverRadius: 6,
+                hidden: seriesVisibility[neighborhood.name] === false ? true : false
             }));
 
             if (priceChart) {
@@ -541,6 +553,9 @@
                                 font: {
                                     size: 11
                                 }
+                            },
+                            onClick: function(e, legendItem, legend) {
+                                toggleSeriesVisibility(neighborhoods[legendItem.datasetIndex].name);
                             }
                         },
                         title: {
@@ -573,79 +588,81 @@
                     }
                 }
             });
+
+            // Create toggle buttons
+            createSeriesToggles(neighborhoods);
         }
 
-        function createComparisonChart() {
-            const ctx = document.getElementById('comparisonChart').getContext('2d');
+        function createSeriesToggles(neighborhoods) {
+            const toggleContainer = document.getElementById('toggleButtons');
+            toggleContainer.innerHTML = ''; // Clear existing
 
-            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
-            const showGrowthIndex = document.getElementById('showGrowthIndex').checked;
+            neighborhoods.forEach(neighborhood => {
+                const isVisible = seriesVisibility[neighborhood.name] !== false; // Default to true
 
-            let chartData;
-            if (showGrowthIndex) {
-                // Growth index (normalized to 100)
-                chartData = neighborhoods.map(neighborhood => {
-                    const prices = currentData.priceData[neighborhood.name];
-                    const basePrice = prices[0];
-                    return prices.map(price => (price / basePrice) * 100);
-                });
+                const toggleBtn = document.createElement('label');
+                toggleBtn.className = 'toggle-btn';
+                toggleBtn.innerHTML = `
+                    <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="toggleSeriesVisibility('${neighborhood.name}')">
+                    <span class="toggle-color" style="background-color: ${neighborhood.color}"></span>
+                    <span class="toggle-name">${neighborhood.name}</span>
+                `;
+                toggleContainer.appendChild(toggleBtn);
+            });
+        }
+
+        function toggleSeriesVisibility(neighborhoodName) {
+            // Toggle visibility in our state
+            if (seriesVisibility[neighborhoodName] === false) {
+                seriesVisibility[neighborhoodName] = true;
             } else {
-                // Actual prices
-                chartData = neighborhoods.map(neighborhood =>
-                    currentData.priceData[neighborhood.name]
-                );
+                seriesVisibility[neighborhoodName] = false;
             }
 
-            const datasets = neighborhoods.map((neighborhood, index) => ({
-                label: neighborhood.name,
-                data: chartData[index],
-                borderColor: neighborhood.color,
-                backgroundColor: neighborhood.color + '10',
-                borderWidth: 2,
-                fill: false
-            }));
+            // Update chart
+            if (priceChart) {
+                const datasetIndex = currentData.filteredNeighborhoods ?
+                    currentData.filteredNeighborhoods.findIndex(n => n.name === neighborhoodName) :
+                    currentData.neighborhoods.findIndex(n => n.name === neighborhoodName);
 
-            if (comparisonChart) {
-                comparisonChart.destroy();
+                if (datasetIndex !== -1) {
+                    priceChart.setDatasetVisibility(datasetIndex, seriesVisibility[neighborhoodName]);
+                    priceChart.update();
+                }
             }
 
-            comparisonChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: currentData.years,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: showGrowthIndex ?
-                                'Growth Index Comparison (Normalized to 100)' :
-                                'Price Comparison by Neighborhood',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: !showGrowthIndex,
-                            ticks: showGrowthIndex ? {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            } : {
-                                callback: function(value) {
-                                    return '$' + (value / 1000) + 'K';
-                                }
-                            }
-                        }
-                    }
+            // Update the checkbox
+            const checkbox = document.querySelector(`input[onchange*="toggleSeriesVisibility('${neighborhoodName}')"]`);
+            if (checkbox) {
+                checkbox.checked = seriesVisibility[neighborhoodName];
+            }
+        }
+
+        function selectAllSeries() {
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+            neighborhoods.forEach(neighborhood => {
+                seriesVisibility[neighborhood.name] = true;
+            });
+            priceChart.show();
+            updateSeriesCheckboxes();
+        }
+
+        function deselectAllSeries() {
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+            neighborhoods.forEach(neighborhood => {
+                seriesVisibility[neighborhood.name] = false;
+            });
+            priceChart.hide();
+            updateSeriesCheckboxes();
+        }
+
+        function updateSeriesCheckboxes() {
+            const neighborhoods = currentData.filteredNeighborhoods || currentData.neighborhoods;
+            neighborhoods.forEach(neighborhood => {
+                const isVisible = seriesVisibility[neighborhood.name];
+                const checkbox = document.querySelector(`input[onchange*="toggleSeriesVisibility('${neighborhood.name}')"]`);
+                if (checkbox) {
+                    checkbox.checked = isVisible;
                 }
             });
         }
@@ -665,32 +682,7 @@
             }
         }
 
-        function applyFilters() {
-            const bedroomFilter = document.getElementById('bedroomFilter').value;
-            const priceFilter = document.getElementById('priceFilter').value;
-            const areaFilter = document.getElementById('areaFilter').value;
-            const timeFilter = document.getElementById('timeFilter').value;
 
-            // First, determine the base set of neighborhoods based on area filter
-            let filtered = currentData.regionArrays[areaFilter] || currentData.neighborhoods;
-
-            // Filter by bedrooms
-            if (bedroomFilter !== 'all') {
-                const bedroomNum = parseInt(bedroomFilter);
-                filtered = filtered.filter(neighborhood =>
-                    neighborhood.bedrooms.includes(bedroomNum));
-            }
-
-            // Filter by price range
-            if (priceFilter !== 'all') {
-                filtered = filtered.filter(neighborhood =>
-                    neighborhood.priceRange === priceFilter);
-            }
-
-            // Note: timeFilter will be handled in the charts themselves by limiting data points
-
-            return filtered;
-        }
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
@@ -1694,6 +1686,98 @@
             font-size: 1.125rem;
             font-weight: bold;
             color: #dc2626;
+        }
+
+        /* Series Toggle Controls */
+        .series-toggles {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .toggle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .toggle-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-all-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-all-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .toggle-all-btn:active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .toggle-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .toggle-btn:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+
+        .toggle-btn input[type="checkbox"] {
+            accent-color: #3b82f6;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .toggle-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .toggle-name {
+            flex: 1;
+            color: #374151;
+            font-weight: 500;
         }
 
         .investment-section canvas {
