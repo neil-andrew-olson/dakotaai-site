@@ -23,17 +23,6 @@
         <div class="demo-content">
             <div class="filters-section">
                 <div class="filter-row">
-                    <select id="areaFilter" onchange="updateVisualization()">
-                        <option value="fargo">Fargo-Moorhead Metro</option>
-                        <option value="northdakota">Fargo + Statewide ND</option>
-                        <option value="university">University Areas (NDSU)</option>
-                        <option value="suburban">Fargo Suburban</option>
-                    </select>
-                    <select id="timeFilter" onchange="updateVisualization()">
-                        <option value="5years">Last 5 Years</option>
-                        <option value="10years">Last 10 Years</option>
-                        <option value="all">Since 2000</option>
-                    </select>
                     <select id="bedroomFilter" onchange="updateVisualization()">
                         <option value="all">All Bedrooms</option>
                         <option value="1">1 Bedroom</option>
@@ -462,21 +451,11 @@
                 window.heatMap.remove();
             }
 
-            // Determine map center and zoom based on area filter
-            const areaFilter = document.getElementById('areaFilter').value;
-            let mapCenter, mapZoom;
+            // Always center on Fargo-Moorhead since we're using neighborhood toggles for selection
+            const mapCenter = [46.8772, -96.7898];
+            const mapZoom = 11;
 
-            if (areaFilter === 'northdakota') {
-                // Center on North Dakota state
-                mapCenter = [47.4502, -100.4652]; // Center of North Dakota
-                mapZoom = 6; // Zoom level to show entire state
-            } else {
-                // Center on Fargo-Moorhead
-                mapCenter = [46.8772, -96.7898];
-                mapZoom = 11;
-            }
-
-            // Create map with appropriate center and zoom
+            // Create map with Fargo-Moorhead center and zoom
             window.heatMap = L.map('growthMap').setView(mapCenter, mapZoom);
 
             // Add OpenStreetMap tiles
@@ -667,6 +646,29 @@
             });
         }
 
+        function applyFilters() {
+            const bedroomFilter = document.getElementById('bedroomFilter').value;
+            const priceFilter = document.getElementById('priceFilter').value;
+
+            // Start with all neighborhoods (since we use toggles for selection)
+            let filtered = currentData.neighborhoods;
+
+            // Filter by bedrooms
+            if (bedroomFilter !== 'all') {
+                const bedroomNum = parseInt(bedroomFilter);
+                filtered = filtered.filter(neighborhood =>
+                    neighborhood.bedrooms.includes(bedroomNum));
+            }
+
+            // Filter by price range
+            if (priceFilter !== 'all') {
+                filtered = filtered.filter(neighborhood =>
+                    neighborhood.priceRange === priceFilter);
+            }
+
+            return filtered;
+        }
+
         function updateVisualization() {
             // Apply filters to data
             const filteredData = applyFilters();
@@ -681,8 +683,6 @@
                 createHeatMap();
             }
         }
-
-
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
