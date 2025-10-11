@@ -386,6 +386,190 @@
             font-size: 24px;
             margin: 10px 0;
         }
+
+        /* Exchange Styles */
+        .exchange-tab h4 {
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .exchange-form {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .swap-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .token-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .token-input label {
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 14px;
+        }
+
+        .token-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .token-select {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .swap-amount-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .swap-arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .swap-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .swap-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .exchange-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .rate-display, .fee-display, .discount-display {
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .rate-display {
+            font-size: 18px;
+            color: #ffd700;
+        }
+
+        .fee-display {
+            color: #4CAF50;
+        }
+
+        .discount-display {
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .exchange-route {
+            margin: 20px 0;
+        }
+
+        .route-info {
+            text-align: center;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .swap-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .swap-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .slippage-settings {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .slippage-settings label {
+            font-weight: 500;
+        }
+
+        .slippage-settings select {
+            padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .token-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .swap-section {
+                gap: 15px;
+            }
+
+            .exchange-info {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -401,6 +585,10 @@
             <button class="tab-btn active" onclick="switchTab('wallet')">
                 <span class="tab-icon">💰</span>
                 <span class="tab-text">Wallet</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('exchange')">
+                <span class="tab-icon">🔄</span>
+                <span class="tab-text">Exchange</span>
             </button>
             <button class="tab-btn" onclick="switchTab('bridge')">
                 <span class="tab-icon">🌉</span>
@@ -569,6 +757,78 @@
                         </div>
                     </div>
                 `;
+            } else if (currentTab === 'exchange') {
+                let allTokens = [];
+
+                // Combine tokens from all networks (prioritize Solana for now)
+                if (DAB_TOKEN_CONFIG.supportedTokens.solana) {
+                    allTokens.push(...DAB_TOKEN_CONFIG.supportedTokens.solana);
+                }
+
+                const tokenOptionsFrom = allTokens.map(token =>
+                    `<option value="${token.symbol}" data-address="${token.address}" data-logo="${token.logo}" data-decimals="${token.decimals}" data-name="${token.name}">
+                        ${token.symbol} - ${token.name}
+                    </option>`
+                ).join('');
+
+                const tokenOptionsTo = tokenOptionsFrom; // Same options for both
+
+                contentDiv.innerHTML = `
+                    <div class="exchange-tab">
+                        <h4>🔄 Multi-Token Exchange</h4>
+                        <div class="exchange-form">
+                            <div class="swap-section">
+                                <div class="token-input">
+                                    <label>You Pay</label>
+                                    <div class="token-row">
+                                        <select id="from-token" class="token-select" onchange="updateExchangePreview()">
+                                            ${tokenOptionsFrom}
+                                        </select>
+                                        <input type="number" id="from-amount" placeholder="0.00" class="swap-amount-input" oninput="calculateExchange()" />
+                                    </div>
+                                </div>
+
+                                <div class="swap-arrow">
+                                    <button onclick="swapTokens()" class="swap-button">⇅</button>
+                                </div>
+
+                                <div class="token-input">
+                                    <label>You Receive</label>
+                                    <div class="token-row">
+                                        <select id="to-token" class="token-select" onchange="updateExchangePreview()">
+                                            ${tokenOptionsTo}
+                                        </select>
+                                        <input type="number" id="to-amount" placeholder="0.00" class="swap-amount-input" readonly />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="exchange-info">
+                                <div class="rate-display" id="exchange-rate">1 DAB = Loading...</div>
+                                <div class="fee-display" id="exchange-fee">Fee: Loading...</div>
+                                <div class="discount-display" id="ai-discount">
+                                    AI Optimization: ${Math.round(DAB_TOKEN_CONFIG.getRewardMultiplier(1000) * 100)}% better rates for DAB holders
+                                </div>
+                            </div>
+
+                            <div class="exchange-route" id="swap-route">
+                                <div class="route-info">Route: Finding optimal path...</div>
+                            </div>
+
+                            <button class="swap-btn" onclick="executeSwap()">🚀 Execute Swap with AI Optimization</button>
+
+                            <div class="slippange-settings">
+                                <label>Max Slippage: </label>
+                                <select id="slippage-select">
+                                    <option value="0.1">0.1%</option>
+                                    <option value="0.3" selected>0.3%</option>
+                                    <option value="0.5">0.5%</option>
+                                    <option value="1.0">1.0%</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
             } else if (currentTab === 'agent') {
                 contentDiv.innerHTML = `
                     <div class="agent-tab">
@@ -623,6 +883,173 @@
 
         function monitorGas() {
             alert('Gas monitoring activated. Real-time price tracking enabled.');
+        }
+
+        // Exchange Functions
+        let tokenPrices = {}; // Cache for price data
+
+        function swapTokens() {
+            const fromSelect = document.getElementById('from-token');
+            const toSelect = document.getElementById('to-token');
+            const fromAmount = document.getElementById('from-amount');
+            const toAmount = document.getElementById('to-amount');
+
+            // Swap the selections
+            const tempValue = fromSelect.value;
+            const tempText = fromSelect.options[fromSelect.selectedIndex].text;
+            fromSelect.value = toSelect.value;
+            fromSelect.options[fromSelect.selectedIndex].text = toSelect.options[toSelect.selectedIndex].text;
+            toSelect.value = tempValue;
+            toSelect.options[toSelect.selectedIndex].text = tempText;
+
+            // Swap amounts
+            const tempAmount = fromAmount.value;
+            fromAmount.value = toAmount.value;
+            toAmount.value = tempAmount;
+
+            calculateExchange();
+        }
+
+        async function updateExchangePreview() {
+            const fromToken = document.getElementById('from-token').value;
+            const toToken = document.getElementById('to-token').value;
+
+            try {
+                // Update exchange rate display
+                const rate = await getExchangeRate(fromToken, toToken);
+                document.getElementById('exchange-rate').textContent = `1 ${fromToken} = ${rate.toFixed(6)} ${toToken}`;
+
+                // Update fee estimate
+                const fee = await calculateExchangeFee(fromToken, toToken);
+                document.getElementById('exchange-fee').textContent = `Fee: ${fee}`;
+
+                // Update route info
+                document.getElementById('swap-route').innerHTML = `<div class="route-info">Route: ${fromToken} → ${getBestDex(fromToken, toToken)} → ${toToken}</div>`;
+
+            } catch (error) {
+                console.error('Exchange preview error:', error);
+                document.getElementById('exchange-rate').textContent = 'Rate: Unable to fetch';
+                document.getElementById('exchange-fee').textContent = 'Fee: Unable to calculate';
+            }
+        }
+
+        async function calculateExchange() {
+            const fromAmount = parseFloat(document.getElementById('from-amount').value) || 0;
+
+            if (fromAmount > 0) {
+                const fromToken = document.getElementById('from-token').value;
+                const toToken = document.getElementById('to-token').value;
+
+                try {
+                    const rate = await getExchangeRate(fromToken, toToken);
+
+                    // Apply DAB holder discount
+                    const discountMultiplier = DAB_TOKEN_CONFIG.getRewardMultiplier(dabTokenBalance);
+                    const finalRate = rate * discountMultiplier;
+
+                    const toAmount = fromAmount * finalRate;
+                    document.getElementById('to-amount').value = toAmount.toFixed(6);
+
+                    updateExchangePreview();
+                } catch (error) {
+                    console.error('Exchange calculation error:', error);
+                    document.getElementById('to-amount').value = '0.00';
+                }
+            } else {
+                document.getElementById('to-amount').value = '0.00';
+            }
+        }
+
+        async function getExchangeRate(fromToken, toToken) {
+            // Mock price data for demonstration
+            const mockPrices = {
+                'DAB/SOL': 0.0001,
+                'DAB/USDC': 0.001,
+                'SOL/USDC': 150,
+                'SOL/DAB': 10000,
+                'USDC/DAB': 1000,
+                'USDC/SOL': 0.00667,
+            };
+
+            const pair = `${fromToken}/${toToken}`;
+            if (mockPrices[pair]) {
+                return mockPrices[pair];
+            }
+
+            // Reverse pairs
+            const reversePair = `${toToken}/${fromToken}`;
+            if (mockPrices[reversePair]) {
+                return 1 / mockPrices[reversePair];
+            }
+
+            // Default fallback
+            return 1;
+        }
+
+        async function calculateExchangeFee(fromToken, toToken) {
+            const slippage = parseFloat(document.getElementById('slippage-select').value);
+
+            // Base Solana fee calculation
+            let baseFee = 0.000005; // SOL
+
+            // Add gas fees for complex swaps
+            if (fromToken !== 'SOL' && toToken !== 'SOL') {
+                baseFee += 0.00001;
+            }
+
+            // Add slippage buffer
+            baseFee += baseFee * (slippage / 100);
+
+            // Apply DAB holder discount
+            const discount = DAB_TOKEN_CONFIG.exchange.dabHolderDiscounts[userTier.toLowerCase()] || 0;
+            baseFee = baseFee * (1 - discount);
+
+            return `$${baseFee.toFixed(6)} (${(discount * 100).toFixed(1)}% discount)`;
+        }
+
+        function getBestDex(fromToken, toToken) {
+            // Simulate DEX selection based on pair
+            const solanaPairs = ['SOL', 'USDC', 'USDT', 'RAY', 'WBTC', 'JUP', 'BONK', 'WIF'];
+            const ethPairs = ['ETH', 'USDC', 'USDT', 'DAI', 'WBTC', 'LINK', 'UNI', 'AAVE'];
+
+            if (solanaPairs.includes(fromToken) && solanaPairs.includes(toToken)) {
+                return 'Raydium';
+            } else if (ethPairs.includes(fromToken) || ethPairs.includes(toToken)) {
+                return 'Uniswap';
+            } else {
+                return 'Jupiter (Aggregate)';
+            }
+        }
+
+        async function executeSwap() {
+            if (!isConnected) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            const fromAmount = parseFloat(document.getElementById('from-amount').value);
+            const toAmount = parseFloat(document.getElementById('to-amount').value);
+            const fromToken = document.getElementById('from-token').value;
+            const toToken = document.getElementById('to-token').value;
+
+            if (!fromAmount || fromAmount <= 0) {
+                alert('Please enter a valid amount to swap.');
+                return;
+            }
+
+            const confirmMsg = `Confirm Swap:\n\nPay: ${fromAmount} ${fromToken}\nReceive: ~${toAmount} ${toToken}\n\nThis will execute on Solana blockchain!`;
+
+            if (confirm(confirmMsg)) {
+                alert('AI Optimized Swap Executed!\n\nThis demo would submit the transaction to the blockchain.\nGathering real quotes from DEX APIs would be needed for live deployment.');
+            }
+        }
+
+        // Initialize exchange on tab switch
+        function initializeExchange() {
+            setTimeout(() => {
+                updateExchangePreview();
+                calculateExchange();
+            }, 500);
         }
 
         // Listen for account changes
