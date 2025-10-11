@@ -1971,3 +1971,19 @@ nav a {
     box-shadow: var(--glass-hover-shadow) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
+
+/* DAB Wallet Navigation Link */
+.dab-link {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.dab-link:hover {
+    border-color: #ffd700;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}

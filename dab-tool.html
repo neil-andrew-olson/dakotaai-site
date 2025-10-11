@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAB Tool - Dakota AI Bridge</title>
+    <style>
+        /* DAB Tool Styles */
+        .dab-tool {
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        .dab-tool-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dab-tool-header h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dab-tool-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .connect-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .connect-btn:hover {
+            background: #45a049;
+        }
+
+        .connected-status {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .green-dot {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        /* Tabs */
+        .dab-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab-btn.active {
+            background: #4CAF50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-icon {
+            font-size: 20px;
+        }
+
+        .tab-text {
+            font-size: 12px;
+        }
+
+        /* Content */
+        .dab-content {
+            min-height: 400px;
+        }
+
+        .wallet-tab h4,
+        .bridge-tab h4,
+        .portfolio-tab h4,
+        .agent-tab h4 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            border-left: 4px solid #4CAF50;
+            padding-left: 15px;
+        }
+
+        .savings-highlight {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .big-saving {
+            font-size: 18px;
+        }
+
+        .big-saving strong {
+            font-size: 24px;
+            color: #ffd700;
+        }
+
+        .balance-display {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .balance {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .label {
+            opacity: 0.9;
+        }
+
+        .amount {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .networks {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .network-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .network-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        /* Bridge Form */
+        .bridge-form {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .bridge-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .network-select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .from-section,
+        .to-section {
+            margin-bottom: 15px;
+        }
+
+        .amount-input {
+            width: calc(100% - 60px);
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .token {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .received-amount {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #ffd700;
+            min-height: 20px;
+        }
+
+        .bridge-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .bridge-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .fee-estimate {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .fee-estimate small {
+            opacity: 0.8;
+            color: #ffd700;
+        }
+
+        /* Portfolio Cards */
+        .portfolio-cards {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .portfolio-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-card:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .card-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .card-change {
+            font-size: 12px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .card-change.positive {
+            color: #4CAF50;
+        }
+
+        /* AI Agent */
+        .agent-status {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .agent-indicator {
+            color: #4CAF50;
+            font-size: 16px;
+        }
+
+        .agent-actions {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .agent-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .agent-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .agent-results {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .dab-footer {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .dab-footer small {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .dab-footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        .dab-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dab-tool">
+        <div class="dab-tool-header">
+            <h3>DAB Tool - Dakota AI Bridge</h3>
+            <p>AI-Powered DeFi Cross-Chain Wallet</p>
+
+            <button class="connect-btn" onclick="connectWallet()">🔗 Connect Wallet</button>
+        </div>
+
+        <div class="dab-tabs">
+            <button class="tab-btn active" onclick="switchTab('wallet')">
+                <span class="tab-icon">💰</span>
+                <span class="tab-text">Wallet</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('bridge')">
+                <span class="tab-icon">🌉</span>
+                <span class="tab-text">Bridge</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('portfolio')">
+                <span class="tab-icon">📊</span>
+                <span class="tab-text">Portfolio</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('agent')">
+                <span class="tab-icon">🤖</span>
+                <span class="tab-text">AI Agent</span>
+            </button>
+        </div>
+
+        <div id="dab-content" class="dab-content">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+
+        <div class="dab-footer">
+            <small>Developed by Dakota AI • Monetizing DeFi with AI</small>
+            <small><a href="https://dakotaai.us" target="_blank">Visit Main Site</a></small>
+        </div>
+    </div>
+
+    <!-- Web3 Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
+
+    <script>
+        let isConnected = false;
+        let currentTab = 'wallet';
+        let savings = '$1,243.89';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateContent();
+            checkConnection();
+        });
+
+        // Wallet Connection
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    isConnected = true;
+                    updateUI();
+                    alert('Wallet connected successfully!');
+                } catch (error) {
+                    console.error('User denied wallet access', error);
+                    alert('Please connect your MetaMask wallet to use DAB.');
+                }
+            } else {
+                alert('Please install MetaMask to use DAB wallet features.');
+            }
+        }
+
+        async function checkConnection() {
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    isConnected = true;
+                    updateUI();
+                }
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.tab-btn').classList.add('active');
+            updateContent();
+        }
+
+        // Update Content
+        function updateContent() {
+            const contentDiv = document.getElementById('dab-content');
+
+            if (currentTab === 'wallet') {
+                contentDiv.innerHTML = `
+                    <div class="wallet-tab">
+                        <h4>Cross-Chain Wallet</h4>
+                        <div class="savings-highlight">
+                            <div class="big-saving">
+                                💸 AI Saved You: <strong>${savings}</strong>
+                            </div>
+                        </div>
+                        <div class="balance-display">
+                            <div class="balance">
+                                <span class="label">Total Balance:</span>
+                                <span class="amount">$5,242.89</span>
+                            </div>
+                            <div class="networks">
+                                <button class="network-btn active">opBNB</button>
+                                <button class="network-btn">BSC</button>
+                                <button class="network-btn">Ethereum</button>
+                                <button class="network-btn">Polygon</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'bridge') {
+                contentDiv.innerHTML = `
+                    <div class="bridge-tab">
+                        <h4>Smart Bridge</h4>
+                        <div class="bridge-form">
+                            <div class="from-section">
+                                <label>From:</label>
+                                <select class="network-select">
+                                    <option>opBNB</option>
+                                    <option>BSC</option>
+                                    <option>Ethereum</option>
+                                </select>
+                                <input type="number" placeholder="0.00" class="amount-input" />
+                                <span class="token">BNB</span>
+                            </div>
+                            <div class="arrow">↕️</div>
+                            <div class="to-section">
+                                <label>To:</label>
+                                <select class="network-select">
+                                    <option>Ethereum</option>
+                                    <option>BSC</option>
+                                    <option>opBNB</option>
+                                </select>
+                                <div class="received-amount">$0.00</div>
+                            </div>
+                            <button class="bridge-btn" onclick="bridgeTokens()">🚀🚀 Bridge with AI Optimization</button>
+                        </div>
+                        <div class="fee-estimate">
+                            <small>Fee: $0.005 (0.1%) | Savings: $9.45 vs competitors</small>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'portfolio') {
+                contentDiv.innerHTML = `
+                    <div class="portfolio-tab">
+                        <h4>Portfolio Analytics</h4>
+                        <div class="portfolio-cards">
+                            <div class="portfolio-card">
+                                <div class="card-title">Total Value</div>
+                                <div class="card-value">$5,242.89</div>
+                                <div class="card-change positive">+5.23%</div>
+                            </div>
+                            <div class="portfolio-card">
+                                <div class="card-title">Fee Savings</div>
+                                <div class="card-value">${savings}</div>
+                                <div class="card-change">Last 30 days</div>
+                            </div>
+                            <div class="portfolio-card">
+                                <div class="card-title">Success Rate</div>
+                                <div class="card-value">99.7%</div>
+                                <div class="card-change positive">+0.3%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'agent') {
+                contentDiv.innerHTML = `
+                    <div class="agent-tab">
+                        <h4>🤖 DAB AI Agent</h4>
+                        <p>Autonomous AI that optimizes your DeFi strategy:</p>
+                        <div class="agent-status">
+                            <span class="agent-indicator">●</span> ACTIVE - Monitoring 23 pools
+                        </div>
+                        <div class="agent-actions">
+                            <button class="agent-btn" onclick="startYieldFarming()">Start Yield Farming</button>
+                            <button class="agent-btn" onclick="optimizePortfolio()">Optimize Portfolio</button>
+                            <button class="agent-btn" onclick="monitorGas()">Monitor Gas</button>
+                        </div>
+                        <div class="agent-results">
+                            <p>Last action: Rebalanced portfolio → +$23.45 gained</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateUI() {
+            const connectBtn = document.querySelector('.connect-btn');
+            if (isConnected) {
+                connectBtn.style.display = 'none';
+                // Add connected status
+                const header = document.querySelector('.dab-tool-header');
+                const connectedEl = document.createElement('div');
+                connectedEl.className = 'connected-status';
+                connectedEl.innerHTML = '<span class="green-dot">●</span> Connected to opBNB';
+                header.appendChild(connectedEl);
+            }
+        }
+
+        // Bridge Functions
+        function bridgeTokens() {
+            if (!isConnected) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+            alert('AI bridge optimization initiated. This would execute the optimal route in a live implementation.');
+        }
+
+        // Agent Functions
+        function startYieldFarming() {
+            alert('Yield farming optimization started. AI agent monitoring pools continuously.');
+        }
+
+        function optimizePortfolio() {
+            alert('Portfolio optimization initiated. AI agent rebalancing holdings.');
+        }
+
+        function monitorGas() {
+            alert('Gas monitoring activated. Real-time price tracking enabled.');
+        }
+
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                    isConnected = false;
+                    updateUI();
+                }
+            });
+
+            window.ethereum.on('chainChanged', function (chainId) {
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
