@@ -15,12 +15,12 @@ const DAB_TOKEN_CONFIG = {
   // Network Addresses (UPDATE AFTER DEPLOYMENT)
   addresses: {
     mainnet: {
-      mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // REPLACE WITH YOUR DEPLOYED ADDRESS
-      bridge: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // UPDATE WHEN BRIDGE CONTRACT DEPLOYED
+      mint: "DAB_TOKEN_ADDRESS_MAINNET", // Will be updated after deployment
+      bridge: "DAB_BRIDGE_ADDRESS_MAINNET"
     },
     devnet: {
-      mint: "DEVNET_ADDRESS_HERE", // For testing
-      bridge: "DEVNET_BRIDGE_HERE"
+      mint: "DAB_TOKEN_ADDRESS_DEVNET", // For testing
+      bridge: "DAB_BRIDGE_ADDRESS_DEVNET"
     },
     testnet: {
       mint: "TESTNET_ADDRESS_HERE",
@@ -89,7 +89,7 @@ const DAB_TOKEN_CONFIG = {
       { symbol: "PYUSD", name: "PayPal USD", address: "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", decimals: 6, logo: "https://cdn.jsdelivr.net/gh/solana-labs/token-list@main/assets/mainnet/2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo/logo.png" },
       { symbol: "WBTC", name: "Wrapped Bitcoin", address: "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh", decimals: 8, logo: "https://cdn.jsdelivr.net/gh/solana-labs/token-list@main/assets/mainnet/3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh/logo.png" },
       { symbol: "JUP", name: "Jupiter", address: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", decimals: 6, logo: "https://cdn.jsdelivr.net/gh/solana-labs/token-list@main/assets/mainnet/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN/logo.png" },
-      { symbol: "DAB", name: "Dakota AI Bridge", address: "MAINNET_DAB_ADDRESS_HERE", decimals: 9, logo: "/DAB-token-logo.png" }
+      { symbol: "DAB", name: "Dakota AI Bridge", address: "DAB_TOKEN_ADDRESS_MAINNET", decimals: 9, logo: "/DAB-token-logo.png" }
     ],
 
     ethereum: [

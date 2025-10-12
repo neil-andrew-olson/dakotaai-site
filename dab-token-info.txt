@@ -1,0 +1,36 @@
+DAB_TOKEN_INFO:
+Name: Dakota AI Bridge
+Symbol: DAB
+Full Name: Dakota AI Bridge - AI-Powered DeFi Intelligence
+Decimals: 9
+Total Supply: 1000000000 (Fixed)
+Supply (with decimals): 1000000000000000000
+Token Address: GJhS9Xt6tXAugqSWNX4dCx1pF33YBV3ZWiS3BPemk7Pv
+Token Account: H66jyvNopxxFfZxFB9PQwrKZwaLGVjaySTVUHzfC9izs
+Network: Solana Devnet
+Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+Deployed by: D7qgDg4dnyg5ZDB3iM7HgUUmRaUhyL5rhktt4As9qkKn
+Mint Authority: Disabled (Fixed Supply) ✅
+Freeze Authority: None ✅
+
+TRANSACTION HISTORY:
+1. Token Creation: 5C8nayVZDBoU74Rv4L3vZf49vEPP4N7RLkksRefccCArPutDz24QnQsh4sq6GYzPGaamPL9U7dmAjWATB1kHwGCW
+2. Account Creation: 5QHGn5ky93To4gAXWw821vWFKo46e7DMMZbn8Sm6mtQVhwW3NZh6142v6bxQGUuPJ2dUFZvP4F121vzSABqwwkms
+3. Initial Mint: 5qKfugngq4QhNm56FjEm5kykcyFN5gnRXMENJBWXz5Cu154r9tC7hR6KovLaDN3625YFPTT8ntKb2krrNZnzz7Ty
+4. Disable Mint: ySc77yCXVkXdQXWVhDDEqScMuja6jP5hCUwJfQ3dzdszMDNR4sUzbKi9aE4maFM1GHmceBWKczgw2Hym9eZXPEh
+
+BLOCKCHAIN LINKS:
+Explorer: https://explorer.solana.com/address/GJhS9Xt6tXAugqSWNX4dCx1pF33YBV3ZWiS3BPemk7Pv?cluster=devnet
+
+TOKENOMICS:
+- Team Allocation: 10% (100,000,000 DAB)
+- Community Rewards: 30% (300,000,000 DAB)
+- Liquidity: 20% (200,000,000 DAB)
+- Treasury: 20% (200,000,000 DAB)
+- Marketing: 10% (100,000,000 DAB)
+
+TECHNICAL SPECIFICATIONS:
+Blockchain: Solana
+Standard: SPL-Token
+Contract Type: Fixed Supply
+Deployment Date: October 12, 2025
