@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakota AI - Options Strategy Visualizer</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .controls-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .chart-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .btn-calculate {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-calculate:hover {
+            opacity: 0.9;
+        }
+
+        .metric-card {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .badge-live {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-live::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #166534;
+            border-radius: 50%;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar" style="background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div class="nav-container">
+            <div class="logo"><a href="../index.html"
+                    style="color: #0f172a; font-weight: 800; text-decoration: none; font-size: 1.5rem;">Dakota AI <span
+                        style="color: #10b981;">Finance</span></a></div>
+            <ul>
+                <li><a href="../index.html" style="color: #475569;">Home</a></li>
+                <li><a href="../services.html" style="color: #475569;">Services</a></li>
+                <li><a href="index.html" style="color: #0f172a; font-weight: 600;">Back to Demos</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="demo-container">
+        <header style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="font-size: 2.5rem; color: #0f172a; margin-bottom: 0.5rem;">Options Strategy Visualizer
+                    </h1>
+                    <p style="color: #64748b;">Institutional-grade P&L modeling with real-time market data integration.
+                    </p>
+                </div>
+                <div class="badge-live">Market Data Connection: Active</div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Controls -->
+            <div class="controls-panel">
+                <h3 style="margin-bottom: 1.5rem; color: #0f172a;">Strategy Config</h3>
+
+                <div class="form-group">
+                    <label>Underlying Asset</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="tickerInput" value="SPY" placeholder="e.g. SPY">
+                        <button onclick="fetchData()"
+                            style="background: #e2e8f0; border: none; border-radius: 8px; padding: 0 1rem; cursor: pointer;"><i
+                                class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 0.25rem;">Current Price: <span
+                            id="currentPrice" style="font-weight: 700;">$450.00</span></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Strategy Type</label>
+                    <select id="strategyType" onchange="updateInputs()">
+                        <option value="long_call">Long Call</option>
+                        <option value="long_put">Long Put</option>
+                        <option value="straddle">Long Straddle</option>
+                        <option value="iron_condor">Iron Condor</option>
+                    </select>
+                </div>
+
+                <div id="dynamicInputs">
+                    <!-- Inputs injected via JS -->
+                </div>
+
+                <div class="form-group">
+                    <label>Implied Volatility (%)</label>
+                    <input type="range" min="10" max="150" value="20" id="ivInput"
+                        oninput="document.getElementById('ivValue').innerText = this.value + '%'">
+                    <div style="text-align: right; font-size: 0.875rem; color: #64748b;" id="ivValue">20%</div>
+                </div>
+
+                <button class="btn-calculate" onclick="calculateAndRender()">Analyze Strategy</button>
+
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                    <h4 style="margin-bottom: 1rem; color: #0f172a;">Greeks (Est.)</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div class="metric-card" style="margin:0;">
+                            <div class="metric-label">Delta</div>
+                            <div class="metric-value" style="font-size: 1rem;" id="deltaValue">0.50</div>
+                        </div>
+                        <div class="metric-card" style="margin:0;">
+                            <div class="metric-label">Theta</div>
+                            <div class="metric-value" style="font-size: 1rem; color: #ef4444;" id="thetaValue">-0.05
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-panel">
+                <canvas id="payoffChart"></canvas>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                    <h4 style="color: #0f172a; margin-bottom: 0.5rem;">Analysis</h4>
+                    <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;" id="analysisText">
+                        The Long Call strategy profits if the underlying asset price rises significantly above the
+                        strike price plus the premium paid. Risk is limited to the premium.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data Service (Simulating Alpha Vantage / Yahoo Finance)
+        // In a production app, this would call fetch('https://api.example.com/quote?symbol=' + ticker)
+        const mockMarketData = {
+            'SPY': 540.25,
+            'AAPL': 215.50,
+            'TSLA': 175.80,
+            'NVDA': 1150.00,
+            'AMD': 160.20
+        };
+
+        let currentPrice = 540.25;
+        let chartInstance = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateInputs();
+            calculateAndRender();
+        });
+
+        function fetchData() {
+            const ticker = document.getElementById('tickerInput').value.toUpperCase();
+            const btn = document.querySelector('button i.fa-sync-alt');
+
+            // Animate button
+            btn.classList.add('fa-spin');
+
+            // Simulate API delay
+            setTimeout(() => {
+                btn.classList.remove('fa-spin');
+                if (mockMarketData[ticker]) {
+                    currentPrice = mockMarketData[ticker];
+                    document.getElementById('currentPrice').innerText = '$' + currentPrice.toFixed(2);
+                    // Auto-update strike inputs to be near money
+                    const strikes = document.querySelectorAll('.strike-input');
+                    strikes.forEach(input => input.value = Math.round(currentPrice));
+                    calculateAndRender();
+                } else {
+                    // Fallback for unknown tickers (random walk from 100)
+                    currentPrice = 100 + Math.random() * 50;
+                    document.getElementById('currentPrice').innerText = '$' + currentPrice.toFixed(2);
+                    alert(`Simulated data loaded for ${ticker} (Real API key required for live data)`);
+                }
+            }, 800);
+        }
+
+        function updateInputs() {
+            const type = document.getElementById('strategyType').value;
+            const container = document.getElementById('dynamicInputs');
+            container.innerHTML = '';
+
+            if (type === 'long_call' || type === 'long_put') {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>Strike Price</label>
+                        <input type="number" class="strike-input" id="strike1" value="${Math.round(currentPrice)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Premium Paid</label>
+                        <input type="number" id="premium1" value="5.50" step="0.10">
+                    </div>
+                `;
+            } else if (type === 'straddle') {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>Strike Price (ATM)</label>
+                        <input type="number" class="strike-input" id="strike1" value="${Math.round(currentPrice)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Premium</label>
+                        <input type="number" id="premium1" value="12.00" step="0.10">
+                    </div>
+                `;
+            } else if (type === 'iron_condor') {
+                const base = Math.round(currentPrice);
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>Short Put Strike</label>
+                        <input type="number" class="strike-input" id="strike1" value="${base - 10}">
+                    </div>
+                    <div class="form-group">
+                        <label>Long Put Strike</label>
+                        <input type="number" class="strike-input" id="strike2" value="${base - 20}">
+                    </div>
+                    <div class="form-group">
+                        <label>Short Call Strike</label>
+                        <input type="number" class="strike-input" id="strike3" value="${base + 10}">
+                    </div>
+                    <div class="form-group">
+                        <label>Long Call Strike</label>
+                        <input type="number" class="strike-input" id="strike4" value="${base + 20}">
+                    </div>
+                    <div class="form-group">
+                        <label>Net Credit Received</label>
+                        <input type="number" id="premium1" value="2.50" step="0.10">
+                    </div>
+                `;
+            }
+        }
+
+        function calculateAndRender() {
+            const type = document.getElementById('strategyType').value;
+            const range = 50; // Price range to visualize (+/-)
+            const center = parseFloat(document.getElementById('strike1')?.value || currentPrice);
+
+            const prices = [];
+            const profits = [];
+
+            // Generate data points
+            for (let i = center - range; i <= center + range; i += 1) {
+                prices.push(i);
+                profits.push(calculateProfit(type, i));
+            }
+
+            renderChart(prices, profits);
+            updateGreeks(type);
+            updateAnalysis(type);
+        }
+
+        function calculateProfit(type, price) {
+            const s1 = parseFloat(document.getElementById('strike1')?.value || 0);
+            const p1 = parseFloat(document.getElementById('premium1')?.value || 0);
+
+            if (type === 'long_call') {
+                return Math.max(0, price - s1) - p1;
+            } else if (type === 'long_put') {
+                return Math.max(0, s1 - price) - p1;
+            } else if (type === 'straddle') {
+                // Long Call + Long Put at same strike
+                const callPayoff = Math.max(0, price - s1);
+                const putPayoff = Math.max(0, s1 - price);
+                return (callPayoff + putPayoff) - p1;
+            } else if (type === 'iron_condor') {
+                // Short Put (s1), Long Put (s2), Short Call (s3), Long Call (s4)
+                // Actually usually ordered: Long Put (Low), Short Put (Mid-Low), Short Call (Mid-High), Long Call (High)
+                // Let's map inputs correctly:
+                // Input 1: Short Put, Input 2: Long Put, Input 3: Short Call, Input 4: Long Call
+                const shortPutK = parseFloat(document.getElementById('strike1').value);
+                const longPutK = parseFloat(document.getElementById('strike2').value);
+                const shortCallK = parseFloat(document.getElementById('strike3').value);
+                const longCallK = parseFloat(document.getElementById('strike4').value);
+                const netCredit = parseFloat(document.getElementById('premium1').value);
+
+                // Payoffs (Short = Credit - Payoff, Long = Payoff - Debit)
+                // Simplified: Net Credit + (Long Put Payoff - Short Put Payoff) + (Long Call Payoff - Short Call Payoff)
+                // But easier logic:
+                // Profit = Net Credit - Max(0, ShortPutK - Price) + Max(0, LongPutK - Price) - Max(0, Price - ShortCallK) + Max(0, Price - LongCallK)
+
+                const shortPutPayoff = Math.max(0, shortPutK - price);
+                const longPutPayoff = Math.max(0, longPutK - price);
+                const shortCallPayoff = Math.max(0, price - shortCallK);
+                const longCallPayoff = Math.max(0, price - longCallK);
+
+                return netCredit - shortPutPayoff + longPutPayoff - shortCallPayoff + longCallPayoff;
+            }
+            return 0;
+        }
+
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('payoffChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Color logic: Green for profit, Red for loss
+            const pointColors = data.map(val => val >= 0 ? '#10b981' : '#ef4444');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'P&L ($)',
+                        data: data,
+                        borderColor: '#0f172a',
+                        borderWidth: 2,
+                        pointBackgroundColor: pointColors,
+                        pointRadius: 0, // Clean line
+                        fill: {
+                            target: 'origin',
+                            above: 'rgba(16, 185, 129, 0.1)',   // Green area
+                            below: 'rgba(239, 68, 68, 0.1)'     // Red area
+                        },
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `P&L: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: currentPrice,
+                                    xMax: currentPrice,
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: 'Current Price',
+                                        enabled: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Stock Price at Expiration ($)' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            title: { display: true, text: 'Profit / Loss ($)' },
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateGreeks(type) {
+            // Simulated Greeks for demo purposes
+            let delta = 0, theta = 0;
+            if (type === 'long_call') { delta = 0.55; theta = -0.04; }
+            else if (type === 'long_put') { delta = -0.45; theta = -0.04; }
+            else if (type === 'straddle') { delta = 0.05; theta = -0.08; }
+            else if (type === 'iron_condor') { delta = 0.02; theta = 0.12; } // Positive theta!
+
+            document.getElementById('deltaValue').innerText = delta.toFixed(2);
+            document.getElementById('thetaValue').innerText = theta.toFixed(2);
+            document.getElementById('thetaValue').style.color = theta > 0 ? '#10b981' : '#ef4444';
+        }
+
+        function updateAnalysis(type) {
+            const texts = {
+                'long_call': 'Bullish strategy. Unlimited upside potential with limited risk (premium paid). Best used when you expect significant upward movement.',
+                'long_put': 'Bearish strategy. Profit increases as price drops. Risk is limited to premium paid. Used for hedging or speculation on downside.',
+                'straddle': 'Volatility strategy. Profits from large moves in EITHER direction. Requires price to move more than the total premium paid.',
+                'iron_condor': 'Neutral strategy. Profits if the stock stays within a specific range. Capped risk and capped profit. High probability of success in low volatility markets.'
+            };
+            document.getElementById('analysisText').innerText = texts[type];
+        }
+    </script>
+</body>
+
+</html>
