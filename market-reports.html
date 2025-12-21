@@ -5,18 +5,550 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Reports & Analysis | Dakota AI</title>
-    <meta name="description" content="Professional market analysis reports by Dakota AI. S&P 500 sector reconstruction, market anomalies, and data-driven insights for investors.">
-    <meta name="keywords" content="market analysis, S&P 500, sector reconstruction, financial analytics, Dakota AI reports">
+    <meta name="description"
+        content="Professional market analysis reports by Dakota AI. S&P 500 sector reconstruction, market anomalies, and data-driven insights for investors.">
+    <meta name="keywords"
+        content="market analysis, S&P 500, sector reconstruction, financial analytics, Dakota AI reports">
     <link rel="icon" href="DA.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Power BI Style Dashboard Overrides */
+        .dashboard-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .report-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+
+        .report-badge.author {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .report-badge.series {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #c084fc;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--card-accent, linear-gradient(90deg, #3b82f6, #8b5cf6));
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin: 0 auto 1rem;
+            color: white;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 0.25rem;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .kpi-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-sublabel {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Chart Cards */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .chart-card h3 {
+            color: #f1f5f9;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-card h3 i {
+            color: #60a5fa;
+        }
+
+        /* Executive Summary Card */
+        .summary-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .summary-card h2 {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .summary-card h2 i {
+            color: #f59e0b;
+        }
+
+        .summary-card p {
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .findings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .finding-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .finding-list li {
+            color: #cbd5e1;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            position: relative;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .finding-list li:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .finding-list li::before {
+            content: '\f058';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0.75rem;
+            color: #10b981;
+        }
+
+        .finding-list.implications li::before {
+            content: '\f0eb';
+            color: #f59e0b;
+        }
+
+        .finding-category {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .finding-category.implications {
+            color: #f59e0b;
+        }
+
+        /* Data Table */
+        .data-table-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            overflow-x: auto;
+        }
+
+        .data-table-card h3 {
+            color: #f1f5f9;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .data-table-card h3 i {
+            color: #60a5fa;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            color: #cbd5e1;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .accuracy-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .accuracy-high {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .accuracy-medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .accuracy-low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Methodology Section */
+        .methodology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .methodology-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .methodology-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .methodology-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .methodology-card h4 {
+            color: #f1f5f9;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .methodology-card p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Download Section */
+        .download-section {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .download-section h3 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-section p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: white;
+            color: #3b82f6;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Future Reports Section */
+        .future-reports {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .future-reports h2 {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .future-reports h2 i {
+            color: #c084fc;
+        }
+
+        .report-teaser-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .report-teaser {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .report-teaser:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .report-teaser .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .report-teaser .status.current {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .report-teaser .status.upcoming {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .report-teaser .status.planned {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
+        .report-teaser h4 {
+            color: #f1f5f9;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-teaser p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .cta-section h3 {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cta-section p {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .kpi-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <button id="themeToggle" class="theme-toggle" style="position: fixed; top: 20px; right: 20px; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.3s;">
+    <button id="themeToggle" class="theme-toggle"
+        style="position: fixed; top: 20px; right: 20px; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.3s;">
         <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+            <path
+                d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
         </svg>
     </button>
 
@@ -37,173 +569,303 @@
         </nav>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
-            <div class="hero-content">
-                <h1>Market Reports & <br><span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Analysis</span></h1>
-                <h2>Data-Driven Insights for Strategic Decision Making</h2>
-                <p>Professional market analysis leveraging advanced AI and quantitative methods. Our reports provide actionable intelligence for investors, analysts, and financial institutions.</p>
-                <div class="cta-buttons">
-                    <a href="#latest-report" class="btn btn-primary">📊 View Latest Report</a>
-                    <a href="contact.html" class="btn btn-secondary">Request Custom Analysis</a>
+    <main class="dashboard-container">
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1><i class="fas fa-chart-line"></i> Market Intelligence Dashboard</h1>
+                <p>S&P 500 Sector Reconstruction: A Structural Analysis Using Network Theory</p>
+                <div style="margin-top: 1rem;">
+                    <span class="report-badge"><i class="fas fa-calendar"></i> December 12, 2025</span>
+                    <span class="report-badge author"><i class="fas fa-user"></i> Neil Olson</span>
+                    <span class="report-badge series"><i class="fas fa-layer-group"></i> Market Report Series #1</span>
                 </div>
             </div>
-        </section>
 
-        <!-- Latest Report Section -->
-        <section id="latest-report" style="padding: 5rem 0; background: var(--neutral-50);">
-            <div class="container">
-                <div style="text-align: center; margin-bottom: 4rem;">
-                    <h2 style="font-size: clamp(2rem, 4vw, 2.5rem); color: var(--neutral-800); font-weight: 800; margin-bottom: 1rem;">
-                        S&P 500 Sector Reconstruction Analysis</h2>
-                    <p style="font-size: 1.2rem; color: var(--neutral-600); max-width: 700px; margin: 0 auto;">A comprehensive structural analysis using network theory and machine learning to uncover hidden market patterns and sector relationships.</p>
-                    <div style="margin-top: 2rem;">
-                        <span style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">Published: December 12, 2025</span>
-                        <span style="background: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-left: 1rem;">By: Neil Olson, Founder</span>
+            <!-- KPI Grid -->
+            <div class="kpi-grid">
+                <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #10b981, #0ea5e9);">
+                    <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981, #0ea5e9);">
+                        <i class="fas fa-network-wired"></i>
                     </div>
-                </div>
-
-                <!-- Key Metrics Dashboard -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
-                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #0ea5e9); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
-                            <i class="fas fa-network-wired"></i>
+                    <div class="kpi-value">69.28</div>
+                    <div class="kpi-label">Spectral Test Score</div>
+                    <div class="kpi-sublabel">p < 0.001 significance</div>
+                    </div>
+                    <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #f59e0b, #ef4444);">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+                            <i class="fas fa-project-diagram"></i>
                         </div>
-                        <div class="stat-number">69.28</div>
-                        <div class="stat-label">Spectral Test Score</div>
-                        <div class="stat-desc">Statistical significance of market structure</div>
+                        <div class="kpi-value">0.28</div>
+                        <div class="kpi-label">Modularity Score</div>
+                        <div class="kpi-sublabel">Spinglass algorithm</div>
                     </div>
-                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <div class="stat-number">0.28</div>
-                        <div class="stat-label">Best Modularity Score</div>
-                        <div class="stat-desc">Community detection effectiveness</div>
-                    </div>
-                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
+                    <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #8b5cf6, #ec4899);">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">
                             <i class="fas fa-brain"></i>
                         </div>
-                        <div class="stat-number">90%</div>
-                        <div class="stat-label">Energy Sector Accuracy</div>
-                        <div class="stat-desc">Neural network classification</div>
+                        <div class="kpi-value">90%</div>
+                        <div class="kpi-label">Energy Sector Accuracy</div>
+                        <div class="kpi-sublabel">Neural network classification</div>
                     </div>
-                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #06b6d4, #10b981); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
-                            <i class="fas fa-exclamation-triangle"></i>
+                    <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #06b6d4, #10b981);">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #06b6d4, #10b981);">
+                            <i class="fas fa-share-alt"></i>
                         </div>
-                        <div class="stat-number">114.1</div>
-                        <div class="stat-label">Triangle Test Score</div>
-                        <div class="stat-desc">Network clustering validation</div>
+                        <div class="kpi-value">114.1</div>
+                        <div class="kpi-label">Triangle Test Score</div>
+                        <div class="kpi-sublabel">Network clustering validation</div>
+                    </div>
+                    <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #3b82f6, #8b5cf6);">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="kpi-value">11</div>
+                        <div class="kpi-label">Communities Detected</div>
+                        <div class="kpi-sublabel">vs 11 official GICS sectors</div>
+                    </div>
+                    <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #ef4444, #f59e0b);">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <div class="kpi-value">110</div>
+                        <div class="kpi-label">Stocks Analyzed</div>
+                        <div class="kpi-sublabel">Top 10 per sector</div>
                     </div>
                 </div>
 
                 <!-- Executive Summary -->
-                <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 3rem; margin-bottom: 4rem; box-shadow: var(--shadow-lg);">
-                    <h3 style="color: var(--neutral-800); margin-bottom: 1.5rem; font-size: 1.8rem;">Executive Summary</h3>
-                    <p style="font-size: 1.1rem; line-height: 1.7; color: var(--neutral-700); margin-bottom: 1.5rem;">
-                        This analysis challenges traditional sector classifications by applying advanced network theory and machine learning to S&P 500 return data. Our findings reveal that official GICS sectors often fail to capture true market relationships, with significant implications for portfolio diversification and risk management.
+                <div class="summary-card">
+                    <h2><i class="fas fa-file-alt"></i> Executive Summary</h2>
+                    <p>
+                        This analysis challenges traditional sector classifications by applying advanced network theory
+                        and machine learning to S&P 500 return data. Our findings reveal that official GICS sectors
+                        often fail to capture true market relationships, with significant implications for portfolio
+                        diversification and risk management.
                     </p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <div class="findings-grid">
                         <div>
-                            <h4 style="color: #0ea5e9; margin-bottom: 1rem;"><i class="fas fa-check-circle"></i> Key Findings</h4>
-                            <ul style="list-style: none; padding: 0;">
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Market structure is statistically significant (p < 0.001)</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Official sectors show weak alignment with return-based clusters</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Energy sector exhibits unique risk-return characteristics</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Nonlinear dimensionality reduction reveals market curvature</li>
+                            <div class="finding-category"><i class="fas fa-check-circle"></i> Key Findings</div>
+                            <ul class="finding-list">
+                                <li>Market structure is statistically significant (p < 0.001)</li>
+                                <li>Official sectors show weak alignment with return-based clusters</li>
+                                <li>Energy sector exhibits unique risk-return characteristics</li>
+                                <li>Nonlinear dimensionality reduction reveals market curvature</li>
+                                <li>Spinglass algorithm outperforms other community detection methods</li>
                             </ul>
                         </div>
                         <div>
-                            <h4 style="color: #f59e0b; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Investment Implications</h4>
-                            <ul style="list-style: none; padding: 0;">
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Traditional sector diversification may leave hidden risks</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Data-driven clustering improves portfolio optimization</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Sector "defectors" present arbitrage opportunities</li>
-                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Advanced analytics enhance risk assessment</li>
+                            <div class="finding-category implications"><i class="fas fa-lightbulb"></i> Investment
+                                Implications</div>
+                            <ul class="finding-list implications">
+                                <li>Traditional sector diversification may leave hidden risks</li>
+                                <li>Data-driven clustering improves portfolio optimization</li>
+                                <li>Sector "defectors" present arbitrage opportunities</li>
+                                <li>Advanced analytics enhance risk assessment capabilities</li>
+                                <li>Return-based clustering reveals true correlations</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- Methodology Overview -->
-                <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 3rem; border-radius: var(--border-radius-lg); margin-bottom: 4rem;">
-                    <h3 style="color: var(--neutral-800); margin-bottom: 1.5rem; font-size: 1.8rem; text-align: center;">Methodology & Data Sources</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                        <div style="text-align: center;">
-                            <i class="fas fa-database" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 1rem;"></i>
-                            <h4 style="color: var(--neutral-800);">Data Acquisition</h4>
-                            <p style="color: var(--neutral-600);">Top 10 S&P 500 stocks per sector by market cap, 1-year daily returns from Yahoo Finance</p>
-                        </div>
-                        <div style="text-align: center;">
-                            <i class="fas fa-project-diagram" style="font-size: 3rem; color: #10b981; margin-bottom: 1rem;"></i>
-                            <h4 style="color: var(--neutral-800);">Network Construction</h4>
-                            <p style="color: var(--neutral-600);">Correlation-based adjacency matrix with 0.35 threshold, community detection algorithms</p>
-                        </div>
-                        <div style="text-align: center;">
-                            <i class="fas fa-brain" style="font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;"></i>
-                            <h4 style="color: var(--neutral-800);">Machine Learning</h4>
-                            <p style="color: var(--neutral-600);">Neural networks for sector classification, dimensionality reduction techniques</p>
-                        </div>
+                <!-- Charts Grid -->
+                <div class="chart-grid">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-bar"></i> Algorithm Performance Comparison</h3>
+                        <canvas id="modularityChart" height="250"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fas fa-exchange-alt"></i> ARI vs Official Sectors</h3>
+                        <canvas id="ariChart" height="250"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fas fa-bullseye"></i> Sector Classification Accuracy</h3>
+                        <canvas id="accuracyRadar" height="250"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fas fa-pie-chart"></i> Community Size Distribution</h3>
+                        <canvas id="communityChart" height="250"></canvas>
                     </div>
                 </div>
 
-                <!-- Visual Analytics Section -->
-                <div style="margin-bottom: 4rem;">
-                    <h3 style="color: var(--neutral-800); margin-bottom: 2rem; font-size: 1.8rem; text-align: center;">Market Structure Visualization</h3>
+                <!-- Sector Analysis Table -->
+                <div class="data-table-card">
+                    <h3><i class="fas fa-table"></i> Neural Network Sector Classification Performance</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sector</th>
+                                <th>Stocks Analyzed</th>
+                                <th>Accuracy</th>
+                                <th>False Positive Rate</th>
+                                <th>Key Insight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Energy</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-high">90%</span></td>
+                                <td>0.06</td>
+                                <td>Most distinct return patterns</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Technology</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-high">80%</span></td>
+                                <td>0.08</td>
+                                <td>High correlation cluster</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Healthcare</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">70%</span></td>
+                                <td>0.12</td>
+                                <td>Mixed with defensive stocks</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Financials</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">65%</span></td>
+                                <td>0.15</td>
+                                <td>Overlaps with industrials</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Consumer Staples</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">60%</span></td>
+                                <td>0.18</td>
+                                <td>Defensive sector blend</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Utilities</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-high">85%</span></td>
+                                <td>0.07</td>
+                                <td>Strong defensive cluster</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Communication</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-low">45%</span></td>
+                                <td>0.25</td>
+                                <td>High sector misclassification</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Industrials</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">55%</span></td>
+                                <td>0.20</td>
+                                <td>Diverse subsectors</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Materials</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">70%</span></td>
+                                <td>0.13</td>
+                                <td>Commodity correlation</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Real Estate</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-high">75%</span></td>
+                                <td>0.10</td>
+                                <td>Interest rate sensitivity</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Consumer Disc.</strong></td>
+                                <td>10</td>
+                                <td><span class="accuracy-badge accuracy-medium">50%</span></td>
+                                <td>0.22</td>
+                                <td>High within-sector variance</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- Placeholder for Network Graph -->
-                    <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-lg); text-align: center;">
-                        <i class="fas fa-chart-network" style="font-size: 4rem; color: #0ea5e9; margin-bottom: 1rem;"></i>
-                        <h4 style="color: var(--neutral-800); margin-bottom: 1rem;">S&P 500 Correlation Network</h4>
-                        <p style="color: var(--neutral-600); margin-bottom: 1.5rem;">Interactive network visualization showing stock relationships and community clusters</p>
-                        <div style="background: #f8fafc; border-radius: 8px; padding: 2rem; margin: 1rem 0;">
-                            <p style="color: #64748b; font-style: italic;">[Network visualization would be embedded here - showing 110 nodes with correlation-based edges]</p>
-                        </div>
+                <!-- Methodology Section -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h2
+                        style="color: #f1f5f9; font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas fa-cogs" style="color: #60a5fa;"></i> Methodology & Data Sources
+                    </h2>
+                </div>
+                <div class="methodology-grid">
+                    <div class="methodology-card">
+                        <i class="fas fa-database" style="color: #0ea5e9;"></i>
+                        <h4>Data Acquisition</h4>
+                        <p>Top 10 S&P 500 stocks per sector by market cap, 1-year daily returns from Yahoo Finance</p>
                     </div>
-
-                    <!-- Community Detection Comparison -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
-                        <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
-                            <h4 style="color: var(--neutral-800); margin-bottom: 1.5rem; text-align: center;">Algorithm Performance Comparison</h4>
-                            <canvas id="modularityChart" width="300" height="200"></canvas>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
-                            <h4 style="color: var(--neutral-800); margin-bottom: 1.5rem; text-align: center;">ARI vs Official Sectors</h4>
-                            <canvas id="ariChart" width="300" height="200"></canvas>
-                        </div>
+                    <div class="methodology-card">
+                        <i class="fas fa-project-diagram" style="color: #10b981;"></i>
+                        <h4>Network Construction</h4>
+                        <p>Correlation-based adjacency matrix with 0.35 threshold, community detection algorithms</p>
+                    </div>
+                    <div class="methodology-card">
+                        <i class="fas fa-brain" style="color: #f59e0b;"></i>
+                        <h4>Machine Learning</h4>
+                        <p>Neural networks for sector classification, UMAP dimensionality reduction techniques</p>
+                    </div>
+                    <div class="methodology-card">
+                        <i class="fas fa-flask" style="color: #8b5cf6;"></i>
+                        <h4>Statistical Testing</h4>
+                        <p>Spectral tests, triangle tests, modularity optimization, confusion matrix analysis</p>
                     </div>
                 </div>
 
                 <!-- Download Section -->
-                <div style="text-align: center; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 3rem; border-radius: var(--border-radius-lg); margin-bottom: 4rem;">
-                    <h3 style="margin-bottom: 1rem;">Download Full Report</h3>
-                    <p style="margin-bottom: 2rem; opacity: 0.9;">Get the complete analysis including detailed methodology, R code, and comprehensive results.</p>
-                    <a href="reports/finalpaper.pdf" class="btn btn-primary" style="background: var(--accent-gradient); display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-download"></i> Download PDF Report
+                <div class="download-section">
+                    <h3><i class="fas fa-download"></i> Download Full Report</h3>
+                    <p>Get the complete analysis including detailed methodology, R code, visualizations, and
+                        comprehensive results.</p>
+                    <a href="reports/finalpaper.pdf" class="download-btn">
+                        <i class="fas fa-file-pdf"></i> Download PDF Report (623 KB)
                     </a>
                 </div>
 
-                <!-- Call to Action -->
-                <div style="text-align: center;">
-                    <h3 style="color: var(--neutral-800); margin-bottom: 1rem;">Need Custom Market Analysis?</h3>
-                    <p style="color: var(--neutral-600); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">Leverage our expertise in quantitative finance and AI to uncover insights specific to your investment strategy or business needs.</p>
+                <!-- Future Reports Section -->
+                <div class="future-reports">
+                    <h2><i class="fas fa-calendar-alt"></i> Market Report Series</h2>
+                    <p style="color: #94a3b8; margin-bottom: 1.5rem;">This is the first in an ongoing series of market
+                        analysis reports showcasing our quantitative research capabilities.</p>
+                    <div class="report-teaser-grid">
+                        <div class="report-teaser">
+                            <span class="status current"><i class="fas fa-check"></i> Available Now</span>
+                            <h4>Sector Reconstruction Analysis</h4>
+                            <p>Network theory and machine learning approach to S&P 500 sector relationships.</p>
+                        </div>
+                        <div class="report-teaser">
+                            <span class="status upcoming"><i class="fas fa-clock"></i> Q1 2025</span>
+                            <h4>Market Regime Detection</h4>
+                            <p>Hidden Markov Models for identifying bull/bear/sideways market states.</p>
+                        </div>
+                        <div class="report-teaser">
+                            <span class="status planned"><i class="fas fa-road"></i> Planned</span>
+                            <h4>Options Flow Analytics</h4>
+                            <p>Analyzing institutional positioning through options market data.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Section -->
+                <div class="cta-section">
+                    <h3>Need Custom Market Analysis?</h3>
+                    <p>Leverage our expertise in quantitative finance and AI to uncover insights specific to your
+                        investment strategy or business needs.</p>
                     <div class="cta-buttons">
                         <a href="contact.html" class="btn btn-primary">🚀 Request Custom Analysis</a>
                         <a href="services.html" class="btn btn-secondary">Explore Our Services</a>
                     </div>
                 </div>
             </div>
-        </section>
     </main>
 
     <footer>
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Dakota AI</h4>
-                <p>Leveraging AI for West Fargo, ND businesses. Data processing and analytics solutions with a focus on future-forward consulting.</p>
+                <p>Leveraging AI for Fargo, ND Area businesses. Data processing, analytics, and quantitative research
+                    solutions.</p>
             </div>
 
             <div class="footer-section">
@@ -218,7 +880,8 @@
             <div class="footer-section">
                 <h4>Contact Info</h4>
                 <div class="contact-info">
-                    <p><strong>Email:</strong> <a href="mailto:contact@dakotaai.us" style="color: #10b981;">contact@dakotaai.us</a></p>
+                    <p><strong>Email:</strong> <a href="mailto:contact@dakotaai.us"
+                            style="color: #10b981;">contact@dakotaai.us</a></p>
                     <p><strong>Location:</strong> Fargo, ND Area</p>
                 </div>
             </div>
@@ -232,15 +895,19 @@
                 </ul>
 
                 <div class="social-links">
-                    <a href="https://www.linkedin.com/in/dakota-ai-437988385/" title="LinkedIn" aria-label="LinkedIn" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="https://x.com/DakotaAi64396" title="X/Twitter" aria-label="X/Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="mailto:dakotaai.us@gmail.com" title="Email" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                    <a href="https://www.linkedin.com/in/dakota-ai-437988385/" title="LinkedIn" aria-label="LinkedIn"
+                        target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://x.com/DakotaAi64396" title="X/Twitter" aria-label="X/Twitter" target="_blank"><i
+                            class="fab fa-twitter"></i></a>
+                    <a href="mailto:dakotaai.us@gmail.com" title="Email" aria-label="Email"><i
+                            class="fas fa-envelope"></i></a>
                 </div>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2025 Dakota AI. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            <p>&copy; 2025 Dakota AI. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of
+                    Service</a></p>
         </div>
     </footer>
 
@@ -249,97 +916,177 @@
         // Theme toggle functionality
         document.addEventListener('DOMContentLoaded', function () {
             const themeToggle = document.getElementById('themeToggle');
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            setTheme(currentTheme);
 
             themeToggle.addEventListener('click', () => {
-                const newTheme = document.body.hasAttribute('data-theme') ? 'light' : 'dark';
-                setTheme(newTheme);
+                const isDark = document.body.hasAttribute('data-theme');
+                if (isDark) {
+                    document.body.removeAttribute('data-theme');
+                    themeToggle.style.background = 'rgba(0,0,0,0.8)';
+                } else {
+                    document.body.setAttribute('data-theme', 'dark');
+                    themeToggle.style.background = 'rgba(30, 41, 59, 0.9)';
+                }
             });
 
-            function setTheme(theme) {
-                if (theme === 'dark') {
-                    document.body.setAttribute('data-theme', 'dark');
-                    document.body.style.backgroundColor = '#1a1a2e';
-                    document.body.style.color = '#f1f5f9';
-                } else {
-                    document.body.removeAttribute('data-theme');
-                    document.body.style.backgroundColor = '';
-                    document.body.style.color = '';
-                }
+            // Chart.js visualizations with Power BI-style colors
+            const chartColors = {
+                primary: ['#3b82f6', '#60a5fa', '#93c5fd'],
+                secondary: ['#10b981', '#34d399', '#6ee7b7'],
+                accent: ['#f59e0b', '#fbbf24', '#fcd34d'],
+                danger: ['#ef4444', '#f87171', '#fca5a5'],
+                purple: ['#8b5cf6', '#a78bfa', '#c4b5fd'],
+                pink: ['#ec4899', '#f472b6', '#f9a8d4']
+            };
 
-                // Update toggle icon
-                const svg = themeToggle.querySelector('svg');
-                if (theme === 'dark') {
-                    svg.innerHTML = `<path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>`;
-                    themeToggle.style.background = 'rgba(30, 41, 59, 0.9)';
-                } else {
-                    svg.innerHTML = `<path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>`;
-                    themeToggle.style.background = 'rgba(0,0,0,0.8)';
-                }
-                localStorage.setItem('theme', theme);
-            }
-
-            // Chart.js visualizations
+            // Modularity Chart
             const modularityCtx = document.getElementById('modularityChart').getContext('2d');
             new Chart(modularityCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Fast Greedy', 'Leading Eigen', 'Label Prop', 'Walktrap', 'Girvan-Newman', 'Spinglass', 'Official GICS'],
+                    labels: ['Spinglass', 'Walktrap', 'Fast Greedy', 'Leading Eigen', 'Girvan-Newman', 'Label Prop', 'Official GICS'],
                     datasets: [{
                         label: 'Modularity Score',
-                        data: [0.25, 0.22, 0.18, 0.26, 0.20, 0.28, 0.15],
+                        data: [0.28, 0.26, 0.25, 0.22, 0.20, 0.18, 0.15],
                         backgroundColor: [
-                            'rgba(54, 162, 235, 0.8)',
-                            'rgba(255, 99, 132, 0.8)',
-                            'rgba(255, 205, 86, 0.8)',
-                            'rgba(75, 192, 192, 0.8)',
-                            'rgba(153, 102, 255, 0.8)',
-                            'rgba(255, 159, 64, 0.8)',
-                            'rgba(201, 203, 207, 0.8)'
+                            '#10b981',
+                            '#34d399',
+                            '#3b82f6',
+                            '#60a5fa',
+                            '#8b5cf6',
+                            '#a78bfa',
+                            '#64748b'
                         ],
-                        borderWidth: 1
+                        borderRadius: 6,
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 0.35
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
+                            max: 0.35,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
                         }
                     }
                 }
             });
 
+            // ARI Chart
             const ariCtx = document.getElementById('ariChart').getContext('2d');
             new Chart(ariCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Fast Greedy', 'Leading Eigen', 'Label Prop', 'Walktrap', 'Girvan-Newman', 'Spinglass'],
+                    labels: ['Walktrap', 'Fast Greedy', 'Leading Eigen', 'Spinglass', 'Girvan-Newman', 'Label Prop'],
                     datasets: [{
                         label: 'ARI Score',
-                        data: [0.08, 0.06, 0.04, 0.09, 0.05, 0.05],
-                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                        borderWidth: 1
+                        data: [0.09, 0.08, 0.06, 0.05, 0.05, 0.04],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 0.12
-                        }
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
                     },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 0.12,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            // Sector Accuracy Radar
+            const radarCtx = document.getElementById('accuracyRadar').getContext('2d');
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Energy', 'Utilities', 'Tech', 'Real Estate', 'Materials', 'Healthcare', 'Financials', 'Consumer Stpl', 'Industrials', 'Consumer Disc', 'Comm'],
+                    datasets: [{
+                        label: 'Classification Accuracy',
+                        data: [90, 85, 80, 75, 70, 70, 65, 60, 55, 50, 45],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#94a3b8', font: { size: 9 } },
+                            ticks: {
+                                color: '#64748b',
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Community Distribution Doughnut
+            const communityCtx = document.getElementById('communityChart').getContext('2d');
+            new Chart(communityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5', 'Cluster 6', 'Cluster 7', 'Other (4)'],
+                    datasets: [{
+                        data: [18, 15, 14, 12, 11, 11, 10, 19],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#ec4899',
+                            '#06b6d4',
+                            '#ef4444',
+                            '#64748b'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false
+                            position: 'right',
+                            labels: {
+                                color: '#94a3b8',
+                                padding: 10,
+                                font: { size: 11 }
+                            }
                         }
                     }
                 }
