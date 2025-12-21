@@ -716,6 +716,53 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Enhanced Dark Mode Text Visibility - Make all text bright white */
+        .kpi-label,
+        .kpi-sublabel,
+        .summary-card p,
+        .finding-list li,
+        .finding-category,
+        .data-table td,
+        .methodology-card p,
+        .report-abstract p,
+        .report-abstract strong,
+        .analysis-card p,
+        .conclusion-box p,
+        .methodology-note,
+        .report-teaser p,
+        .cta-section p,
+        .dashboard-header p,
+        .download-section p,
+        .future-reports p {
+            color: #ffffff !important;
+        }
+
+        .finding-list li::before,
+        .finding-list.implications li::before {
+            color: #ffffff !important;
+        }
+
+        .data-table th {
+            color: #ffffff !important;
+        }
+
+        .report-teaser h4,
+        .analysis-card h4,
+        .conclusion-box h4,
+        .methodology-card h4 {
+            color: #ffffff !important;
+        }
+
+        /* Make sure all paragraph text is bright */
+        .summary-card p,
+        .methodology-card p,
+        .report-abstract p,
+        .analysis-card p,
+        .conclusion-box p,
+        .methodology-note {
+            color: #ffffff !important;
+            font-weight: 400;
+        }
     </style>
 </head>
 
