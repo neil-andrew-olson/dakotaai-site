@@ -151,16 +151,24 @@
             border-radius: 16px;
             padding: 1.5rem;
             position: relative;
+            min-height: 350px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
         }
 
         .chart-card h3 {
-            color: #f1f5f9;
-            font-size: 1rem;
-            font-weight: 600;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 700;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .chart-card h3 i {
@@ -177,12 +185,14 @@
         }
 
         .summary-card h2 {
-            color: #f1f5f9;
+            color: #ffffff;
             font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .summary-card h2 i {
@@ -236,17 +246,18 @@
         }
 
         .finding-category {
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             color: #60a5fa;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .finding-category.implications {
-            color: #f59e0b;
+            color: #fbbf24;
         }
 
         /* Data Table */
@@ -672,19 +683,27 @@
                 <div class="chart-grid">
                     <div class="chart-card">
                         <h3><i class="fas fa-chart-bar"></i> Algorithm Performance Comparison</h3>
-                        <canvas id="modularityChart" height="250"></canvas>
+                        <div class="chart-container">
+                            <canvas id="modularityChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fas fa-exchange-alt"></i> ARI vs Official Sectors</h3>
-                        <canvas id="ariChart" height="250"></canvas>
+                        <div class="chart-container">
+                            <canvas id="ariChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fas fa-bullseye"></i> Sector Classification Accuracy</h3>
-                        <canvas id="accuracyRadar" height="250"></canvas>
+                        <div class="chart-container">
+                            <canvas id="accuracyRadar"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fas fa-pie-chart"></i> Community Size Distribution</h3>
-                        <canvas id="communityChart" height="250"></canvas>
+                        <h3><i class="fas fa-chart-pie"></i> Community Size Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="communityChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
