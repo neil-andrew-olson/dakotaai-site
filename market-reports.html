@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Reports & Analysis | Dakota AI</title>
+    <meta name="description" content="Professional market analysis reports by Dakota AI. S&P 500 sector reconstruction, market anomalies, and data-driven insights for investors.">
+    <meta name="keywords" content="market analysis, S&P 500, sector reconstruction, financial analytics, Dakota AI reports">
+    <link rel="icon" href="DA.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <button id="themeToggle" class="theme-toggle" style="position: fixed; top: 20px; right: 20px; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.3s;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+        </svg>
+    </button>
+
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="logo"><a href="index.html"><img src="DakotaAI_logo.png" alt="Dakota AI"></a></div>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="demos/index.html">Demos</a></li>
+                    <li><a href="market-reports.html" class="active">Market Reports</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+            <div class="hero-content">
+                <h1>Market Reports & <br><span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Analysis</span></h1>
+                <h2>Data-Driven Insights for Strategic Decision Making</h2>
+                <p>Professional market analysis leveraging advanced AI and quantitative methods. Our reports provide actionable intelligence for investors, analysts, and financial institutions.</p>
+                <div class="cta-buttons">
+                    <a href="#latest-report" class="btn btn-primary">📊 View Latest Report</a>
+                    <a href="contact.html" class="btn btn-secondary">Request Custom Analysis</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Report Section -->
+        <section id="latest-report" style="padding: 5rem 0; background: var(--neutral-50);">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 4rem;">
+                    <h2 style="font-size: clamp(2rem, 4vw, 2.5rem); color: var(--neutral-800); font-weight: 800; margin-bottom: 1rem;">
+                        S&P 500 Sector Reconstruction Analysis</h2>
+                    <p style="font-size: 1.2rem; color: var(--neutral-600); max-width: 700px; margin: 0 auto;">A comprehensive structural analysis using network theory and machine learning to uncover hidden market patterns and sector relationships.</p>
+                    <div style="margin-top: 2rem;">
+                        <span style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">Published: December 12, 2025</span>
+                        <span style="background: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-left: 1rem;">By: Neil Olson, Founder</span>
+                    </div>
+                </div>
+
+                <!-- Key Metrics Dashboard -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #0ea5e9); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div class="stat-number">69.28</div>
+                        <div class="stat-label">Spectral Test Score</div>
+                        <div class="stat-desc">Statistical significance of market structure</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="stat-number">0.28</div>
+                        <div class="stat-label">Best Modularity Score</div>
+                        <div class="stat-desc">Community detection effectiveness</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="stat-number">90%</div>
+                        <div class="stat-label">Energy Sector Accuracy</div>
+                        <div class="stat-desc">Neural network classification</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem; text-align: center;">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #06b6d4, #10b981); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; margin: 0 auto 1rem;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number">114.1</div>
+                        <div class="stat-label">Triangle Test Score</div>
+                        <div class="stat-desc">Network clustering validation</div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 3rem; margin-bottom: 4rem; box-shadow: var(--shadow-lg);">
+                    <h3 style="color: var(--neutral-800); margin-bottom: 1.5rem; font-size: 1.8rem;">Executive Summary</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.7; color: var(--neutral-700); margin-bottom: 1.5rem;">
+                        This analysis challenges traditional sector classifications by applying advanced network theory and machine learning to S&P 500 return data. Our findings reveal that official GICS sectors often fail to capture true market relationships, with significant implications for portfolio diversification and risk management.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                        <div>
+                            <h4 style="color: #0ea5e9; margin-bottom: 1rem;"><i class="fas fa-check-circle"></i> Key Findings</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Market structure is statistically significant (p < 0.001)</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Official sectors show weak alignment with return-based clusters</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Energy sector exhibits unique risk-return characteristics</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-dot-circle" style="position: absolute; left: 0; color: #10b981;"></i> Nonlinear dimensionality reduction reveals market curvature</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="color: #f59e0b; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Investment Implications</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Traditional sector diversification may leave hidden risks</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Data-driven clustering improves portfolio optimization</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Sector "defectors" present arbitrage opportunities</li>
+                                <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;"><i class="fas fa-lightbulb" style="position: absolute; left: 0; color: #f59e0b;"></i> Advanced analytics enhance risk assessment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Methodology Overview -->
+                <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 3rem; border-radius: var(--border-radius-lg); margin-bottom: 4rem;">
+                    <h3 style="color: var(--neutral-800); margin-bottom: 1.5rem; font-size: 1.8rem; text-align: center;">Methodology & Data Sources</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div style="text-align: center;">
+                            <i class="fas fa-database" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 1rem;"></i>
+                            <h4 style="color: var(--neutral-800);">Data Acquisition</h4>
+                            <p style="color: var(--neutral-600);">Top 10 S&P 500 stocks per sector by market cap, 1-year daily returns from Yahoo Finance</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <i class="fas fa-project-diagram" style="font-size: 3rem; color: #10b981; margin-bottom: 1rem;"></i>
+                            <h4 style="color: var(--neutral-800);">Network Construction</h4>
+                            <p style="color: var(--neutral-600);">Correlation-based adjacency matrix with 0.35 threshold, community detection algorithms</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <i class="fas fa-brain" style="font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+                            <h4 style="color: var(--neutral-800);">Machine Learning</h4>
+                            <p style="color: var(--neutral-600);">Neural networks for sector classification, dimensionality reduction techniques</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Analytics Section -->
+                <div style="margin-bottom: 4rem;">
+                    <h3 style="color: var(--neutral-800); margin-bottom: 2rem; font-size: 1.8rem; text-align: center;">Market Structure Visualization</h3>
+
+                    <!-- Placeholder for Network Graph -->
+                    <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-lg); text-align: center;">
+                        <i class="fas fa-chart-network" style="font-size: 4rem; color: #0ea5e9; margin-bottom: 1rem;"></i>
+                        <h4 style="color: var(--neutral-800); margin-bottom: 1rem;">S&P 500 Correlation Network</h4>
+                        <p style="color: var(--neutral-600); margin-bottom: 1.5rem;">Interactive network visualization showing stock relationships and community clusters</p>
+                        <div style="background: #f8fafc; border-radius: 8px; padding: 2rem; margin: 1rem 0;">
+                            <p style="color: #64748b; font-style: italic;">[Network visualization would be embedded here - showing 110 nodes with correlation-based edges]</p>
+                        </div>
+                    </div>
+
+                    <!-- Community Detection Comparison -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                        <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
+                            <h4 style="color: var(--neutral-800); margin-bottom: 1.5rem; text-align: center;">Algorithm Performance Comparison</h4>
+                            <canvas id="modularityChart" width="300" height="200"></canvas>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--border-radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
+                            <h4 style="color: var(--neutral-800); margin-bottom: 1.5rem; text-align: center;">ARI vs Official Sectors</h4>
+                            <canvas id="ariChart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Section -->
+                <div style="text-align: center; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 3rem; border-radius: var(--border-radius-lg); margin-bottom: 4rem;">
+                    <h3 style="margin-bottom: 1rem;">Download Full Report</h3>
+                    <p style="margin-bottom: 2rem; opacity: 0.9;">Get the complete analysis including detailed methodology, R code, and comprehensive results.</p>
+                    <a href="reports/finalpaper.pdf" class="btn btn-primary" style="background: var(--accent-gradient); display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-download"></i> Download PDF Report
+                    </a>
+                </div>
+
+                <!-- Call to Action -->
+                <div style="text-align: center;">
+                    <h3 style="color: var(--neutral-800); margin-bottom: 1rem;">Need Custom Market Analysis?</h3>
+                    <p style="color: var(--neutral-600); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">Leverage our expertise in quantitative finance and AI to uncover insights specific to your investment strategy or business needs.</p>
+                    <div class="cta-buttons">
+                        <a href="contact.html" class="btn btn-primary">🚀 Request Custom Analysis</a>
+                        <a href="services.html" class="btn btn-secondary">Explore Our Services</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Dakota AI</h4>
+                <p>Leveraging AI for West Fargo, ND businesses. Data processing and analytics solutions with a focus on future-forward consulting.</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="services.html#data-processing">Data Processing & Analytics</a></li>
+                    <li><a href="services.html#ai-consulting">AI Integration Consulting</a></li>
+                    <li><a href="market-reports.html">Market Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <div class="contact-info">
+                    <p><strong>Email:</strong> <a href="mailto:contact@dakotaai.us" style="color: #10b981;">contact@dakotaai.us</a></p>
+                    <p><strong>Location:</strong> Fargo, ND Area</p>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Get in Touch</a></li>
+                    <li><a href="blog.html">Latest Insights</a></li>
+                </ul>
+
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/dakota-ai-437988385/" title="LinkedIn" aria-label="LinkedIn" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://x.com/DakotaAi64396" title="X/Twitter" aria-label="X/Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="mailto:dakotaai.us@gmail.com" title="Email" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Dakota AI. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('themeToggle');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            setTheme(currentTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const newTheme = document.body.hasAttribute('data-theme') ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.setAttribute('data-theme', 'dark');
+                    document.body.style.backgroundColor = '#1a1a2e';
+                    document.body.style.color = '#f1f5f9';
+                } else {
+                    document.body.removeAttribute('data-theme');
+                    document.body.style.backgroundColor = '';
+                    document.body.style.color = '';
+                }
+
+                // Update toggle icon
+                const svg = themeToggle.querySelector('svg');
+                if (theme === 'dark') {
+                    svg.innerHTML = `<path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>`;
+                    themeToggle.style.background = 'rgba(30, 41, 59, 0.9)';
+                } else {
+                    svg.innerHTML = `<path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>`;
+                    themeToggle.style.background = 'rgba(0,0,0,0.8)';
+                }
+                localStorage.setItem('theme', theme);
+            }
+
+            // Chart.js visualizations
+            const modularityCtx = document.getElementById('modularityChart').getContext('2d');
+            new Chart(modularityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Fast Greedy', 'Leading Eigen', 'Label Prop', 'Walktrap', 'Girvan-Newman', 'Spinglass', 'Official GICS'],
+                    datasets: [{
+                        label: 'Modularity Score',
+                        data: [0.25, 0.22, 0.18, 0.26, 0.20, 0.28, 0.15],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(201, 203, 207, 0.8)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 0.35
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            const ariCtx = document.getElementById('ariChart').getContext('2d');
+            new Chart(ariCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Fast Greedy', 'Leading Eigen', 'Label Prop', 'Walktrap', 'Girvan-Newman', 'Spinglass'],
+                    datasets: [{
+                        label: 'ARI Score',
+                        data: [0.08, 0.06, 0.04, 0.09, 0.05, 0.05],
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 0.12
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
