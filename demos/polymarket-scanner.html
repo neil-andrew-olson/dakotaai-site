@@ -580,11 +580,10 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Free, reliable CORS proxy services
+        // Use local PHP proxy if available, fallback to external proxies
         const PROXIES = [
-            { url: "https://cors-anywhere.herokuapp.com/", type: "direct" },
+            { url: "./proxy.php?url=", type: "direct" },
             { url: "https://api.codetabs.com/v1/proxy?quest=", type: "direct" },
-            { url: "https://thingproxy.freeboard.io/fetch/", type: "direct" },
             { url: "https://cors.bridged.cc/", type: "direct" },
             { url: "https://api.allorigins.win/get?url=", type: "json_wrapped" }
         ];
