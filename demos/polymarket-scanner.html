@@ -574,14 +574,19 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Direct API calls only - no proxies needed since they work
+        // Use reliable CORS proxy since Polymarket blocks direct browser requests
         async function fetchProxy(url) {
             try {
-                console.log('Making direct API call to Polymarket...');
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                console.log('Making API call via CORS proxy...');
 
-                const response = await fetch(url, {
+                // Use a reliable CORS proxy service
+                const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+                const proxyUrl = corsProxy + url;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+                const response = await fetch(proxyUrl, {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
@@ -601,7 +606,15 @@
 
             } catch (error) {
                 console.error('❌ API call failed:', error.message);
-                throw new Error(`Failed to fetch data from Polymarket API: ${error.message}`);
+
+                // If proxy fails, try a different approach - JSONP if available
+                if (url.includes('polymarket.com')) {
+                    console.log('Trying alternative CORS method...');
+                    // For now, just show a helpful error
+                    throw new Error(`Unable to access Polymarket API. This is likely due to CORS restrictions. The API works but browsers block direct access for security reasons.`);
+                }
+
+                throw new Error(`Failed to fetch data: ${error.message}`);
             }
         }
 
