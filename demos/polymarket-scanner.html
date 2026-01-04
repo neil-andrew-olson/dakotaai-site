@@ -748,7 +748,15 @@
 
                 if (markets.length === 0) {
                     log("No markets found match filters.", "error");
-                    console.log('DEBUG: No markets found. Check category filtering logic.');
+                    console.log('DEBUG: No markets found after filtering.');
+                    console.log('DEBUG: All markets before category filtering:', allMarkets.map(m => ({
+                        question: m.question?.substring(0, 40),
+                        tags: m.tags,
+                        end_date: m.end_date,
+                        resolution: m.resolution
+                    })));
+                    console.log('DEBUG: Selected categories:', selectedCats);
+                    console.log('DEBUG: Date range:', endDateGte, 'to today');
                     btn.disabled = false;
                     return;
                 }
