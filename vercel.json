@@ -18,10 +18,6 @@
     {
       "src": "/api/polymarket-trades(.*)",
       "dest": "/api/polymarket-trades.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
     }
   ]
 }
