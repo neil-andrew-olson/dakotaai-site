@@ -406,14 +406,27 @@
             </div>
 
             <!-- Category Filters -->
-            <div class="control-group" style="min-width: 200px;">
+            <div class="control-group" style="min-width: 300px;">
                 <label>Categories</label>
-                <div class="category-filters">
+                <div class="category-filters" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                     <label><input type="checkbox" class="cat-filter" value="Politics" checked> Politics</label>
                     <label><input type="checkbox" class="cat-filter" value="Crypto" checked> Crypto</label>
                     <label><input type="checkbox" class="cat-filter" value="Sports"> Sports</label>
                     <label><input type="checkbox" class="cat-filter" value="Business"> Business</label>
+                    <label><input type="checkbox" class="cat-filter" value="Economy"> Economy</label>
+                    <label><input type="checkbox" class="cat-filter" value="Finance"> Finance</label>
+                    <label><input type="checkbox" class="cat-filter" value="Entertainment"> Entertainment</label>
+                    <label><input type="checkbox" class="cat-filter" value="Technology"> Technology</label>
+                    <label><input type="checkbox" class="cat-filter" value="Science"> Science</label>
+                    <label><input type="checkbox" class="cat-filter" value="Health"> Health</label>
+                    <label><input type="checkbox" class="cat-filter" value="World"> World</label>
+                    <label><input type="checkbox" class="cat-filter" value="Weather"> Weather</label>
+                    <label><input type="checkbox" class="cat-filter" value="Legal"> Legal</label>
+                    <label><input type="checkbox" class="cat-filter" value="Gaming"> Gaming</label>
+                    <label><input type="checkbox" class="cat-filter" value="NFT"> NFT</label>
+                    <label><input type="checkbox" class="cat-filter" value="AI"> AI</label>
                     <label><input type="checkbox" class="cat-filter" value="Other"> Other</label>
+                    <label style="grid-column: span 2;"><input type="checkbox" id="selectAllCats"> Select All Categories</label>
                 </div>
             </div>
 
@@ -686,12 +699,24 @@
                         return '';
                     });
 
-                    // Category keyword mapping (V3.1)
+                    // Comprehensive category keyword mapping
                     const keywordMap = {
-                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor"],
-                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens"],
-                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc"],
-                        business: ["business", "finance", "economics", "stocks", "market", "earnings", "tech", "fed", "inflation", "gdp"]
+                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor", "president", "congress", "parliament"],
+                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens", "defi", "nft", "web3", "cryptocurrency"],
+                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc", "championship", "league", "tournament"],
+                        business: ["business", "finance", "economics", "stocks", "market", "earnings", "tech", "fed", "inflation", "gdp", "economy", "corporate", "company"],
+                        economy: ["economy", "economics", "finance", "fed", "inflation", "gdp", "recession", "growth", "unemployment", "interest", "rates"],
+                        finance: ["finance", "stocks", "market", "earnings", "trading", "investment", "banking", "hedge", "fund", "portfolio"],
+                        entertainment: ["entertainment", "movies", "film", "tv", "television", "hollywood", "celebrity", "award", "oscar", "grammy", "music"],
+                        technology: ["technology", "tech", "software", "hardware", "computer", "internet", "mobile", "app", "startup", "innovation"],
+                        science: ["science", "research", "study", "discovery", "experiment", "laboratory", "medical", "physics", "chemistry", "biology"],
+                        health: ["health", "medical", "disease", "treatment", "vaccine", "pandemic", "hospital", "doctor", "patient", "medicine"],
+                        world: ["world", "international", "global", "foreign", "diplomacy", "war", "peace", "treaty", "alliance", "geopolitics"],
+                        weather: ["weather", "climate", "storm", "hurricane", "temperature", "forecast", "meteorology", "natural", "disaster"],
+                        legal: ["legal", "law", "court", "judge", "trial", "lawsuit", "verdict", "justice", "supreme", "attorney"],
+                        gaming: ["gaming", "game", "video", "esports", "tournament", "player", "console", "pc", "mobile", "streaming"],
+                        nft: ["nft", "non-fungible", "token", "digital", "art", "collectible", "cryptopunk", "bored", "ape"],
+                        ai: ["ai", "artificial", "intelligence", "machine", "learning", "robot", "automation", "neural", "network"]
                     };
 
                     // Match if ANY selected category's keywords match ANY market tags
@@ -1046,6 +1071,12 @@
                 btn.innerHTML = '<i class="fas fa-magic"></i> Build Strategy';
             }
         }
+
+        // Initialize select all functionality
+        document.getElementById('selectAllCats').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.cat-filter');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
 
         // Helper
         function updateStats() {
