@@ -555,7 +555,7 @@
             const time = new Date().toLocaleTimeString();
             const color = type === 'error' ? '#ef4444' : (type === 'success' ? '#34d399' : '#10b981');
             logOutput.innerHTML += `<div class="log-line"><span class="log-time">[${time}]</span><span style="color: ${color}">${message}</span></div>`;
-            logOutput.scrollTop = logOutput.scrollHeight();
+            logOutput.scrollTop = logOutput.scrollHeight;
         }
 
         const PROXIES = [
