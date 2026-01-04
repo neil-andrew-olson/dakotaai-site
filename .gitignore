@@ -29,3 +29,5 @@ __pycache__/
 
 # Large data files - exclude from deployment but keep in git LFS
 demos/Housingdata/
+.vercel
+.env*.local
