@@ -479,6 +479,7 @@
                         <th>Bet Outcome</th>
                         <th>Result</th>
                         <th>Insider Bet</th>
+                        <th>Score</th>
                         <th>Sim Bet</th>
                         <th>Sim P&L</th>
                         <th>Entry Price</th>
@@ -487,7 +488,7 @@
                 </thead>
                 <tbody id="resultsBody">
                     <tr>
-                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                             No data. Click "Start Scan" to begin.
                         </td>
                     </tr>
@@ -558,6 +559,7 @@
 
         let currentMode = 'backtest'; // 'backtest' or 'strategy'
         let accountHits = new Map();
+        let accountClusters = new Map(); // New: Account behavior tracking
         let currentBalance = 0;
         let totalTrades = 0;
         let winningTrades = 0;
@@ -839,12 +841,25 @@
 
                     console.log('Total market trades collected:', marketTrades.length, 'max size seen:', maxTradeSeen);
 
+                    // Calculate market volume for dynamic thresholds
+                    let marketVolume = 0;
+                    marketTrades.forEach(t => {
+                        const tradeValue = parseFloat(t.size) * parseFloat(t.price);
+                        marketVolume += tradeValue;
+                    });
+                    const volumeThreshold = Math.max(minSize, marketVolume * 0.005); // 0.5% of market volume or minSize, whichever is larger
+                    console.log('Market volume analysis:', {
+                        totalVolume: marketVolume,
+                        volumeThreshold: volumeThreshold,
+                        originalMinSize: minSize
+                    });
+
                     // Filter & Sim
                     let foundAny = false;
                     let buyTrades = 0;
                     let qualifyingTrades = 0;
 
-                    console.log('Filtering trades for market. Total trades:', marketTrades.length);
+                    console.log('Filtering trades for market. Total trades:', marketTrades.length, 'volume threshold:', volumeThreshold);
 
                     for (const trade of marketTrades) {
                         const side = trade.side;
@@ -865,9 +880,9 @@
                             continue;
                         }
 
-                        // Filter 3: Minimum size threshold
-                        if (sizeUsd < minSize) {
-                            console.log('Trade filtered - below min size:', { sizeUsd, minSize });
+                        // Filter 3: Minimum size threshold (volume-based)
+                        if (sizeUsd < volumeThreshold) {
+                            console.log('Trade filtered - below volume threshold:', { sizeUsd, volumeThreshold, marketVolume });
                             continue;
                         }
 
@@ -879,13 +894,52 @@
                         const hits = (accountHits.get(addr) || 0) + 1;
                         accountHits.set(addr, hits);
 
+                        // Account Clustering: Track account behavior patterns
+                        if (!accountClusters.has(addr)) {
+                            accountClusters.set(addr, {
+                                totalVolume: 0,
+                                tradeCount: 0,
+                                winCount: 0,
+                                avgOdds: [],
+                                markets: new Set(),
+                                outcomes: new Set(),
+                                firstSeen: new Date().toISOString(),
+                                lastSeen: new Date().toISOString()
+                            });
+                        }
+
+                        const cluster = accountClusters.get(addr);
+                        cluster.totalVolume += sizeUsd;
+                        cluster.tradeCount++;
+                        if (didWin) cluster.winCount++;
+                        cluster.avgOdds.push(price);
+                        cluster.markets.add(market.id);
+                        cluster.outcomes.add(trade._outcome);
+                        cluster.lastSeen = new Date().toISOString();
+
+                        // Calculate suspiciousness score based on account patterns
+                        const winRate = cluster.tradeCount > 0 ? cluster.winCount / cluster.tradeCount : 0;
+                        const avgOdd = cluster.avgOdds.reduce((a, b) => a + b, 0) / cluster.avgOdds.length;
+                        const volumeScore = Math.min(cluster.totalVolume / 10000, 1); // Normalize volume
+                        const consistencyScore = Math.abs(winRate - 0.5) * 2; // Reward extreme win rates
+
+                        trade._suspiciousnessScore = (avgOdd * 0.4) + (volumeScore * 0.4) + (consistencyScore * 0.2);
+                        trade._accountPattern = {
+                            totalTrades: cluster.tradeCount,
+                            winRate: winRate,
+                            totalVolume: cluster.totalVolume,
+                            marketCount: cluster.markets.size
+                        };
+
                         console.log('QUALIFYING TRADE FOUND:', {
                             outcome: trade._outcome,
                             winningOutcome: winningOutcome,
                             didWin: didWin,
                             sizeUsd: sizeUsd,
                             price: price,
-                            address: addr.substring(0, 8)
+                            address: addr.substring(0, 8),
+                            suspiciousnessScore: trade._suspiciousnessScore.toFixed(3),
+                            accountPattern: trade._accountPattern
                         });
 
                         const simBetAmount = currentBalance * betPercent;
@@ -894,11 +948,13 @@
                         if (didWin) winningTrades++;
                         totalTrades++;
 
+                        const scoreColor = trade._suspiciousnessScore > 0.7 ? '#34d399' : trade._suspiciousnessScore > 0.5 ? '#f59e0b' : '#ef4444';
                         const row = `<tr>
                             <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${market.question}">${market.question}</div></td>
                             <td><span class="badge" style="background:#1e293b; color:#cbd5e1">${trade._outcome}</span></td>
                             <td><span class="badge ${didWin ? 'badge-win' : 'badge-loss'}">${didWin ? 'WIN' : 'LOSS'}</span></td>
                             <td>$${Math.round(sizeUsd).toLocaleString()}</td>
+                            <td><span style="color:${scoreColor}; font-weight:600">${(trade._suspiciousnessScore * 100).toFixed(0)}</span></td>
                             <td>$${Math.round(simBetAmount).toLocaleString()}</td>
                             <td class="${simPnL >= 0 ? 'profit-positive' : 'profit-negative'}">${simPnL >= 0 ? '+' : ''}$${Math.round(simPnL).toLocaleString()}</td>
                             <td>${price.toFixed(3)}</td>
