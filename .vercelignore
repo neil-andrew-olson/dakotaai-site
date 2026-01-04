@@ -1,0 +1,45 @@
+# Exclude large ML models and datasets
+*.h5
+*.keras
+*.pkl
+*.joblib
+*.sav
+*.model
+*.weights
+*.pb
+*.onnx
+
+# Exclude large data files
+*.csv
+*.xlsx
+*.xls
+*.jsonl
+*.parquet
+*.feather
+
+# Exclude node_modules (not needed for static site)
+dakotaai-demos/node_modules/
+node_modules/
+
+# Exclude development and build files
+.git/
+.gitignore
+README.md
+*.log
+.env*
+.cache/
+dist/
+build/
+
+# Exclude large housing data
+demos/Housingdata/
+demos/Neighborhood_zhvi*.csv
+
+# Keep only essential files for Polymarket scanner
+!demos/polymarket-scanner.html
+!demos/index.html
+!css/
+!js/
+!api/
+!vercel.json
+!package.json
