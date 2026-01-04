@@ -371,7 +371,17 @@
             </div>
         </div>
 
-        <div class="stats-grid">
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('backtest')">
+                <i class="fas fa-history"></i> Backtest Scanner
+            </button>
+            <button class="mode-tab" onclick="switchMode('strategy')">
+                <i class="fas fa-chess"></i> Strategy Builder
+            </button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
                 <span class="stat-label">Simulated Net Profit</span>
                 <span class="stat-value" id="statProfit">$0.00</span>
@@ -394,28 +404,44 @@
                 <label>Resolution Window</label>
                 <input type="number" id="daysBack" value="7" min="1" max="14" title="Days back to scan">
             </div>
-            <div class="control-group">
+
+            <!-- Category Filters -->
+            <div class="control-group" style="min-width: 200px;">
+                <label>Categories</label>
+                <div class="category-filters">
+                    <label><input type="checkbox" class="cat-filter" value="Politics" checked> Politics</label>
+                    <label><input type="checkbox" class="cat-filter" value="Crypto" checked> Crypto</label>
+                    <label><input type="checkbox" class="cat-filter" value="Sports"> Sports</label>
+                    <label><input type="checkbox" class="cat-filter" value="Business"> Business</label>
+                    <label><input type="checkbox" class="cat-filter" value="Other"> Other</label>
+                </div>
+            </div>
+
+            <!-- Backtest Only Controls -->
+            <div class="control-group backtest-only">
                 <label>Scan Pre-Close (Hrs)</label>
-                <input type="number" id="hoursBefore" value="24" min="1" max="48">
+                <input type="number" id="hoursBefore" value="48" min="1" max="72">
             </div>
-            <div class="control-group">
+            <div class="control-group backtest-only">
                 <label>Min Insider Bet ($)</label>
-                <input type="number" id="minSize" value="5000" step="1000">
+                <input type="number" id="minSize" value="1000" step="500">
             </div>
-            <div class="control-group">
+            <div class="control-group backtest-only">
                 <label>Max Markets</label>
                 <input type="number" id="maxMarkets" value="15" min="5" max="100" step="5">
             </div>
-            <div class="control-group" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1.5rem;">
+            <div class="control-group backtest-only"
+                style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1.5rem;">
                 <label>Sim Starting Balance</label>
                 <input type="number" id="startBalance" value="10000">
             </div>
-            <div class="control-group">
+            <div class="control-group backtest-only">
                 <label>Sim Bet Size (%)</label>
                 <input type="number" id="betPercent" value="5" min="1" max="50">
             </div>
-            <button class="btn-scan" onclick="startScan()" id="scanBtn">
-                <i class="fas fa-search"></i> Start Backtest
+
+            <button class="btn-scan" onclick="handleStart()" id="scanBtn">
+                <i class="fas fa-search"></i> Start Scan
             </button>
         </div>
 
@@ -424,18 +450,18 @@
                 <div class="terminal-dot" style="background:#ef4444;"></div>
                 <div class="terminal-dot" style="background:#f59e0b;"></div>
                 <div class="terminal-dot" style="background:#22c55e;"></div>
-                <span style="margin-left: 0.5rem;">Scanner Logs</span>
+                <span style="margin-left: 0.5rem;" id="terminalTitle">Scanner Logs</span>
             </div>
             <div class="terminal-content" id="logOutput">
-                <div class="log-line"><span class="log-time">[System]</span> Ready to scan. Enter parameters and click
-                    Start.</div>
+                <div class="log-line"><span class="log-time">[System]</span> Ready to scan. Select Mode and Categories
+                    above.</div>
             </div>
         </div>
 
         <div class="results-container">
-            <table class="results-table">
+            <table class="results-table" id="resultsTable">
                 <thead>
-                    <tr>
+                    <tr id="tableHeaderRow">
                         <th>Market Question</th>
                         <th>Bet Outcome</th>
                         <th>Result</th>
@@ -449,20 +475,76 @@
                 <tbody id="resultsBody">
                     <tr>
                         <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                            No data. Click "Start Backtest" to begin simulation.
+                            No data. Click "Start Scan" to begin.
                         </td>
                     </tr>
                 </tbody>
             </table>
+            <!-- Strategy Builder Output Area -->
+            <div id="strategyOutput" style="display:none; padding: 2rem;">
+                <h3 style="color:#fff; margin-bottom:1rem;">Strategy Analysis</h3>
+                <div id="strategyContent" style="color:var(--text-muted); line-height:1.7;"></div>
+            </div>
         </div>
     </main>
+
+    <style>
+        /* New CSS for Tabs and Checkboxes */
+        .mode-tabs {
+            margin: 0 2rem 1.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .mode-tab {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mode-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .mode-tab.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .category-filters label {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+    </style>
 
     <script>
         const PROXY_URL = "https://api.allorigins.win/get?url=";
         const GAMMA_API = "https://gamma-api.polymarket.com";
         const DATA_API = "https://data-api.polymarket.com";
 
-        let accountHits = new Map(); // Tracks maker_address frequency
+        let currentMode = 'backtest'; // 'backtest' or 'strategy'
+        let accountHits = new Map();
         let currentBalance = 0;
         let totalTrades = 0;
         let winningTrades = 0;
@@ -479,7 +561,7 @@
         async function fetchProxy(url) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
 
                 const target = encodeURIComponent(url);
                 const response = await fetch(`${PROXY_URL}${target}`, { signal: controller.signal });
@@ -494,27 +576,38 @@
             }
         }
 
-        function updateStats() {
-            const profit = currentBalance - initialBalance;
-            const roi = initialBalance > 0 ? (profit / initialBalance) * 100 : 0;
-            const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+            event.target.closest('.mode-tab').classList.add('active');
 
-            document.getElementById('statBalance').innerText = `$${currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const backtestEls = document.querySelectorAll('.backtest-only');
+            const statsGrid = document.getElementById('statsGrid');
+            const resultsTable = document.getElementById('resultsTable');
+            const strategyOutput = document.getElementById('strategyOutput');
 
-            const profitEl = document.getElementById('statProfit');
-            profitEl.innerText = (profit >= 0 ? '+' : '') + `$${profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            profitEl.style.color = profit >= 0 ? '#34d399' : '#ef4444';
-
-            const roiEl = document.getElementById('statRoi');
-            roiEl.innerText = `ROI: ${roi.toFixed(2)}%`;
-            roiEl.style.color = roi >= 0 ? '#34d399' : '#ef4444';
-
-            document.getElementById('statWinRate').innerText = `${winRate.toFixed(1)}%`;
-            document.getElementById('statTrades').innerText = `${totalTrades} Trades`;
+            if (mode === 'strategy') {
+                backtestEls.forEach(el => el.style.display = 'none');
+                statsGrid.style.display = 'none';
+                resultsTable.style.display = 'none';
+                strategyOutput.style.display = 'block';
+                document.getElementById('scanBtn').innerHTML = '<i class="fas fa-magic"></i> Build Strategy';
+            } else {
+                backtestEls.forEach(el => el.style.display = 'flex');
+                statsGrid.style.display = 'grid';
+                resultsTable.style.display = 'table';
+                strategyOutput.style.display = 'none';
+                document.getElementById('scanBtn').innerHTML = '<i class="fas fa-search"></i> Start Backtest';
+            }
         }
 
-        async function startScan() {
-            console.log("Start Scan clicked");
+        function handleStart() {
+            if (currentMode === 'backtest') startBacktest();
+            else runStrategyBuilder();
+        }
+
+        // --- BACKTEST LOGIC (V3) ---
+        async function startBacktest() {
             const btn = document.getElementById('scanBtn');
             const tbody = document.getElementById('resultsBody');
 
@@ -522,56 +615,60 @@
             const daysBack = parseInt(document.getElementById('daysBack').value);
             const hoursBefore = parseInt(document.getElementById('hoursBefore').value);
             const minSize = parseFloat(document.getElementById('minSize').value);
-            const maxMarkets = parseInt(document.getElementById('maxMarkets').value) || 15; // New Input
+            const maxMarkets = parseInt(document.getElementById('maxMarkets').value) || 15;
             initialBalance = parseFloat(document.getElementById('startBalance').value);
             const betPercent = parseFloat(document.getElementById('betPercent').value) / 100;
 
-            // Reset State
+            // Get selected categories
+            const selectedCats = Array.from(document.querySelectorAll('.cat-filter:checked')).map(cb => cb.value.toLowerCase());
+
+            // Reset
             currentBalance = initialBalance;
-            totalTrades = 0;
-            winningTrades = 0;
-            accountHits.clear();
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Running Simulation...';
-            tbody.innerHTML = '';
+            totalTrades = 0; winningTrades = 0; accountHits.clear();
+            btn.disabled = true; tbody.innerHTML = '';
+            btn.innerHTML = '<span class="loading-spinner"></span> Scanning...';
             updateStats();
 
             try {
-                // 1. Fetch Resolved Markets
-                log(`Initializing scan... fetching last ${maxMarkets} markets from ${daysBack} days.`);
+                // 1. Fetch Markets
+                log(`Fetching last ${maxMarkets} markets (Days: ${daysBack}, Cats: ${selectedCats.join(',')})...`);
                 const endDateGte = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=${maxMarkets}&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=${maxMarkets * 3}&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                // Req 3x limit to handle filtering
 
-                let markets = [];
-                try {
-                    markets = await fetchProxy(marketsUrl);
-                } catch (e) {
-                    log(`Proxy error: ${e.message}. Retrying...`, "error");
-                    await new Promise(r => setTimeout(r, 2000));
-                    markets = await fetchProxy(marketsUrl);
-                }
+                let allMarkets = await fetchProxy(marketsUrl);
 
-                if (!markets || markets.length === 0) {
-                    log("No markets found.", "error");
-                    btn.disabled = false;
-                    return;
-                }
+                // Client-side Filtering
+                let markets = allMarkets.filter(m => {
+                    if (selectedCats.includes('other')) return true; // Minimal filtering if 'Other' checked
+                    // Basic tag matching
+                    const tags = (m.tags || []).map(t => t.name.toLowerCase());
+                    /*
+                     category tag matching map:
+                     politics -> politics, us politics, election
+                     crypto -> crypto, bitcoin, ethereum
+                     sports -> sports, nfl, nba, soccer
+                     business -> business, finance, economics
+                    */
+                    // Simplified: check if ANY tag matches ANY selected category string
+                    // This is rough but works for general API tags
+                    return selectedCats.some(cat => tags.some(tag => tag.includes(cat)));
+                }).slice(0, maxMarkets);
 
-                log(`Analying ${markets.length} markets for insider activity...`);
+                if (markets.length === 0) { log("No markets found match filters.", "error"); btn.disabled = false; return; }
 
-                // 2. Process Markets
+                // 2. Process
                 for (const market of markets) {
-                    // Try to map Outcomes to Token IDs
-                    let tokenMap = new Map(); // tokenId -> outcomeName
-                    let winningOutcome = market.resolution;
+                    log(`Scanning: "${market.question.substring(0, 40)}..."`); // Real-time logging
 
+                    // Token Mapping (Same as V2)
+                    let tokenMap = new Map();
+                    let winningOutcome = market.resolution;
                     if (market.clobTokenIds && market.outcomes) {
                         try {
                             const ids = JSON.parse(market.clobTokenIds);
                             const outcomes = JSON.parse(market.outcomes);
                             ids.forEach((id, idx) => tokenMap.set(id, outcomes[idx]));
-
-                            // Deduce numeric winning outcome if needed (Data integrity fallback)
                             if (!winningOutcome && market.outcomePrices) {
                                 const prices = JSON.parse(market.outcomePrices);
                                 const winnerIdx = prices.findIndex(p => parseFloat(p) >= 0.99);
@@ -579,96 +676,219 @@
                             }
                         } catch (e) { }
                     }
+                    if (tokenMap.size === 0 && market.tokens) market.tokens.forEach(t => tokenMap.set(t.token_id, t.outcome));
+                    if (tokenMap.size === 0) continue;
 
-                    if (tokenMap.size === 0 && market.tokens) {
-                        market.tokens.forEach(t => tokenMap.set(t.token_id, t.outcome));
-                    }
-
-                    if (tokenMap.size === 0) continue; // Skip if no mapping
-
-                    // 3. Scan ALL token IDs for this market to find ANY big bet
                     const resolutionTime = new Date(market.end_date);
                     const scanStartTime = new Date(resolutionTime - (hoursBefore * 60 * 60 * 1000));
 
-                    // Parallel Fetch for all tokens in market (usually 2)
                     let marketTrades = [];
-                    for (const [tokenId, outcome] of tokenMap) {
-                        const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=20&start_ts=${scanStartTime.getTime()}&end_ts=${resolutionTime.getTime()}&sortBy=TIMESTAMP&sortDirection=DESC`;
+                    // Check logs for Max Trade Size
+                    let maxTradeSeen = 0;
 
-                        await new Promise(r => setTimeout(r, 300)); // Rate limit protection
+                    for (const [tokenId, outcome] of tokenMap) {
+                        const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=30&start_ts=${scanStartTime.getTime()}&end_ts=${resolutionTime.getTime()}&sortBy=TIMESTAMP&sortDirection=DESC`;
+                        await new Promise(r => setTimeout(r, 250));
                         try {
                             const t = await fetchProxy(tradesUrl);
                             if (Array.isArray(t)) {
-                                t.forEach(trade => trade._outcome = outcome); // Attach outcome to trade
+                                t.forEach(trade => {
+                                    trade._outcome = outcome;
+                                    const val = parseFloat(trade.size) * parseFloat(trade.price);
+                                    if (val > maxTradeSeen) maxTradeSeen = val;
+                                });
                                 marketTrades.push(...t);
                             }
-                        } catch (e) { console.warn("Trade fetch failed", e); }
+                        } catch (e) { }
                     }
 
-                    // 4. Filter & Simulate
+                    // Filter & Sim
+                    let foundAny = false;
                     for (const trade of marketTrades) {
-                        // V2 Logic: Track ALL big bets, not just winners, to calc accurate Win Rate
                         if (trade.side !== "BUY") continue;
-                        const sizeUsd = parseFloat(trade.size) * parseFloat(trade.price);
+                        const price = parseFloat(trade.price);
+                        if (price >= 0.90) continue; // Exclude high-probability "cash out" trades
+
+                        const sizeUsd = parseFloat(trade.size) * price;
                         if (sizeUsd < minSize) continue;
 
-                        // Found a "Large" Trade
-                        const price = parseFloat(trade.price);
+                        foundAny = true;
+                        // const price = parseFloat(trade.price);
                         const didWin = trade._outcome === winningOutcome;
-
-                        // Account Tracking
                         const addr = trade.maker_address;
                         const hits = (accountHits.get(addr) || 0) + 1;
                         accountHits.set(addr, hits);
 
-                        // Simulation Logic
                         const simBetAmount = currentBalance * betPercent;
-                        let simPnL = 0;
-
-                        if (didWin) {
-                            // Win: (Amount / Price) - Amount = Profit
-                            const shares = simBetAmount / price;
-                            const payout = shares * 1.0; // Redeemed at $1
-                            simPnL = payout - simBetAmount;
-                            currentBalance += simPnL;
-                            winningTrades++;
-                        } else {
-                            // Loss: Lost the bet amount
-                            simPnL = -simBetAmount;
-                            currentBalance += simPnL;
-                        }
+                        let simPnL = (didWin) ? ((simBetAmount / price) * 1.0) - simBetAmount : -simBetAmount;
+                        currentBalance += simPnL;
+                        if (didWin) winningTrades++;
                         totalTrades++;
 
-                        // Add Row
-                        const row = `
-                            <tr>
-                                <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${market.question}">${market.question}</div></td>
-                                <td><span class="badge" style="background:#1e293b; color:#cbd5e1">${trade._outcome}</span></td>
-                                <td><span class="badge ${didWin ? 'badge-win' : 'badge-loss'}">${didWin ? 'WIN' : 'LOSS'}</span></td>
-                                <td>$${Math.round(sizeUsd).toLocaleString()}</td>
-                                <td>$${Math.round(simBetAmount).toLocaleString()}</td>
-                                <td class="${simPnL >= 0 ? 'profit-positive' : 'profit-negative'}">${simPnL >= 0 ? '+' : ''}$${Math.round(simPnL).toLocaleString()}</td>
-                                <td>${price.toFixed(3)}</td>
-                                <td style="font-size:0.85rem">
-                                    <a href="https://polymarket.com/profile/${addr}" target="_blank" style="color:var(--primary)">${addr.substring(0, 6)}...</a>
-                                    ${hits > 1 ? `<span class="badge" style="background:#f59e0b; color:#000; margin-left:5px">x${hits}</span>` : '<span class="badge" style="background:#64748b; color:#fff; margin-left:5px">New</span>'}
-                                </td>
-                            </tr>
-                        `;
+                        const row = `<tr>
+                            <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${market.question}">${market.question}</div></td>
+                            <td><span class="badge" style="background:#1e293b; color:#cbd5e1">${trade._outcome}</span></td>
+                            <td><span class="badge ${didWin ? 'badge-win' : 'badge-loss'}">${didWin ? 'WIN' : 'LOSS'}</span></td>
+                            <td>$${Math.round(sizeUsd).toLocaleString()}</td>
+                            <td>$${Math.round(simBetAmount).toLocaleString()}</td>
+                            <td class="${simPnL >= 0 ? 'profit-positive' : 'profit-negative'}">${simPnL >= 0 ? '+' : ''}$${Math.round(simPnL).toLocaleString()}</td>
+                            <td>${price.toFixed(3)}</td>
+                            <td style="font-size:0.85rem">
+                                <a href="https://polymarket.com/profile/${addr}" target="_blank" style="color:var(--primary)">${addr.substring(0, 6)}...</a>
+                                ${hits > 1 ? `<span class="badge" style="background:#f59e0b; color:#000; margin-left:5px">x${hits}</span>` : '<span class="badge" style="background:#64748b; color:#fff; margin-left:5px">New</span>'}
+                            </td>
+                        </tr>`;
                         tbody.innerHTML += row;
-                        updateStats(); // Update stats real-time
+                        updateStats();
+                    }
+                    if (!foundAny && maxTradeSeen > 0) {
+                        // Info Log
+                        // log(`  > Info: Max trade in market was $${Math.round(maxTradeSeen)} (Min: $${minSize})`, 'info');
                     }
                 }
-
-                log(`Scan Complete. Processed ${totalTrades} qualifying trades.`, "success");
-
+                log(`Scan Complete.`, "success");
             } catch (error) {
                 log(`Error: ${error.message}`, "error");
-                console.error(error);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-search"></i> Start Backtest';
             }
+        }
+
+        // --- STRATEGY BUILDER LOGIC (V3) ---
+        async function runStrategyBuilder() {
+            const btn = document.getElementById('scanBtn');
+            const output = document.getElementById('strategyContent');
+            output.innerHTML = "Initializing market analysis...";
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Building Strategy...';
+
+            const daysBack = parseInt(document.getElementById('daysBack').value) || 2;
+            const selectedCats = Array.from(document.querySelectorAll('.cat-filter:checked')).map(cb => cb.value.toLowerCase());
+
+            try {
+                // 1. Fetch
+                log(`Strategy Builder: Fetching last ${daysBack} days of data...`);
+                const endDateGte = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=20&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                let allMarkets = await fetchProxy(marketsUrl);
+
+                // Filter
+                let markets = allMarkets.filter(m => selectedCats.some(cat => (m.tags || []).some(t => t.name.toLowerCase().includes(cat))));
+                if (markets.length < 3) {
+                    output.innerHTML = "<span style='color:orange'>Not enough data points. Try increasing the 'Resolution Window' or selecting more categories.</span>";
+                    btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Build Strategy';
+                    return;
+                }
+
+                // 2. Analyze Variables
+                let whaleCount = 0;
+                let whaleWins = 0;
+                let lateMoneyWins = 0;
+                let lateMoneyCount = 0;
+
+                log(`Analyzing ${markets.length} markets for patterns...`);
+
+                for (const market of markets) {
+                    // Get Winner Logic
+                    let tokenMap = new Map();
+                    let winningOutcome = market.resolution;
+                    if (market.clobTokenIds && market.outcomes) {
+                        try {
+                            const ids = JSON.parse(market.clobTokenIds);
+                            const outcomes = JSON.parse(market.outcomes);
+                            ids.forEach((id, idx) => tokenMap.set(id, outcomes[idx]));
+                            if (!winningOutcome && market.outcomePrices) {
+                                const prices = JSON.parse(market.outcomePrices);
+                                const winnerIdx = prices.findIndex(p => parseFloat(p) >= 0.99);
+                                if (winnerIdx !== -1) winningOutcome = outcomes[winnerIdx];
+                            }
+                        } catch (e) { }
+                    }
+                    if (tokenMap.size === 0) continue;
+
+                    // Fetch Trades
+                    for (const [tokenId, outcome] of tokenMap) {
+                        const isWinner = outcome === winningOutcome;
+                        // const resolutionTime = new Date(market.end_date).getTime();
+                        // Scan last 6 hours
+                        const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=10&sortBy=TIMESTAMP&sortDirection=DESC`; // Most recent
+                        await new Promise(r => setTimeout(r, 200));
+
+                        try {
+                            const trades = await fetchProxy(tradesUrl);
+                            if (Array.isArray(trades)) {
+                                trades.forEach(t => {
+                                    if (t.side !== "BUY") return;
+                                    if (parseFloat(t.price) >= 0.90) return; // Exclude >90% odds
+                                    const sizeVal = parseFloat(t.size) * parseFloat(t.price);
+
+                                    // Pattern 1: Whale Bets (> $2000)
+                                    if (sizeVal > 2000) {
+                                        whaleCount++;
+                                        if (isWinner) whaleWins++;
+                                    }
+
+                                    // Pattern 2: Late Money (Last 10 trades, high conviction > 50c)
+                                    if (parseFloat(t.price) > 0.5) {
+                                        lateMoneyCount++;
+                                        if (isWinner) lateMoneyWins++;
+                                    }
+                                });
+                            }
+                        } catch (e) { }
+                    }
+                }
+
+                // 3. Generate Report
+                const whaleWinRate = whaleCount > 0 ? (whaleWins / whaleCount * 100).toFixed(1) : 0;
+                const lateWinRate = lateMoneyCount > 0 ? (lateMoneyWins / lateMoneyCount * 100).toFixed(1) : 0;
+
+                let strategyText = `
+                    <p><strong style="color:white; font-size:1.1rem">Analysis Complete</strong></p>
+                    <ul style="margin: 1rem 0 1rem 1.5rem;">
+                        <li>Analyzed <strong>${markets.length}</strong> markets in ${selectedCats.join(', ')}.</li>
+                        <li>Found <strong>${whaleCount}</strong> large bets (>$2k).</li>
+                    </ul>
+
+                    <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; margin-bottom:1.5rem;">
+                        <h4 style="color:${whaleWinRate > 50 ? '#34d399' : '#f59e0b'}">Pattern #1: Whale Activity</h4>
+                        <p>Large bets (>$2,000) on the winning outcome appeared <strong>${whaleWinRate}%</strong> of the time.</p>
+                        ${whaleWinRate > 60 ? 'Recommendation: <strong>Follow Whales</strong>. Set "Min Insider Bet" to $2000.' : 'Recommendation: <strong>Avoid Blind Tailing</strong>. Whales are frequently wrong in this category.'}
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px;">
+                        <h4 style="color:${lateWinRate > 50 ? '#34d399' : '#f59e0b'}">Pattern #2: Late Conviction</h4>
+                        <p>High-conviction bets (>50¢) in the final hours won <strong>${lateWinRate}%</strong> of the time.</p>
+                         ${lateWinRate > 65 ? 'Recommendation: <strong>Snipe Late</strong>. Set "Scan Pre-Close" to 4-6 hours.' : 'Recommendation: <strong>Trade Early</strong>. Late movement is often noise.'}
+                    </div>
+                `;
+
+                output.innerHTML = strategyText;
+                log("Strategy Builder analysis complete.", "success");
+
+            } catch (e) {
+                log("Builder Error: " + e.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Build Strategy';
+            }
+        }
+
+        // Helper
+        function updateStats() {
+            const profit = currentBalance - initialBalance;
+            const roi = initialBalance > 0 ? (profit / initialBalance) * 100 : 0;
+            const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+            document.getElementById('statBalance').innerText = `$${currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const profitEl = document.getElementById('statProfit');
+            profitEl.innerText = (profit >= 0 ? '+' : '') + `$${profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            profitEl.style.color = profit >= 0 ? '#34d399' : '#ef4444';
+            const roiEl = document.getElementById('statRoi');
+            roiEl.innerText = `ROI: ${roi.toFixed(2)}%`;
+            roiEl.style.color = roi >= 0 ? '#34d399' : '#ef4444';
+            document.getElementById('statWinRate').innerText = `${winRate.toFixed(1)}%`;
+            document.getElementById('statTrades').innerText = `${totalTrades} Trades`;
         }
     </script>
 </body>
