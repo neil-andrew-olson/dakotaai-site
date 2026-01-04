@@ -690,11 +690,15 @@
                 console.log('Total markets from API:', allMarkets.length);
                 console.log('Sample market data:', allMarkets.slice(0, 2));
 
-                // Client-side Filtering
+                // Client-side Filtering - More permissive for active markets
                 let markets = allMarkets.filter(m => {
-                    if (selectedCats.includes('other')) return true; // Minimal filtering if 'Other' checked
+                    // If 'other' is selected, include everything
+                    if (selectedCats.includes('other')) return true;
 
-                    // Robust tag matching
+                    // Check market question/title for keywords
+                    const question = (m.question || '').toLowerCase();
+
+                    // Also check any available tags
                     const tags = (m.tags || []).map(t => {
                         if (typeof t === 'string') return t.toLowerCase();
                         if (typeof t === 'object' && t !== null) {
@@ -705,28 +709,30 @@
 
                     // Comprehensive category keyword mapping
                     const keywordMap = {
-                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor", "president", "congress", "parliament"],
-                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens", "defi", "nft", "web3", "cryptocurrency"],
-                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc", "championship", "league", "tournament"],
+                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor", "president", "congress", "parliament", "deport"],
+                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens", "defi", "nft", "web3", "cryptocurrency", "microstrategy", "mining", "halving"],
+                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc", "championship", "league", "tournament", "world series"],
                         business: ["business", "finance", "economics", "stocks", "market", "earnings", "tech", "fed", "inflation", "gdp", "economy", "corporate", "company"],
-                        economy: ["economy", "economics", "finance", "fed", "inflation", "gdp", "recession", "growth", "unemployment", "interest", "rates"],
+                        economy: ["economy", "economics", "finance", "fed", "inflation", "gdp", "recession", "growth", "unemployment", "interest", "rates", "deficit"],
                         finance: ["finance", "stocks", "market", "earnings", "trading", "investment", "banking", "hedge", "fund", "portfolio"],
-                        entertainment: ["entertainment", "movies", "film", "tv", "television", "hollywood", "celebrity", "award", "oscar", "grammy", "music"],
+                        entertainment: ["entertainment", "movies", "film", "tv", "television", "hollywood", "celebrity", "award", "oscar", "grammy", "music", "jurassic", "marvel", "disney"],
                         technology: ["technology", "tech", "software", "hardware", "computer", "internet", "mobile", "app", "startup", "innovation"],
                         science: ["science", "research", "study", "discovery", "experiment", "laboratory", "medical", "physics", "chemistry", "biology"],
                         health: ["health", "medical", "disease", "treatment", "vaccine", "pandemic", "hospital", "doctor", "patient", "medicine"],
                         world: ["world", "international", "global", "foreign", "diplomacy", "war", "peace", "treaty", "alliance", "geopolitics"],
                         weather: ["weather", "climate", "storm", "hurricane", "temperature", "forecast", "meteorology", "natural", "disaster"],
-                        legal: ["legal", "law", "court", "judge", "trial", "lawsuit", "verdict", "justice", "supreme", "attorney"],
-                        gaming: ["gaming", "game", "video", "esports", "tournament", "player", "console", "pc", "mobile", "streaming"],
+                        legal: ["legal", "law", "court", "judge", "trial", "lawsuit", "verdict", "justice", "supreme", "attorney", "guilty"],
+                        gaming: ["gaming", "game", "video", "esports", "tournament", "player", "console", "pc", "mobile", "streaming", "minecraft"],
                         nft: ["nft", "non-fungible", "token", "digital", "art", "collectible", "cryptopunk", "bored", "ape"],
                         ai: ["ai", "artificial", "intelligence", "machine", "learning", "robot", "automation", "neural", "network"]
                     };
 
-                    // Match if ANY selected category's keywords match ANY market tags
+                    // Match if ANY selected category's keywords match question OR tags
                     const matches = selectedCats.some(cat => {
                         const keywords = keywordMap[cat] || [cat];
-                        return tags.some(tag => keywords.some(k => tag.includes(k)));
+                        const questionMatches = keywords.some(k => question.includes(k));
+                        const tagMatches = tags.some(tag => keywords.some(k => tag.includes(k)));
+                        return questionMatches || tagMatches;
                     });
 
                     if (!matches) {
