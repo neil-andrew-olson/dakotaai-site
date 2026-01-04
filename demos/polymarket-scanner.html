@@ -555,7 +555,7 @@
             const time = new Date().toLocaleTimeString();
             const color = type === 'error' ? '#ef4444' : (type === 'success' ? '#34d399' : '#10b981');
             logOutput.innerHTML += `<div class="log-line"><span class="log-time">[${time}]</span><span style="color: ${color}">${message}</span></div>`;
-            logOutput.scrollTop = logOutput.scrollHeight;
+            logOutput.scrollTop = logOutput.scrollHeight();
         }
 
         const PROXIES = [
@@ -643,6 +643,10 @@
             // Get selected categories
             const selectedCats = Array.from(document.querySelectorAll('.cat-filter:checked')).map(cb => cb.value.toLowerCase());
 
+            // DEBUG: Log all input parameters
+            console.log('=== BACKTEST DEBUG START ===');
+            console.log('Inputs:', { daysBack, hoursBefore, minSize, maxMarkets, initialBalance, betPercent, selectedCats });
+
             // Reset
             currentBalance = initialBalance;
             totalTrades = 0; winningTrades = 0; accountHits.clear();
@@ -659,13 +663,17 @@
 
                 // Increased limit to 200 to ensure we find filtered markets in busy periods
                 const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=200&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
-                // Req 3x limit to handle filtering
+                console.log('Markets API URL:', marketsUrl);
 
                 let allMarkets = await fetchProxy(marketsUrl);
+                console.log('Raw API Response - First market keys:', allMarkets.length > 0 ? Object.keys(allMarkets[0]) : 'No markets');
+                console.log('Total markets from API:', allMarkets.length);
+                console.log('Sample market data:', allMarkets.slice(0, 2));
 
                 // Client-side Filtering
                 let markets = allMarkets.filter(m => {
                     if (selectedCats.includes('other')) return true; // Minimal filtering if 'Other' checked
+
                     // Robust tag matching
                     const tags = (m.tags || []).map(t => {
                         if (typeof t === 'string') return t.toLowerCase();
@@ -684,35 +692,88 @@
                     };
 
                     // Match if ANY selected category's keywords match ANY market tags
-                    return selectedCats.some(cat => {
+                    const matches = selectedCats.some(cat => {
                         const keywords = keywordMap[cat] || [cat];
                         return tags.some(tag => keywords.some(k => tag.includes(k)));
                     });
+
+                    if (!matches) {
+                        console.log('Market filtered out:', {
+                            question: m.question?.substring(0, 50),
+                            tags: tags,
+                            selectedCats: selectedCats
+                        });
+                    }
+
+                    return matches;
                 }).slice(0, maxMarkets);
 
-                if (markets.length === 0) { log("No markets found match filters.", "error"); btn.disabled = false; return; }
+                console.log('Markets after filtering:', markets.length);
+                console.log('Filtered markets sample:', markets.slice(0, 2).map(m => ({
+                    question: m.question?.substring(0, 50),
+                    tags: m.tags,
+                    resolution: m.resolution,
+                    end_date: m.end_date
+                })));
+
+                if (markets.length === 0) {
+                    log("No markets found match filters.", "error");
+                    console.log('DEBUG: No markets found. Check category filtering logic.');
+                    btn.disabled = false;
+                    return;
+                }
 
                 // 2. Process
                 for (const market of markets) {
                     log(`Scanning: "${market.question.substring(0, 40)}..."`); // Real-time logging
 
+                    console.log('Processing market:', {
+                        question: market.question?.substring(0, 50),
+                        resolution: market.resolution,
+                        clobTokenIds: market.clobTokenIds,
+                        outcomes: market.outcomes,
+                        outcomePrices: market.outcomePrices,
+                        tokens: market.tokens
+                    });
+
                     // Token Mapping (Same as V2)
                     let tokenMap = new Map();
                     let winningOutcome = market.resolution;
+                    console.log('Initial winningOutcome from resolution:', winningOutcome);
+
                     if (market.clobTokenIds && market.outcomes) {
                         try {
                             const ids = JSON.parse(market.clobTokenIds);
                             const outcomes = JSON.parse(market.outcomes);
                             ids.forEach((id, idx) => tokenMap.set(id, outcomes[idx]));
+                            console.log('Parsed clobTokenIds and outcomes:', { ids, outcomes, tokenMap: Array.from(tokenMap) });
+
                             if (!winningOutcome && market.outcomePrices) {
                                 const prices = JSON.parse(market.outcomePrices);
                                 const winnerIdx = prices.findIndex(p => parseFloat(p) >= 0.99);
-                                if (winnerIdx !== -1) winningOutcome = outcomes[winnerIdx];
+                                if (winnerIdx !== -1) {
+                                    winningOutcome = outcomes[winnerIdx];
+                                    console.log('Determined winner from outcomePrices:', { prices, winnerIdx, winningOutcome });
+                                } else {
+                                    console.log('No winner found in outcomePrices:', prices);
+                                }
                             }
-                        } catch (e) { }
+                        } catch (e) {
+                            console.error('Error parsing clobTokenIds/outcomes:', e);
+                        }
                     }
-                    if (tokenMap.size === 0 && market.tokens) market.tokens.forEach(t => tokenMap.set(t.token_id, t.outcome));
-                    if (tokenMap.size === 0) continue;
+
+                    if (tokenMap.size === 0 && market.tokens) {
+                        market.tokens.forEach(t => tokenMap.set(t.token_id, t.outcome));
+                        console.log('Using fallback tokens mapping:', Array.from(tokenMap));
+                    }
+
+                    console.log('Final tokenMap:', Array.from(tokenMap), 'winningOutcome:', winningOutcome);
+
+                    if (tokenMap.size === 0) {
+                        console.log('Skipping market - no token mapping found');
+                        continue;
+                    }
 
                     const resolutionTime = new Date(market.end_date);
                     const scanStartTime = new Date(resolutionTime - (hoursBefore * 60 * 60 * 1000));
@@ -721,11 +782,18 @@
                     // Check logs for Max Trade Size
                     let maxTradeSeen = 0;
 
+                    console.log('Scanning trades for market:', market.question?.substring(0, 30));
+                    console.log('Time window:', { scanStartTime, resolutionTime, hoursBefore });
+
                     for (const [tokenId, outcome] of tokenMap) {
                         const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=30&start_ts=${scanStartTime.getTime()}&end_ts=${resolutionTime.getTime()}&sortBy=TIMESTAMP&sortDirection=DESC`;
+                        console.log('Fetching trades for token:', tokenId, 'outcome:', outcome, 'URL:', tradesUrl);
+
                         await new Promise(r => setTimeout(r, 250));
                         try {
                             const t = await fetchProxy(tradesUrl);
+                            console.log('Trades response for', outcome, ':', t?.length || 0, 'trades');
+
                             if (Array.isArray(t)) {
                                 t.forEach(trade => {
                                     trade._outcome = outcome;
@@ -733,26 +801,64 @@
                                     if (val > maxTradeSeen) maxTradeSeen = val;
                                 });
                                 marketTrades.push(...t);
+                            } else {
+                                console.log('Invalid trades response:', t);
                             }
-                        } catch (e) { }
+                        } catch (e) {
+                            console.error('Error fetching trades for token', tokenId, ':', e);
+                        }
                     }
+
+                    console.log('Total market trades collected:', marketTrades.length, 'max size seen:', maxTradeSeen);
 
                     // Filter & Sim
                     let foundAny = false;
+                    let buyTrades = 0;
+                    let qualifyingTrades = 0;
+
+                    console.log('Filtering trades for market. Total trades:', marketTrades.length);
+
                     for (const trade of marketTrades) {
-                        if (trade.side !== "BUY") continue;
+                        const side = trade.side;
                         const price = parseFloat(trade.price);
-                        if (price >= 0.90) continue; // Exclude high-probability "cash out" trades
+                        const size = parseFloat(trade.size);
+                        const sizeUsd = size * price;
 
-                        const sizeUsd = parseFloat(trade.size) * price;
-                        if (sizeUsd < minSize) continue;
+                        // Filter 1: Must be BUY order
+                        if (side !== "BUY") {
+                            console.log('Trade filtered - not BUY:', { side, price, sizeUsd });
+                            continue;
+                        }
+                        buyTrades++;
 
+                        // Filter 2: Exclude high-probability trades
+                        if (price >= 0.90) {
+                            console.log('Trade filtered - high probability:', { price, sizeUsd });
+                            continue;
+                        }
+
+                        // Filter 3: Minimum size threshold
+                        if (sizeUsd < minSize) {
+                            console.log('Trade filtered - below min size:', { sizeUsd, minSize });
+                            continue;
+                        }
+
+                        qualifyingTrades++;
                         foundAny = true;
-                        // const price = parseFloat(trade.price);
+
                         const didWin = trade._outcome === winningOutcome;
                         const addr = trade.maker_address;
                         const hits = (accountHits.get(addr) || 0) + 1;
                         accountHits.set(addr, hits);
+
+                        console.log('QUALIFYING TRADE FOUND:', {
+                            outcome: trade._outcome,
+                            winningOutcome: winningOutcome,
+                            didWin: didWin,
+                            sizeUsd: sizeUsd,
+                            price: price,
+                            address: addr.substring(0, 8)
+                        });
 
                         const simBetAmount = currentBalance * betPercent;
                         let simPnL = (didWin) ? ((simBetAmount / price) * 1.0) - simBetAmount : -simBetAmount;
@@ -776,9 +882,18 @@
                         tbody.innerHTML += row;
                         updateStats();
                     }
+
+                    console.log('Market scan summary:', {
+                        totalTrades: marketTrades.length,
+                        buyTrades: buyTrades,
+                        qualifyingTrades: qualifyingTrades,
+                        foundSuspicious: foundAny,
+                        maxTradeSeen: maxTradeSeen,
+                        winningOutcome: winningOutcome
+                    });
+
                     if (!foundAny && maxTradeSeen > 0) {
-                        // Info Log
-                        // log(`  > Info: Max trade in market was $${Math.round(maxTradeSeen)} (Min: $${minSize})`, 'info');
+                        log(`  > Info: Max trade in market was $${Math.round(maxTradeSeen)} (Min: $${minSize})`, 'info');
                     }
                 }
                 log(`Scan Complete.`, "success");
