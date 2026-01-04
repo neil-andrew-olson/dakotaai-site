@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug Polymarket</title>
+</head>
+
+<body>
+    <pre id="output">Fetching...</pre>
+    <script>
+        const PROXY_URL = "https://api.allorigins.win/get?url=";
+        const GAMMA_API = "https://gamma-api.polymarket.com";
+
+        async function fetchProxy(url) {
+            const target = encodeURIComponent(url);
+            const response = await fetch(`${PROXY_URL}${target}`);
+            const data = await response.json();
+            return JSON.parse(data.contents);
+        }
+
+        async function debug() {
+            try {
+                // Fetch batch
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&limit=50&order_by=end_date&desc=true`;
+                const markets = await fetchProxy(marketsUrl);
+                const resolved = markets.find(m => m.resolution);
+                if (resolved) {
+                    document.getElementById('output').innerText = JSON.stringify(resolved, null, 2);
+                } else {
+                    document.getElementById('output').innerText = "No market with 'resolution' found in 50 items. Keys of first: " + Object.keys(markets[0]).join(", ");
+                }
+            } catch (e) {
+                document.getElementById('output').innerText = "Error: " + e.message;
+            }
+        }
+        debug();
+    </script>
+</body>
+
+</html>
