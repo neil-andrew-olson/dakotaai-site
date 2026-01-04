@@ -554,15 +554,9 @@
 
     <script>
         const PROXY_URL = "https://api.allorigins.win/get?url=";
-        // Use Vercel API functions for deployed website, fallback to direct API for localhost
-        const isDeployed = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-        const GAMMA_API = isDeployed ?
-            `${window.location.protocol}//${window.location.host}/api/polymarket` :
-            "https://gamma-api.polymarket.com";
-
-        const DATA_API = isDeployed ?
-            `${window.location.protocol}//${window.location.host}/api/polymarket-trades` :
-            "https://data-api.polymarket.com";
+        // Direct API calls work for both localhost and deployed sites
+        const GAMMA_API = "https://gamma-api.polymarket.com";
+        const DATA_API = "https://data-api.polymarket.com";
 
         let currentMode = 'backtest'; // 'backtest' or 'strategy'
         let accountHits = new Map();
