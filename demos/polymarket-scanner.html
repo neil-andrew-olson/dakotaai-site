@@ -652,10 +652,13 @@
 
             try {
                 // 1. Fetch Markets
-                log(`Fetching last ${maxMarkets} markets (Days: ${daysBack}, Cats: ${selectedCats.join(',')})...`);
-                const endDateGte = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                // Lowered limit multiplier to 1.5x -> Reduced payload
-                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=${Math.ceil(maxMarkets * 1.5)}&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                const startDate = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000));
+                const endDateGte = startDate.toISOString().split('T')[0];
+                log(`Resolution Window: From ${endDateGte} to Today`);
+                log(`Fetching markets (Days: ${daysBack}, Cats: ${selectedCats.join(',')})...`);
+
+                // Increased limit to 200 to ensure we find filtered markets in busy periods
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=200&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
                 // Req 3x limit to handle filtering
 
                 let allMarkets = await fetchProxy(marketsUrl);
@@ -800,9 +803,12 @@
 
             try {
                 // 1. Fetch
-                log(`Strategy Builder: Fetching last ${daysBack} days of data...`);
-                const endDateGte = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=20&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                const startDate = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000));
+                const endDateGte = startDate.toISOString().split('T')[0];
+                log(`Strategy Builder: Checking markets since ${endDateGte}...`);
+
+                // Increased limit to 100 for strategy analysis
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=100&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
                 let allMarkets = await fetchProxy(marketsUrl);
 
                 // Filter (V3.1 Robustness)
