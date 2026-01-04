@@ -1,13 +1,15 @@
 {
   "version": 2,
-  "functions": {
-    "api/polymarket.js": {
-      "runtime": "@vercel/node"
+  "builds": [
+    {
+      "src": "api/polymarket.js",
+      "use": "@vercel/node"
     },
-    "api/polymarket-trades.js": {
-      "runtime": "@vercel/node"
+    {
+      "src": "api/polymarket-trades.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/polymarket(.*)",
