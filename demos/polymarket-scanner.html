@@ -558,22 +558,43 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
+        const PROXIES = [
+            { url: "https://api.allorigins.win/get?url=", type: "json_wrapped" },
+            { url: "https://corsproxy.io/?", type: "direct" }
+        ];
+
         async function fetchProxy(url) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+            let lastError;
 
-                const target = encodeURIComponent(url);
-                const response = await fetch(`${PROXY_URL}${target}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
+            for (const proxy of PROXIES) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-                const data = await response.json();
-                if (!data.contents) throw new Error("No content from proxy");
-                return JSON.parse(data.contents);
-            } catch (error) {
-                console.error("Fetch error:", error);
-                throw new Error(error.name === 'AbortError' ? 'Request timed out' : error.message);
+                    const target = proxy.type === 'json_wrapped' ? encodeURIComponent(url) : url;
+                    const fetchUrl = `${proxy.url}${target}`;
+
+                    const response = await fetch(fetchUrl, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    let data;
+                    if (proxy.type === 'json_wrapped') {
+                        const json = await response.json();
+                        if (!json.contents) throw new Error("No content from proxy");
+                        data = JSON.parse(json.contents);
+                    } else {
+                        data = await response.json();
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.warn(`Proxy ${proxy.url} failed:`, error);
+                    lastError = error;
+                }
             }
+            throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
         }
 
         function switchMode(mode) {
@@ -633,7 +654,8 @@
                 // 1. Fetch Markets
                 log(`Fetching last ${maxMarkets} markets (Days: ${daysBack}, Cats: ${selectedCats.join(',')})...`);
                 const endDateGte = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=${maxMarkets * 3}&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                // Lowered limit multiplier to 1.5x -> Reduced payload
+                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=${Math.ceil(maxMarkets * 1.5)}&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
                 // Req 3x limit to handle filtering
 
                 let allMarkets = await fetchProxy(marketsUrl);
@@ -641,18 +663,28 @@
                 // Client-side Filtering
                 let markets = allMarkets.filter(m => {
                     if (selectedCats.includes('other')) return true; // Minimal filtering if 'Other' checked
-                    // Basic tag matching
-                    const tags = (m.tags || []).map(t => t.name.toLowerCase());
-                    /*
-                     category tag matching map:
-                     politics -> politics, us politics, election
-                     crypto -> crypto, bitcoin, ethereum
-                     sports -> sports, nfl, nba, soccer
-                     business -> business, finance, economics
-                    */
-                    // Simplified: check if ANY tag matches ANY selected category string
-                    // This is rough but works for general API tags
-                    return selectedCats.some(cat => tags.some(tag => tag.includes(cat)));
+                    // Robust tag matching
+                    const tags = (m.tags || []).map(t => {
+                        if (typeof t === 'string') return t.toLowerCase();
+                        if (typeof t === 'object' && t !== null) {
+                            return (t.name || t.label || t.slug || '').toLowerCase();
+                        }
+                        return '';
+                    });
+
+                    // Category keyword mapping (V3.1)
+                    const keywordMap = {
+                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor"],
+                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens"],
+                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc"],
+                        business: ["business", "finance", "economics", "stocks", "market", "earnings", "tech", "fed", "inflation", "gdp"]
+                    };
+
+                    // Match if ANY selected category's keywords match ANY market tags
+                    return selectedCats.some(cat => {
+                        const keywords = keywordMap[cat] || [cat];
+                        return tags.some(tag => keywords.some(k => tag.includes(k)));
+                    });
                 }).slice(0, maxMarkets);
 
                 if (markets.length === 0) { log("No markets found match filters.", "error"); btn.disabled = false; return; }
@@ -773,8 +805,24 @@
                 const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=20&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
                 let allMarkets = await fetchProxy(marketsUrl);
 
-                // Filter
-                let markets = allMarkets.filter(m => selectedCats.some(cat => (m.tags || []).some(t => t.name.toLowerCase().includes(cat))));
+                // Filter (V3.1 Robustness)
+                let markets = allMarkets.filter(m => {
+                    const tags = (m.tags || []).map(t => {
+                        if (typeof t === 'string') return t.toLowerCase();
+                        if (typeof t === 'object' && t !== null) return (t.name || t.label || t.slug || '').toLowerCase();
+                        return '';
+                    });
+                    const keywordMap = {
+                        politics: ["politics", "election", "democrat", "republican", "trump", "biden", "harris", "usa", "government", "senate", "house", "governor"],
+                        crypto: ["crypto", "bitcoin", "ethereum", "btc", "eth", "solana", "blockchain", "coin", "tokens"],
+                        sports: ["sports", "nfl", "nba", "soccer", "football", "basketball", "baseball", "tennis", "olympics", "f1", "ufc"],
+                        business: ["business", "finance", "economics", "stocks", "market", "earnings", "tech", "fed", "inflation", "gdp"]
+                    };
+                    return selectedCats.some(cat => {
+                        const keywords = keywordMap[cat] || [cat];
+                        return tags.some(tag => keywords.some(k => tag.includes(k)));
+                    });
+                });
                 if (markets.length < 3) {
                     output.innerHTML = "<span style='color:orange'>Not enough data points. Try increasing the 'Resolution Window' or selecting more categories.</span>";
                     btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Build Strategy';
