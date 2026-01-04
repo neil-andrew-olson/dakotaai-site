@@ -574,17 +574,20 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Use reliable CORS proxy since Polymarket blocks direct browser requests
-        async function fetchProxy(url) {
+        // Use reliable CORS proxy with comprehensive rate limit handling
+        async function fetchProxy(url, retryCount = 0) {
+            const maxRetries = 5; // Increased retries for rate limiting
+            const baseDelay = 3000; // Start with 3 seconds
+
             try {
-                console.log('Making API call via CORS proxy...');
+                console.log(`Making API call via CORS proxy (attempt ${retryCount + 1}/${maxRetries + 1})...`);
 
                 // Use a reliable CORS proxy service
                 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
                 const proxyUrl = corsProxy + url;
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
                 const response = await fetch(proxyUrl, {
                     signal: controller.signal,
@@ -595,6 +598,22 @@
                     }
                 });
                 clearTimeout(timeoutId);
+
+                // Handle rate limiting (429) with longer delays
+                if (response.status === 429) {
+                    if (retryCount < maxRetries) {
+                        // More aggressive exponential backoff: 3s, 9s, 27s, 81s, 243s
+                        const delay = baseDelay * Math.pow(3, retryCount);
+                        const delaySeconds = Math.round(delay / 1000);
+                        console.log(`Rate limited (429). Waiting ${delaySeconds} seconds before retry...`);
+                        log(`Rate limited by proxy. Waiting ${delaySeconds} seconds...`, 'error');
+
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchProxy(url, retryCount + 1);
+                    } else {
+                        throw new Error('Rate limit exceeded after multiple retries. Please wait 5-10 minutes before trying again.');
+                    }
+                }
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -607,11 +626,22 @@
             } catch (error) {
                 console.error('❌ API call failed:', error.message);
 
-                // If proxy fails, try a different approach - JSONP if available
+                // Retry on network errors or timeouts with exponential backoff
+                if ((error.name === 'TypeError' || error.name === 'AbortError') && retryCount < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, retryCount);
+                    const delaySeconds = Math.round(delay / 1000);
+                    console.log(`Network error. Retrying in ${delaySeconds} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchProxy(url, retryCount + 1);
+                }
+
+                // If proxy fails completely, provide helpful error
                 if (url.includes('polymarket.com')) {
-                    console.log('Trying alternative CORS method...');
-                    // For now, just show a helpful error
-                    throw new Error(`Unable to access Polymarket API. This is likely due to CORS restrictions. The API works but browsers block direct access for security reasons.`);
+                    if (error.message.includes('Rate limit') || error.message.includes('429')) {
+                        throw new Error(`Polymarket API rate limited. Please wait 5-10 minutes before scanning again. The CORS proxy service has request limits.`);
+                    } else {
+                        throw new Error(`Unable to access Polymarket API: ${error.message}. Try again in a few minutes.`);
+                    }
                 }
 
                 throw new Error(`Failed to fetch data: ${error.message}`);
@@ -772,9 +802,16 @@
                     return;
                 }
 
-                // 2. Process
-                for (const market of markets) {
+                // 2. Process - Add delays between markets to avoid rate limiting
+                for (let i = 0; i < markets.length; i++) {
+                    const market = markets[i];
                     log(`Scanning: "${market.question.substring(0, 40)}..."`); // Real-time logging
+
+                    // Add delay between markets to avoid overwhelming the proxy
+                    if (i > 0) {
+                        console.log(`Waiting 3 seconds before next market...`);
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
 
                     console.log('Processing market:', {
                         question: market.question?.substring(0, 50),
