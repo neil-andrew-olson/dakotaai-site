@@ -554,8 +554,15 @@
 
     <script>
         const PROXY_URL = "https://api.allorigins.win/get?url=";
-        const GAMMA_API = "https://gamma-api.polymarket.com";
-        const DATA_API = "https://data-api.polymarket.com";
+        // Use Vercel API functions for deployed website, fallback to direct API for localhost
+        const isDeployed = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const GAMMA_API = isDeployed ?
+            `${window.location.protocol}//${window.location.host}/api/polymarket` :
+            "https://gamma-api.polymarket.com";
+
+        const DATA_API = isDeployed ?
+            `${window.location.protocol}//${window.location.host}/api/polymarket-trades` :
+            "https://data-api.polymarket.com";
 
         let currentMode = 'backtest'; // 'backtest' or 'strategy'
         let accountHits = new Map();
@@ -573,12 +580,13 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
+        // Free, reliable CORS proxy services
         const PROXIES = [
             { url: "https://cors-anywhere.herokuapp.com/", type: "direct" },
+            { url: "https://api.codetabs.com/v1/proxy?quest=", type: "direct" },
             { url: "https://thingproxy.freeboard.io/fetch/", type: "direct" },
-            { url: "https://api.allorigins.win/get?url=", type: "json_wrapped" },
-            { url: "https://corsproxy.io/?", type: "direct" },
-            { url: "https://corsproxy.org/?", type: "direct" }
+            { url: "https://cors.bridged.cc/", type: "direct" },
+            { url: "https://api.allorigins.win/get?url=", type: "json_wrapped" }
         ];
 
         async function fetchProxy(url) {
@@ -644,7 +652,33 @@
                     lastError = error;
                 }
             }
-            throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
+
+            // If all proxies fail, show user how to set up local proxy
+            const errorMsg = `All proxies failed. Last error: ${lastError?.message}
+
+🔧 QUICK FIX: Run this Node.js script locally:
+
+const fetch = require('node-fetch');
+
+async function testAPI() {
+  const url = 'https://gamma-api.polymarket.com/markets?closed=true&active=false&limit=10';
+  try {
+    const response = await fetch(url, {
+      headers: {'User-Agent': 'Mozilla/5.0'}
+    });
+    const data = await response.json();
+    console.log('Success! Found', data.length, 'markets');
+    console.log('Sample:', data[0]);
+  } catch (error) {
+    console.log('Error:', error.message);
+  }
+}
+
+testAPI();
+
+Save as test-api.js and run: node test-api.js`;
+
+            throw new Error(errorMsg);
         }
 
         function switchMode(mode) {
