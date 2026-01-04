@@ -676,14 +676,17 @@
             updateStats();
 
             try {
-                // 1. Fetch CURRENT ACTIVE markets (not resolved ones) to see recent trading activity
-                log(`Scanning CURRENT active markets for recent trades (last ${daysBack} days)`);
+                // 1. Fetch RESOLVED markets (not active ones) to analyze insider trading patterns
+                const actualDaysBack = Math.min(daysBack, 90); // Cap at 90 days to avoid very old markets
+                const startDate = new Date(Date.now() - (actualDaysBack * 24 * 60 * 60 * 1000));
+                const endDateGte = startDate.toISOString().split('T')[0];
+
+                log(`Scanning RESOLVED markets from ${endDateGte} to today (${actualDaysBack} days back)`);
                 log(`Categories: ${selectedCats.join(', ')}`);
 
-                // Get active markets first - these are currently trading
-                let marketsUrl = `${GAMMA_API}/markets?active=true&closed=false&limit=200&order_by=volume&desc=true`;
-                console.log('Active markets API URL:', marketsUrl);
-                console.log('Markets API URL:', marketsUrl);
+                // Get RESOLVED markets - these have known outcomes for insider analysis
+                let marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=200&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                console.log('Resolved markets API URL:', marketsUrl);
 
                 let allMarkets = await fetchProxy(marketsUrl);
                 console.log('Raw API Response - First market keys:', allMarkets.length > 0 ? Object.keys(allMarkets[0]) : 'No markets');
@@ -821,27 +824,28 @@
                         continue;
                     }
 
-                    // For ACTIVE markets, scan RECENT trades (not pre-resolution trades)
-                    const now = new Date();
-                    const scanStartTime = new Date(now - (hoursBefore * 60 * 60 * 1000)); // Last N hours of trading
+                    // For RESOLVED markets, scan PRE-RESOLUTION trades (insider detection)
+                    const resolutionTime = new Date(market.end_date);
+                    const scanStartTime = new Date(resolutionTime - (hoursBefore * 60 * 60 * 1000)); // Hours before resolution
 
                     let marketTrades = [];
                     // Check logs for Max Trade Size
                     let maxTradeSeen = 0;
 
-                    console.log('Scanning RECENT trades for active market:', market.question?.substring(0, 30));
-                    console.log('Time window: Last', hoursBefore, 'hours of trading');
+                    console.log('Scanning PRE-RESOLUTION trades for resolved market:', market.question?.substring(0, 30));
+                    console.log('Resolution time:', resolutionTime.toISOString());
+                    console.log('Time window: Last', hoursBefore, 'hours before resolution');
 
                     for (const [tokenId, outcome] of tokenMap) {
-                        // For active markets, scan trades up to NOW (not market end date)
-                        const endTime = now.getTime(); // Use current time for active markets
+                        // For resolved markets, scan trades up to resolution time (not current time)
+                        const endTime = resolutionTime.getTime(); // Use resolution time for resolved markets
                         const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=30&start_ts=${scanStartTime.getTime()}&end_ts=${endTime}&sortBy=TIMESTAMP&sortDirection=DESC`;
-                        console.log('Fetching trades for token:', tokenId, 'outcome:', outcome, 'URL:', tradesUrl);
+                        console.log('Fetching pre-resolution trades for token:', tokenId, 'outcome:', outcome);
 
                         await new Promise(r => setTimeout(r, 250));
                         try {
                             const t = await fetchProxy(tradesUrl);
-                            console.log('Trades response for', outcome, ':', t?.length || 0, 'trades');
+                            console.log('Pre-resolution trades for', outcome, ':', t?.length || 0, 'trades');
 
                             if (Array.isArray(t)) {
                                 t.forEach(trade => {
