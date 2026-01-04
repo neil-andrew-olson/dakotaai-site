@@ -676,14 +676,13 @@
             updateStats();
 
             try {
-                // 1. Fetch Markets
-                const startDate = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000));
-                const endDateGte = startDate.toISOString().split('T')[0];
-                log(`Resolution Window: From ${endDateGte} to Today`);
-                log(`Fetching markets (Days: ${daysBack}, Cats: ${selectedCats.join(',')})...`);
+                // 1. Fetch CURRENT ACTIVE markets (not resolved ones) to see recent trading activity
+                log(`Scanning CURRENT active markets for recent trades (last ${daysBack} days)`);
+                log(`Categories: ${selectedCats.join(', ')}`);
 
-                // Increased limit to 200 to ensure we find filtered markets in busy periods
-                const marketsUrl = `${GAMMA_API}/markets?closed=true&active=false&limit=200&order_by=end_date&desc=true&end_date_gte=${endDateGte}`;
+                // Get active markets first - these are currently trading
+                let marketsUrl = `${GAMMA_API}/markets?active=true&closed=false&limit=200&order_by=volume&desc=true`;
+                console.log('Active markets API URL:', marketsUrl);
                 console.log('Markets API URL:', marketsUrl);
 
                 let allMarkets = await fetchProxy(marketsUrl);
@@ -816,18 +815,21 @@
                         continue;
                     }
 
-                    const resolutionTime = new Date(market.end_date);
-                    const scanStartTime = new Date(resolutionTime - (hoursBefore * 60 * 60 * 1000));
+                    // For ACTIVE markets, scan RECENT trades (not pre-resolution trades)
+                    const now = new Date();
+                    const scanStartTime = new Date(now - (hoursBefore * 60 * 60 * 1000)); // Last N hours of trading
 
                     let marketTrades = [];
                     // Check logs for Max Trade Size
                     let maxTradeSeen = 0;
 
-                    console.log('Scanning trades for market:', market.question?.substring(0, 30));
-                    console.log('Time window:', { scanStartTime, resolutionTime, hoursBefore });
+                    console.log('Scanning RECENT trades for active market:', market.question?.substring(0, 30));
+                    console.log('Time window: Last', hoursBefore, 'hours of trading');
 
                     for (const [tokenId, outcome] of tokenMap) {
-                        const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=30&start_ts=${scanStartTime.getTime()}&end_ts=${resolutionTime.getTime()}&sortBy=TIMESTAMP&sortDirection=DESC`;
+                        // For active markets, scan trades up to NOW (not market end date)
+                        const endTime = now.getTime(); // Use current time for active markets
+                        const tradesUrl = `${DATA_API}/trades?token_id=${tokenId}&limit=30&start_ts=${scanStartTime.getTime()}&end_ts=${endTime}&sortBy=TIMESTAMP&sortDirection=DESC`;
                         console.log('Fetching trades for token:', tokenId, 'outcome:', outcome, 'URL:', tradesUrl);
 
                         await new Promise(r => setTimeout(r, 250));
