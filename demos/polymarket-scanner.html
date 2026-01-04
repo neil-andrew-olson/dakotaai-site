@@ -574,104 +574,35 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Use local PHP proxy if available, fallback to external proxies
-        const PROXIES = [
-            { url: "./proxy.php?url=", type: "direct" },
-            { url: "https://api.codetabs.com/v1/proxy?quest=", type: "direct" },
-            { url: "https://cors.bridged.cc/", type: "direct" },
-            { url: "https://api.allorigins.win/get?url=", type: "json_wrapped" }
-        ];
-
+        // Direct API calls only - no proxies needed since they work
         async function fetchProxy(url) {
-            let lastError;
-
-            // First try direct request (might work in some cases)
             try {
-                console.log('Trying direct request (no proxy)...');
+                console.log('Making direct API call to Polymarket...');
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for direct
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
                 const response = await fetch(url, {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        'User-Agent': 'Mozilla/5.0 (compatible; DakotaAI/1.0)',
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
                 clearTimeout(timeoutId);
 
-                if (response.ok) {
-                    console.log('Direct request succeeded!');
-                    return await response.json();
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
+
+                const data = await response.json();
+                console.log('✅ API call successful!');
+                return data;
+
             } catch (error) {
-                console.log('Direct request failed, trying proxies...');
+                console.error('❌ API call failed:', error.message);
+                throw new Error(`Failed to fetch data from Polymarket API: ${error.message}`);
             }
-
-            // Try proxies with shorter timeout
-            for (const proxy of PROXIES) {
-                try {
-                    console.log(`Trying proxy: ${proxy.url}`);
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout per proxy
-
-                    const target = proxy.type === 'json_wrapped' ? encodeURIComponent(url) : url;
-                    const fetchUrl = `${proxy.url}${target}`;
-
-                    const response = await fetch(fetchUrl, {
-                        signal: controller.signal,
-                        headers: {
-                            'Accept': 'application/json',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        }
-                    });
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    let data;
-                    if (proxy.type === 'json_wrapped') {
-                        const json = await response.json();
-                        if (!json.contents) throw new Error("No content from proxy");
-                        data = JSON.parse(json.contents);
-                    } else {
-                        data = await response.json();
-                    }
-
-                    console.log(`Proxy ${proxy.url} succeeded!`);
-                    return data;
-                } catch (error) {
-                    console.warn(`Proxy ${proxy.url} failed:`, error.message);
-                    lastError = error;
-                }
-            }
-
-            // If all proxies fail, show user how to set up local proxy
-            const errorMsg = `All proxies failed. Last error: ${lastError?.message}
-
-🔧 QUICK FIX: Run this Node.js script locally:
-
-const fetch = require('node-fetch');
-
-async function testAPI() {
-  const url = 'https://gamma-api.polymarket.com/markets?closed=true&active=false&limit=10';
-  try {
-    const response = await fetch(url, {
-      headers: {'User-Agent': 'Mozilla/5.0'}
-    });
-    const data = await response.json();
-    console.log('Success! Found', data.length, 'markets');
-    console.log('Sample:', data[0]);
-  } catch (error) {
-    console.log('Error:', error.message);
-  }
-}
-
-testAPI();
-
-Save as test-api.js and run: node test-api.js`;
-
-            throw new Error(errorMsg);
         }
 
         function switchMode(mode) {
