@@ -584,15 +584,46 @@
         async function fetchProxy(url) {
             let lastError;
 
+            // First try direct request (might work in some cases)
+            try {
+                console.log('Trying direct request (no proxy)...');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for direct
+
+                const response = await fetch(url, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    console.log('Direct request succeeded!');
+                    return await response.json();
+                }
+            } catch (error) {
+                console.log('Direct request failed, trying proxies...');
+            }
+
+            // Try proxies with shorter timeout
             for (const proxy of PROXIES) {
                 try {
+                    console.log(`Trying proxy: ${proxy.url}`);
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout per proxy
 
                     const target = proxy.type === 'json_wrapped' ? encodeURIComponent(url) : url;
                     const fetchUrl = `${proxy.url}${target}`;
 
-                    const response = await fetch(fetchUrl, { signal: controller.signal });
+                    const response = await fetch(fetchUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        }
+                    });
                     clearTimeout(timeoutId);
 
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -606,9 +637,10 @@
                         data = await response.json();
                     }
 
+                    console.log(`Proxy ${proxy.url} succeeded!`);
                     return data;
                 } catch (error) {
-                    console.warn(`Proxy ${proxy.url} failed:`, error);
+                    console.warn(`Proxy ${proxy.url} failed:`, error.message);
                     lastError = error;
                 }
             }
