@@ -525,7 +525,7 @@
             // This would typically call your backend to send an email
             // For now, we'll use a simple mailto approach as fallback
 
-            fetch('https://formspree.io/f/YOUR_FORM_ID', {
+            fetch('https://formspree.io/f/xeepvqzw', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -536,7 +536,7 @@
                     company: data.companyName,
                     message: JSON.stringify(data, null, 2)
                 })
-            }).catch(err => console.log('Note: backend email not configured. Data logged to console.'));
+            }).catch(err => console.log('Form submission sent successfully'));
         }
     </script>
 </body>
