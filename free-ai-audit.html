@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free AI Audit - Dakota AI</title>
+    <link rel="icon" href="DA.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 3rem 2rem;
+        }
+
+        .intro {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .intro h3 {
+            color: #0284c7;
+            margin-bottom: 0.5rem;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #10b981;
+        }
+
+        .question-group {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #0ea5e9;
+        }
+
+        .question-group label {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .question-group p {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group,
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .checkbox-option,
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0ea5e9;
+        }
+
+        .checkbox-option label,
+        .radio-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .submit-section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0ea5e9;
+            border: 2px solid #0ea5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f9ff;
+        }
+
+        .footer-note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-radius: 8px;
+            color: #92400e;
+        }
+
+        .footer-note strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .submit-section {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Free AI Readiness Audit</h1>
+            <p>Discover where AI can unlock value in your business</p>
+        </div>
+
+        <div class="content">
+            <div class="intro">
+                <h3>Quick Overview</h3>
+                <p>This 5-minute audit helps us understand your business and identify 2-3 specific AI opportunities tailored to your operations. After you submit, we'll schedule a 20-30 minute call to review findings and discuss next steps.</p>
+            </div>
+
+            <form id="auditForm">
+                <!-- SECTION 1: COMPANY INFO -->
+                <div class="section">
+                    <h2>1. About Your Company</h2>
+
+                    <div class="question-group">
+                        <label for="companyName">Company Name *</label>
+                        <input type="text" id="companyName" name="companyName" required>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="contactName">Your Name *</label>
+                        <input type="text" id="contactName" name="contactName" required>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="contactEmail">Email *</label>
+                        <input type="email" id="contactEmail" name="contactEmail" required>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="contactPhone">Phone (optional)</label>
+                        <input type="tel" id="contactPhone" name="contactPhone">
+                    </div>
+
+                    <div class="question-group">
+                        <label for="industry">What industry are you in? *</label>
+                        <select id="industry" name="industry" required>
+                            <option value="">-- Select Industry --</option>
+                            <option value="retail">Retail / E-Commerce</option>
+                            <option value="manufacturing">Manufacturing / Production</option>
+                            <option value="finance">Finance / Banking / Insurance</option>
+                            <option value="healthcare">Healthcare / Medical</option>
+                            <option value="logistics">Logistics / Supply Chain</option>
+                            <option value="agriculture">Agriculture / Farming</option>
+                            <option value="real-estate">Real Estate / Property Management</option>
+                            <option value="professional-services">Professional Services / Consulting</option>
+                            <option value="tech">Technology / Software</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="employees">Company Size *</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="emp1" name="employees" value="1-10" required>
+                                <label for="emp1">1-10 employees</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="emp2" name="employees" value="11-50" required>
+                                <label for="emp2">11-50 employees</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="emp3" name="employees" value="51-200" required>
+                                <label for="emp3">51-200 employees</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="emp4" name="employees" value="201+" required>
+                                <label for="emp4">201+ employees</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: DATA & OPERATIONS -->
+                <div class="section">
+                    <h2>2. Your Data & Operations</h2>
+
+                    <div class="question-group">
+                        <label>What data do you currently collect or store? *</label>
+                        <p>Check all that apply:</p>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data1" name="dataTypes" value="customer">
+                                <label for="data1">Customer/client data (sales, history, behavior)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data2" name="dataTypes" value="operational">
+                                <label for="data2">Operational data (processes, efficiency, quality)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data3" name="dataTypes" value="financial">
+                                <label for="data3">Financial data (transactions, revenue, costs)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data4" name="dataTypes" value="inventory">
+                                <label for="data4">Inventory/supply chain data</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data5" name="dataTypes" value="marketing">
+                                <label for="data5">Marketing/campaign data</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="data6" name="dataTypes" value="other-data">
+                                <label for="data6">Other (please specify below)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="dataStorage">Where is your data currently stored?</label>
+                        <p>Examples: spreadsheets, databases, cloud (Salesforce, QuickBooks, etc.)</p>
+                        <textarea id="dataStorage" name="dataStorage" placeholder="Describe..."></textarea>
+                    </div>
+
+                    <div class="question-group">
+                        <label>What are your biggest operational challenges? *</label>
+                        <p>Select top 1-2:</p>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge1" name="challenges" value="efficiency">
+                                <label for="challenge1">Low efficiency / wasted time on manual work</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge2" name="challenges" value="quality">
+                                <label for="challenge2">Quality issues or mistakes</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge3" name="challenges" value="forecasting">
+                                <label for="challenge3">Hard to predict demand / plan inventory</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge4" name="challenges" value="customer-insight">
+                                <label for="challenge4">Don't understand customer behavior / preferences</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge5" name="challenges" value="costs">
+                                <label for="challenge5">Rising costs (labor, materials, operations)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="challenge6" name="challenges" value="competition">
+                                <label for="challenge6">Falling behind competitors</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: AI & TECHNOLOGY -->
+                <div class="section">
+                    <h2>3. AI & Technology Readiness</h2>
+
+                    <div class="question-group">
+                        <label>Have you used AI or automation tools before?</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="aiexp1" name="aiExperience" value="never">
+                                <label for="aiexp1">Never - this would be new for us</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="aiexp2" name="aiExperience" value="some">
+                                <label for="aiexp2">Some experience (ChatGPT, basic automation)</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="aiexp3" name="aiExperience" value="significant">
+                                <label for="aiexp3">Significant experience (custom tools, analytics)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label>What's your biggest concern about AI adoption?</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="concern1" name="concern" value="cost">
+                                <label for="concern1">Cost / ROI uncertainty</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="concern2" name="concern" value="complexity">
+                                <label for="concern2">Too complex / hard to implement</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="concern3" name="concern" value="security">
+                                <label for="concern3">Data security / privacy</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="concern4" name="concern" value="skills">
+                                <label for="concern4">Lack of in-house AI skills</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="concern5" name="concern" value="vendor">
+                                <label for="concern5">Concerned about vendor lock-in</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="concern6" name="concern" value="none">
+                                <label for="concern6">No major concerns</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="budget">What budget range would you consider for an AI project?</label>
+                        <select id="budget" name="budget">
+                            <option value="">-- Select Range --</option>
+                            <option value="under-5k">Under $5,000</option>
+                            <option value="5-15k">$5,000 - $15,000</option>
+                            <option value="15-50k">$15,000 - $50,000</option>
+                            <option value="50k-plus">$50,000+</option>
+                            <option value="unsure">Not sure yet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: PRIORITIES & TIMELINE -->
+                <div class="section">
+                    <h2>4. Priorities & Timeline</h2>
+
+                    <div class="question-group">
+                        <label for="priority">What's your timeline for AI implementation?</label>
+                        <select id="priority" name="priority">
+                            <option value="">-- Select Timeline --</option>
+                            <option value="urgent">ASAP (this month)</option>
+                            <option value="soon">Soon (1-3 months)</option>
+                            <option value="planning">Planning phase (3-6 months)</option>
+                            <option value="exploring">Just exploring (6+ months)</option>
+                        </select>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="goal">What's your top goal for this project?</label>
+                        <textarea id="goal" name="goal" placeholder="E.g., 'Reduce manual data entry by 50%' or 'Improve customer retention'"></textarea>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="additional">Anything else you'd like us to know?</label>
+                        <textarea id="additional" name="additional" placeholder="Share any additional context..."></textarea>
+                    </div>
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="submit-section">
+                    <button type="submit" class="btn btn-primary">Submit Audit</button>
+                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                </div>
+            </form>
+
+            <div class="footer-note">
+                <strong>What happens next?</strong>
+                After you submit, we'll review your responses and send you a personalized report with 2-3 specific AI opportunities for your business, along with a meeting invitation to discuss details.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('auditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {
+                companyName: formData.get('companyName'),
+                contactName: formData.get('contactName'),
+                contactEmail: formData.get('contactEmail'),
+                contactPhone: formData.get('contactPhone'),
+                industry: formData.get('industry'),
+                employees: formData.get('employees'),
+                dataTypes: formData.getAll('dataTypes'),
+                dataStorage: formData.get('dataStorage'),
+                challenges: formData.getAll('challenges'),
+                aiExperience: formData.get('aiExperience'),
+                concern: formData.get('concern'),
+                budget: formData.get('budget'),
+                priority: formData.get('priority'),
+                goal: formData.get('goal'),
+                additional: formData.get('additional'),
+                submittedAt: new Date().toISOString()
+            };
+
+            // Log to console (you can replace with API call)
+            console.log('Audit Form Data:', data);
+
+            // Send email (requires backend)
+            sendAuditEmail(data);
+
+            // Show success message
+            alert('Thank you! We\'ve received your audit. You should expect a call within 24 business hours.');
+            this.reset();
+        });
+
+        function sendAuditEmail(data) {
+            // This would typically call your backend to send an email
+            // For now, we'll use a simple mailto approach as fallback
+
+            fetch('https://formspree.io/f/YOUR_FORM_ID', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.contactEmail,
+                    name: data.contactName,
+                    company: data.companyName,
+                    message: JSON.stringify(data, null, 2)
+                })
+            }).catch(err => console.log('Note: backend email not configured. Data logged to console.'));
+        }
+    </script>
+</body>
+
+</html>
